@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GP Argumentative Essay Practice (v4)</title>
+    <title>GP Argumentative Essay Practice (v7)</title>
     <style>
         /* Basic Styling */
         body {
@@ -25,7 +25,7 @@
             border: 1px solid #dee2e6;
         }
 
-        /* --- New Colour Scheme --- */
+        /* --- Colour Scheme --- */
         :root {
             --primary-color: #18314F;
             --secondary-color-1: #0D0630;
@@ -44,7 +44,6 @@
             font-size: 2rem;
         }
 
-         /* Headings within the main container structure */
         h2 {
             color: var(--secondary-color-1);
             border-bottom: 2px solid #e9ecef;
@@ -59,11 +58,36 @@
             margin-bottom: 25px;
         }
 
+         /* Specific styling for checkbox group */
+         .checkbox-group {
+             display: flex;
+             align-items: center;
+             background-color: #f8f9fa;
+             padding: 10px 15px;
+             border-radius: 5px;
+             border: 1px solid #ced4da;
+             margin-bottom: 25px; /* Consistent margin */
+         }
+         .checkbox-group input[type="checkbox"] {
+            width: auto; /* Override default width */
+            margin-right: 10px;
+            accent-color: var(--primary-color); /* Color the check */
+            cursor: pointer;
+            transform: scale(1.1); /* Slightly larger checkbox */
+         }
+          .checkbox-group label {
+             margin-bottom: 0; /* Remove label margin */
+             font-weight: normal; /* Normal weight for checkbox label */
+             color: var(--secondary-color-2);
+             cursor: pointer;
+          }
+
+
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: var(--secondary-color-2); /* Label color */
+            color: var(--secondary-color-2);
         }
 
         select,
@@ -77,30 +101,25 @@
             font-size: 1rem;
             font-family: inherit;
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            color: var(--body-text-color); /* Ensure inputs have body text color */
+            color: var(--body-text-color);
         }
-        select {
-             background-color: #fff; /* Ensure select bg is white */
-        }
+        select { background-color: #fff; }
 
         select:focus,
         textarea:focus {
-             border-color: var(--accent-color-1); /* Use accent for focus */
+             border-color: var(--accent-color-1);
              outline: 0;
-             box-shadow: 0 0 0 0.2rem rgba(139, 190, 178, 0.25); /* Accent focus shadow */
+             box-shadow: 0 0 0 0.2rem rgba(139, 190, 178, 0.25);
         }
-
 
         textarea {
             min-height: 100px;
             resize: vertical;
         }
-        textarea::placeholder {
-            color: #6c757d;
-        }
+        textarea::placeholder { color: #6c757d; }
 
         button {
-            background-color: var(--primary-color); /* Button background */
+            background-color: var(--primary-color);
             color: white;
             font-weight: bold;
             border: none;
@@ -108,21 +127,25 @@
             transition: background-color 0.3s ease, transform 0.1s ease;
             padding: 14px 15px;
             font-size: 1.1rem;
+            margin-top: 10px; /* Added margin top */
         }
 
-        button:hover {
-            background-color: var(--secondary-color-1); /* Button hover */
-        }
+        button:hover { background-color: var(--secondary-color-1); }
+        button:active { transform: translateY(1px); }
+        button:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.7; }
 
-        button:active {
-             transform: translateY(1px);
-        }
-
-        button:disabled {
-            background-color: #adb5bd; /* Keep disabled grey */
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+         /* Planning Button Styling */
+         #planning-done-btn {
+            background-color: var(--accent-color-1);
+            color: var(--secondary-color-1);
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 20px; /* Space below button */
+            display: none; /* Initially hidden */
+         }
+         #planning-done-btn:hover {
+            background-color: #7aa89f; /* Darker accent on hover */
+         }
 
         /* Output Styling */
         #output-section {
@@ -131,13 +154,13 @@
             border-top: 1px solid #e9ecef;
         }
 
-         /* Styling for the displayed question */
+         /* Displayed Question Container */
          #displayed-question-container {
-            background-color: #eef2f7; /* Light bg to highlight the question */
+            background-color: var(--accent-color-2); /* Light accent bg */
             border: 1px solid #ced4da;
             border-left: 5px solid var(--primary-color);
             padding: 15px 20px;
-            margin-bottom: 30px;
+            margin-bottom: 15px; /* Reduced margin when planning button might appear */
             border-radius: 5px;
          }
           #displayed-question-container h3 {
@@ -146,154 +169,79 @@
               font-size: 1.2em;
               line-height: 1.4;
           }
-           #displayed-question-container p { /* Small note if question was generated */
+           #displayed-question-container p {
               font-size: 0.85em;
               font-style: italic;
               color: var(--secondary-color-2);
-              margin: 5px 0 0 0;
-              padding: 0;
-              background: none;
-              border: none;
+              margin: 5px 0 0 0; padding: 0;
+              background: none; border: none;
            }
 
-        /* Styling for generated H2, H3, H4 in output content */
+        /* Output Content (Accordion Target) */
+        #output-content.hidden {
+            display: none;
+        }
+
+        /* Styling for generated content (headings, lists etc) */
         #output-content h2 {
-             font-size: 1.5rem;
-             color: var(--secondary-color-1); /* Generated section headers */
-             margin-top: 25px;
-             margin-bottom: 15px;
-             border-bottom: 1px solid var(--accent-color-1); /* Accent border */
-             padding-bottom: 8px;
+             font-size: 1.5rem; color: var(--secondary-color-1);
+             margin-top: 25px; margin-bottom: 15px;
+             border-bottom: 1px solid var(--accent-color-1); padding-bottom: 8px;
         }
         #output-content h3 {
-             font-size: 1.3rem;
-             color: var(--primary-color); /* Viewpoint type headers */
-             margin-top: 20px;
-             margin-bottom: 10px;
-             border-bottom: 1px dashed var(--secondary-color-2);
-             padding-bottom: 5px;
+             font-size: 1.3rem; color: var(--primary-color);
+             margin-top: 20px; margin-bottom: 10px;
+             border-bottom: 1px dashed var(--secondary-color-2); padding-bottom: 5px;
         }
         #output-content h4 {
-             font-size: 1.1rem;
-             color: var(--secondary-color-1); /* Conclusion headers */
-             margin-top: 20px;
-             margin-bottom: 10px;
-             font-weight: 600;
+             font-size: 1.1rem; color: var(--secondary-color-1);
+             margin-top: 20px; margin-bottom: 10px; font-weight: 600;
         }
-
-        #output-content ul {
-            list-style-type: none;
-            padding-left: 0;
-            margin-top: 10px;
+        #output-content ul { list-style-type: none; padding-left: 0; margin-top: 10px; }
+        #output-content li {
+            background-color: #f8f9fa; margin-bottom: 12px; padding: 15px 20px;
+            border-radius: 5px; border-left: 5px solid var(--secondary-color-2);
+            line-height: 1.6; color: var(--body-text-color);
         }
-
-         #output-content li {
-            background-color: #f8f9fa; /* Lighter bg for list items */
-            margin-bottom: 12px;
-            padding: 15px 20px;
-            border-radius: 5px;
-            border-left: 5px solid var(--secondary-color-2); /* List item border */
-            line-height: 1.6;
-            color: var(--body-text-color); /* Explicitly set body text color */
-         }
-
-        #output-content li ul {
-             margin-top: 10px;
-             padding-left: 20px;
-         }
-         #output-content li li {
-             background-color: #ffffff; /* White for nested */
-             border-left: 3px solid var(--accent-color-1); /* Accent border for nested */
-             font-size: 0.95em;
-             padding: 10px 15px;
-         }
-
+        #output-content li ul { margin-top: 10px; padding-left: 20px; }
+        #output-content li li {
+            background-color: #ffffff; border-left: 3px solid var(--accent-color-1);
+            font-size: 0.95em; padding: 10px 15px;
+        }
         #output-content p {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            color: var(--body-text-color); /* Explicitly set body text color */
+            margin-bottom: 15px; padding: 10px; background-color: #f8f9fa;
+            border: 1px solid #e9ecef; border-radius: 4px; color: var(--body-text-color);
         }
-         #output-content strong { /* Point:, Example: labels */
-            color: var(--secondary-color-1);
-            font-weight: 600;
-         }
+        #output-content strong { color: var(--secondary-color-1); font-weight: 600; }
 
         /* Vocabulary Section Styling */
         #vocabulary-section {
-            margin-top: 40px;
-            padding-top: 25px;
-            border-top: 2px solid var(--primary-color); /* Prominent separator */
+            margin-top: 40px; padding-top: 25px; border-top: 2px solid var(--primary-color);
         }
-        #vocabulary-section h2 {
-             color: var(--primary-color); /* Vocab heading */
-             border-bottom: none;
-             margin-bottom: 15px;
-        }
-         #vocabulary-section dl {
-             margin-left: 5px;
+        #vocabulary-section h2 { color: var(--primary-color); border-bottom: none; margin-bottom: 15px; }
+        #vocabulary-section dl { margin-left: 5px; }
+        #vocabulary-section dt { font-weight: bold; color: var(--secondary-color-1); margin-top: 10px; }
+        #vocabulary-section dd { margin-left: 20px; margin-bottom: 10px; color: var(--secondary-color-2); font-size: 0.95em; }
+        #vocabulary-section p {
+             font-style: italic; color: var(--secondary-color-2);
+             background-color: transparent; border: none; padding: 0;
          }
-         #vocabulary-section dt { /* Term */
-            font-weight: bold;
-            color: var(--secondary-color-1); /* Vocab term color */
-            margin-top: 10px;
-         }
-         #vocabulary-section dd { /* Definition */
-             margin-left: 20px;
-             margin-bottom: 10px;
-             color: var(--secondary-color-2); /* Vocab definition color */
-             font-size: 0.95em;
-         }
-         #vocabulary-section p { /* Status messages in vocab */
-             font-style: italic;
-             color: var(--secondary-color-2);
-             background-color: transparent;
-             border: none;
-             padding: 0;
-         }
-         #vocabulary-section p.error { /* Specific error styling */
-              color: #721c24; /* Keep error red distinct */
-              background-color: #f8d7da;
-              border: 1px solid #f5c6cb;
-              padding: 10px;
-              border-radius: 4px;
-              font-style: normal;
-              font-weight: bold;
+         #vocabulary-section p.error {
+              color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb;
+              padding: 10px; border-radius: 4px; font-style: normal; font-weight: bold;
           }
 
-
         /* Loading/Error Styling */
-        #status {
-            margin-top: 20px;
-            padding: 12px 15px;
-            border-radius: 5px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .loading {
-            background-color: #e2f3ff; /* Keep standard loading/error colors */
-            color: #0056b3;
-            border: 1px solid #b8dffc;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            font-weight: bold;
-        }
+        #status { margin-top: 20px; padding: 12px 15px; border-radius: 5px; text-align: center; font-weight: 500; }
+        .loading { background-color: #e2f3ff; color: #0056b3; border: 1px solid #b8dffc; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-weight: bold; }
 
         /* Responsive Adjustments */
         @media (max-width: 768px) {
-             .container {
-                padding: 20px;
-            }
-            h1 { font-size: 1.7rem; }
-            h2 { font-size: 1.4rem; }
-            select, textarea, button { font-size: 0.95rem; }
+             .container { padding: 20px; }
+             h1 { font-size: 1.7rem; }
+             h2 { font-size: 1.4rem; }
+             select, textarea, button { font-size: 0.95rem; }
         }
 
     </style>
@@ -302,10 +250,11 @@
 
     <div class="container">
         <h1>GP Argumentative Essay Practice</h1>
+        <p style="text-align: center; color: #A3A3A3;">In this beta version, your history cannot be saved. Please print page as PDF for your own archive!</p>
 
         <div id="input-section">
             <h2>Essay Parameters</h2>
-            <p><em>Select parameters below to generate a question, OR enter a specific question in the text box (this will override parameter selection).</em></p>
+            <p><em>Select parameters below to generate a question, OR enter a specific question in the text box.</em></p>
 
             <div class="form-group">
                 <label for="question-type">Question Type:</label>
@@ -327,6 +276,12 @@
                 <textarea id="essay-question" placeholder="Enter the full essay question here..."></textarea>
             </div>
 
+             <!-- Local Examples Checkbox -->
+             <div class="checkbox-group">
+                 <input type="checkbox" id="local-examples-checkbox">
+                 <label for="local-examples-checkbox">Use local examples (Singapore/SEA focus) for viewpoints?</label>
+             </div>
+
             <button id="generate-btn">Generate Pointers</button>
 
             <div id="status"></div>
@@ -335,11 +290,13 @@
         <div id="output-section">
             <h2>Generated Pointers</h2>
 
-             <!-- Container for the generated or provided question -->
-             <div id="displayed-question-container" style="display: none;"> <!-- Initially hidden -->
+             <!-- Container for the question & optional planning button -->
+             <div id="displayed-question-container" style="display: none;">
                 <h3 id="displayed-question"></h3>
-                <p id="question-source-note" style="display: none;"></p> <!-- Note for generated questions -->
+                <p id="question-source-note" style="display: none;"></p>
             </div>
+             <button id="planning-done-btn" style="display: none;">I've done my planning - Show Pointers</button>
+
 
             <div id="output-content">
                 <p><em>Select parameters or enter an essay question above, then click "Generate Pointers".</em></p>
@@ -353,13 +310,14 @@
     </div>
 
     <script>
-        // --- Data (Keep CSV data and common words as before) ---
-        const csvData = { /* ... same data as before ... */
-            questionTypes: ["To what extent", "Discuss", "How desirable", "Evaluate", "How far do you agree", "Assess", "Evaluate this claim", "Consider the view", "How far is this true", "How realistic is it", "Consider the argument", "Assess the extent", "What is your view", "Inquiry (e.g., Does...? Is...? Are...?)", "Examine the claim", "Is there any point", "How true is this", "How acceptable is this", "How far is", "How reliable are", "How necessary is", "Should", "How far can", "How far should", "Consider whether", "Can"],
+        // --- Data (CSV data and common words) ---
+        const csvData = { /* ... same data ... */
+             questionTypes: ["To what extent", "Discuss", "How desirable", "Evaluate", "How far do you agree", "Assess", "Evaluate this claim", "Consider the view", "How far is this true", "How realistic is it", "Consider the argument", "Assess the extent", "What is your view", "Inquiry (e.g., Does...? Is...? Are...?)", "Examine the claim", "Is there any point", "How true is this", "How acceptable is this", "How far is", "How reliable are", "How necessary is", "Should", "How far can", "How far should", "Consider whether", "Can"],
             categories: ["Science/Tech", "Environment", "Family", "Ethics/Education", "Healthcare", "Public Policy", "Law & Society", "Education", "Social", "Ethics", "Social Justice", "Media", "Communication", "Business Ethics", "History", "Literature", "Arts & Culture", "Psychology", "Business", "Economics", "Society", "Labor Policy", "Energy", "Freedom of Expression", "Social Equality", "Culture", "Social Cohesion", "Philosophy/Values", "Sports", "Youth", "Language", "Social Change", "Law", "Justice", "Religion", "Arts", "Demographics", "Philosophy", "Global Issues", "Data", "Planning", "Biology", "Architecture", "International Relations", "Politics", "Democracy", "Civil Liberties", "Workforce", "Leadership", "Gender Equality", "Food", "Nature", "STEM", "Life Values", "Journalism", "Tourism", "Personal Freedom"],
             topics: ["Waste disposal", "Parental responsibility", "Free healthcare", "Crime deterrence", "Education beyond academics", "Challenging injustice", "Social media", "Online ads", "Autobiographies", "Humour", "Business profitability", "Music appreciation", "National minimum wage", "Fossil fuels", "Space travel", "Censorship", "Voluntary work", "Equal opportunity", "Quality of human interaction", "Festivals", "Regret", "Sports personalities", "Translation accuracy", "Young people", "Prisoners losing rights", "Religion in Modernity", "Dramas vs live performance", "Value of different age groups", "Individual agency", "Historical figures", "Accessibility of scientific research", "Music without words", "Extinction of species", "Consumerism’s impact on society", "Mathematics", "Value of participation vs winning", "Pursuit of happiness", "Scientific advancement", "Power balance: people vs politicians", "Social media’s effect on friendship", "Charity and donations", "Films: escapism vs addressing problems", "Private and Public rights", "News reliability", "Arts as a luxury", "Major sporting events", "Global tourism vs online alternatives", "Advertising’s role in consumer persuasion", "Statistics", "Survival of the fittest", "Sporting success", "Buildings shaping society", "Claiming societal greatness", "Scientist’s focus: knowledge vs morality", "Arms trade", "Politicians: popular opinion vs convictions", "Democracy", "Freedom of speech", "Prosperity and population growth", "International relations", "Income inequality", "Science as a solution to global hunger", "Social media vs political influence", "Artificial intelligence", "Leadership", "Religion’s role in young people", "Violence in visual media", "Globalisation: pros and cons", "Equal parenting", "Importance of food in Singaporean culture", "Fiction’s ability to teach about the real world"]
-        };
-        const commonWords = new Set(['a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'shall', 'should', 'can', 'could', 'may', 'might', 'must', 'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 'as', 'if', 'of', 'in', 'on', 'at', 'to', 'from', 'by', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'than', 'too', 'very', 's', 't', 'just', 'don', 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', 'couldn', 'didn', 'doesn', 'hadn', 'hasn', 'haven', 'isn', 'ma', 'mightn', 'mustn', 'needn', 'shan', 'shouldn', 'wasn', 'weren', 'won', 'wouldn', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'i', 'me', 'my', 'myself', 'we', 'us', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'one', 'also', 'get', 'go', 'make', 'say', 'see', 'take', 'think', 'use', 'want', 'work', 'like', 'because', 'while', 'within', 'without', 'example', 'point', 'view', 'stance', 'argument', 'conclusion', 'however', 'therefore', 'furthermore', 'moreover', 'whether', 'often', 'always', 'sometimes', 'never', 'really', 'quite', 'much', 'many', 'even', 'still', 'viewpoint', 'opposing', 'supporting', 'rebuttal', 'suggested', 'option']);
+         };
+        const commonWords = new Set([ /* ... same large set ... */ 'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'being', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'shall', 'should', 'can', 'could', 'may', 'might', 'must', 'and', 'but', 'or', 'nor', 'for', 'so', 'yet', 'as', 'if', 'of', 'in', 'on', 'at', 'to', 'from', 'by', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'not', 'only', 'own', 'same', 'than', 'too', 'very', 's', 't', 'just', 'don', 'now', 'd', 'll', 'm', 'o', 're', 've', 'y', 'ain', 'aren', 'couldn', 'didn', 'doesn', 'hadn', 'hasn', 'haven', 'isn', 'ma', 'mightn', 'mustn', 'needn', 'shan', 'shouldn', 'wasn', 'weren', 'won', 'wouldn', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'i', 'me', 'my', 'myself', 'we', 'us', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 'one', 'also', 'get', 'go', 'make', 'say', 'see', 'take', 'think', 'use', 'want', 'work', 'like', 'because', 'while', 'within', 'without', 'example', 'point', 'view', 'stance', 'argument', 'conclusion', 'however', 'therefore', 'furthermore', 'moreover', 'whether', 'often', 'always', 'sometimes', 'never', 'really', 'quite', 'much', 'many', 'even', 'still', 'viewpoint', 'opposing', 'supporting', 'rebuttal', 'suggested', 'option']);
+
 
         // --- DOM Elements ---
         const generateBtn = document.getElementById('generate-btn');
@@ -367,165 +325,124 @@
         const categorySelect = document.getElementById('category');
         const topicSelect = document.getElementById('topic');
         const essayQuestionTextarea = document.getElementById('essay-question');
+        const localExamplesCheckbox = document.getElementById('local-examples-checkbox');
         const outputContentDiv = document.getElementById('output-content');
         const statusDiv = document.getElementById('status');
         const vocabularySectionDiv = document.getElementById('vocabulary-section');
         const displayedQuestionContainer = document.getElementById('displayed-question-container');
         const displayedQuestionEl = document.getElementById('displayed-question');
         const questionSourceNoteEl = document.getElementById('question-source-note');
+        const planningDoneBtn = document.getElementById('planning-done-btn');
 
-        // --- API Key Handling (Keep as before) ---
+        // --- API Key Handling ---
         let apiKey = sessionStorage.getItem('geminiApiKey');
-        function getApiKey() { /* ... same function ... */
-            if (!apiKey) {
-                apiKey = prompt("Please enter your Google AI Gemini API Key:");
-                if (apiKey) {
-                    sessionStorage.setItem('geminiApiKey', apiKey);
-                    console.log("API Key stored in sessionStorage for this session.");
-                } else {
-                    showError("API Key is required.");
-                    return false;
-                }
+        function getApiKey() {
+             if (!apiKey) {
+                // **CHANGE: Updated prompt text**
+                apiKey = prompt("You need a key to access this service.");
+                if (apiKey) { sessionStorage.setItem('geminiApiKey', apiKey); }
+                else { showError("API Key is required."); return false; }
             }
             if (statusDiv.classList.contains('error')) { clearStatus(); }
             return true;
-         }
+        }
 
-        // --- Helper Functions (Keep showLoading, showError, clearStatus, populateDropdown, escapeHtml) ---
+        // --- Helper Functions ---
         function showLoading(message) { /* ... same ... */
-            statusDiv.textContent = message;
-            statusDiv.className = 'status loading';
-            outputContentDiv.innerHTML = '';
-            vocabularySectionDiv.innerHTML = '';
-            displayedQuestionContainer.style.display = 'none'; // Hide question container while loading
-            generateBtn.disabled = true;
+             statusDiv.textContent = message; statusDiv.className = 'status loading';
+             outputContentDiv.innerHTML = ''; vocabularySectionDiv.innerHTML = '';
+             displayedQuestionContainer.style.display = 'none';
+             planningDoneBtn.style.display = 'none';
+             outputContentDiv.classList.add('hidden');
+             generateBtn.disabled = true;
         }
         function showError(message, isVocabError = false) { /* ... same ... */
-             if (isVocabError) {
+            if (isVocabError) {
                  vocabularySectionDiv.innerHTML = `<h2>Vocabulary Focus</h2><p class="error">Error generating vocabulary: ${message}</p>`;
                  console.error("GP App Vocab Error:", message);
              } else {
-                statusDiv.textContent = `Error: ${message}`;
-                statusDiv.className = 'status error';
-                generateBtn.disabled = false;
-                console.error("GP App Error:", message);
+                statusDiv.textContent = `Error: ${message}`; statusDiv.className = 'status error';
+                generateBtn.disabled = false; console.error("GP App Error:", message);
             }
         }
-        function clearStatus() { /* ... same ... */
-            statusDiv.textContent = '';
-            statusDiv.className = 'status';
-        }
+        function clearStatus() { statusDiv.textContent = ''; statusDiv.className = 'status'; }
         function populateDropdown(selectElement, optionsArray) { /* ... same ... */
-             const defaultOption = document.createElement('option');
-             defaultOption.value = "";
-             defaultOption.textContent = `-- Select ${selectElement.id.replace('-', ' ')} --`;
-             defaultOption.disabled = true;
-             defaultOption.selected = true;
-             selectElement.appendChild(defaultOption);
+              const defaultOption = document.createElement('option');
+             defaultOption.value = ""; defaultOption.textContent = `-- Select ${selectElement.id.replace('-', ' ')} --`;
+             defaultOption.disabled = true; defaultOption.selected = true; selectElement.appendChild(defaultOption);
             [...new Set(optionsArray)].sort().forEach(optionText => {
-                const option = document.createElement('option');
-                option.value = optionText; option.textContent = optionText;
-                selectElement.appendChild(option);
-            });
-        }
-         function escapeHtml(unsafe) { /* ... same ... */
-            if (!unsafe) return '';
-            return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                const option = document.createElement('option'); option.value = optionText; option.textContent = optionText;
+                selectElement.appendChild(option); });
+         }
+        function escapeHtml(unsafe) { /* ... same ... */
+             if (!unsafe) return ''; return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
-
-        // --- NEW: Function to Generate Question from Parameters ---
-        async function generateQuestionFromParams(type, category, topic) {
+        // --- Function to Generate Question from Parameters ---
+        async function generateQuestionFromParams(type, category, topic) { /* ... same function ... */
             if (!apiKey) throw new Error("API Key not available for question generation.");
-
-            const prompt = `Generate a single, clear GCE 'A' Level General Paper style essay question based on these parameters:
-- Question Type: "${type}"
-- Category: "${category}"
-- Topic: "${topic}"
-
-Use British English spelling. Output *only* the generated question as a single string, without any extra text or quotation marks around it.`;
-
-             const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            const prompt = `Generate a single, clear GCE 'A' Level General Paper style essay question based on these parameters:\n- Question Type: "${type}"\n- Category: "${category}"\n- Topic: "${topic}"\n\nUse British English spelling. Output *only* the generated question as a single string, without any extra text or quotation marks around it.`;
+            const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
              try {
-                 const response = await fetch(API_ENDPOINT, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({
-                         contents: [{ parts: [{ text: prompt }] }],
-                         generationConfig: { temperature: 0.5 } // Slightly creative for question wording
-                     }),
-                 });
-                 if (!response.ok) {
-                    let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; }
-                    throw new Error(errorData.error?.message || `Question generation API failed (${response.status})`);
-                 }
+                 const response = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5 } }) });
+                 if (!response.ok) { let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; } throw new Error(errorData.error?.message || `Question generation API failed (${response.status})`); }
                  const data = await response.json();
-                 if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                     return data.candidates[0].content.parts[0].text.trim();
-                 } else {
-                     throw new Error("AI did not return a valid question string.");
-                 }
-             } catch (error) {
-                 console.error("Error generating question via API:", error);
-                 // Fallback: construct a basic string if API fails
-                 return `Essay based on: Type='${type}', Category='${category}', Topic='${topic}'`;
-             }
-        }
+                 if (data.candidates?.[0]?.content?.parts?.[0]?.text) { return data.candidates[0].content.parts[0].text.trim(); }
+                 else { throw new Error("AI did not return a valid question string."); }
+             } catch (error) { console.error("Error generating question via API:", error); return `Essay based on: Type='${type}', Category='${category}', Topic='${topic}'`; } // Fallback
+         }
 
 
-        // --- Main Generation Logic (Revised) ---
-        async function generateEssayPointers() {
+        // --- Main Generation Logic ---
+        async function generateEssayPointers() { // (No changes needed here from v6)
             if (!getApiKey()) return;
 
             const questionType = questionTypeSelect.value;
             const category = categorySelect.value;
             const topic = topicSelect.value;
             const specificQuestion = essayQuestionTextarea.value.trim();
+            const useLocalExamples = localExamplesCheckbox.checked;
 
             let finalQuestion = "";
-            let questionSource = ""; // To note if generated
+            let questionSource = "";
+            let inputDescription = "";
 
-            // Clear previous outputs
-            outputContentDiv.innerHTML = '<p><em>Generating...</em></p>'; // Placeholder
+            // Clear previous outputs & state
+            outputContentDiv.innerHTML = '<p><em>Generating...</em></p>';
             vocabularySectionDiv.innerHTML = '';
             displayedQuestionContainer.style.display = 'none';
-            questionSourceNoteEl.style.display = 'none';
+            planningDoneBtn.style.display = 'none';
+            outputContentDiv.classList.add('hidden');
 
             try {
+                // Determine the final question
                 if (specificQuestion) {
                     finalQuestion = specificQuestion;
-                    inputDescription = "the specific question provided";
                     questionSource = "user-provided";
-                    // Visually reset dropdowns if using override
-                    questionTypeSelect.selectedIndex = 0;
-                    categorySelect.selectedIndex = 0;
-                    topicSelect.selectedIndex = 0;
+                    inputDescription = "the specific question provided";
+                    questionTypeSelect.selectedIndex = 0; categorySelect.selectedIndex = 0; topicSelect.selectedIndex = 0;
                     showLoading(`Generating pointers for the specific question provided...`);
-
                 } else if (questionType && category && topic) {
-                    inputDescription = `parameters (Type: ${questionType}, Category: ${category}, Topic: ${topic})`;
                     questionSource = "generated";
+                    inputDescription = `parameters (Type: ${questionType}, Category: ${category}, Topic: ${topic})`;
                     showLoading(`Generating question based on parameters and then pointers...`);
-                    // Generate question via API
                     finalQuestion = await generateQuestionFromParams(questionType, category, topic);
-
                 } else {
                     showError("Please either enter a specific essay question OR select a Question Type, Category, and Topic.");
-                    return; // Stop execution
+                    return;
                 }
 
-                 // Display the final question being used
+                 // Display the final question
                  displayedQuestionEl.textContent = finalQuestion;
-                 if (questionSource === "generated") {
-                     questionSourceNoteEl.textContent = "(Question generated from selected parameters)";
-                     questionSourceNoteEl.style.display = 'block';
-                 } else {
-                      questionSourceNoteEl.style.display = 'none';
-                 }
+                 questionSourceNoteEl.style.display = (questionSource === "generated") ? 'block' : 'none';
+                 questionSourceNoteEl.textContent = (questionSource === "generated") ? "(Question generated from selected parameters)" : "";
                  displayedQuestionContainer.style.display = 'block';
 
+                // --- Construct the Pointer Prompt (Keep v6 prompt) ---
+                const localExampleInstruction = useLocalExamples
+                    ? `\n**IMPORTANT: For the examples provided in the Supporting and Opposing Viewpoints sections, prioritise using recent, specific, verifiable examples from Singapore. If suitable Singaporean examples are not readily available or convincing for a point, use examples from Southeast Asia.**\n`
+                    : "";
 
-                 // --- Construct the Prompt for Pointers (using finalQuestion) ---
                 const pointerPrompt = `
 You are an expert assistant helping a GCE 'A' Level General Paper student brainstorm for an argumentative essay.
 **Use British English spelling throughout (e.g., 'analyse', 'centre', 'behaviour').**
@@ -534,7 +451,11 @@ The essay question is: "${finalQuestion}"
 
 Please generate pointers strictly following the structure and format guidelines below. Use standard HTML tags (<h2>, <h3>, <h4>, <ul>, <li>) for structure. Output should consist *only* of these pointers formatted in HTML, with no introductory or concluding text outside this structure.
 
-Ensure examples provided are solid, specific, and preferably recent (within the last 5-10 years where applicable). Generate points as bulleted lists.
+Ensure all generated content is relevant to the question.
+Generate points as bulleted lists.
+Hooks should be generally relevant to the question and the likely direction of the points, but do not need to use local examples.
+${localExampleInstruction} <!-- Local example instruction placed here -->
+Ensure examples provided in viewpoints are solid, specific, and verifiable.
 
 <!-- START OF REQUIRED HTML STRUCTURE -->
 <h2>Hook</h2>
@@ -545,44 +466,22 @@ Ensure examples provided are solid, specific, and preferably recent (within the 
 </ul>
 
 <h2>Stances</h2>
-<h3>Supporting Stance</h3>
-<ul><li>Briefly state the core argument FOR the proposition or main idea in the question.</li></ul>
-<h3>Opposing Stance</h3>
-<ul><li>Briefly state the core argument AGAINST the proposition or main idea in the question.</li></ul>
+<h3>Supporting Stance</h3><ul><li>Briefly state the core argument FOR the proposition or main idea in the question.</li></ul>
+<h3>Opposing Stance</h3><ul><li>Briefly state the core argument AGAINST the proposition or main idea in the question.</li></ul>
 
 <h2>Supporting Viewpoints</h2>
-<h3>Viewpoint 1 (Supporting)</h3>
-<ul>
-    <li><strong>Point:</strong> [Clear supporting viewpoint related to the 'Supporting Stance'].</li>
-    <li><strong>Example:</strong> [Specific, concrete, preferably recent example illustrating the point. Include brief context/source if possible.].</li>
-    <li><strong>Rebuttal:</strong> [A potential counter-argument or limitation to this specific supporting point].</li>
-</ul>
-<!-- Repeat Viewpoint 2 & 3 -->
-<h3>Viewpoint 2 (Supporting)</h3>
-<ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
-<h3>Viewpoint 3 (Supporting)</h3>
-<ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
-
+<h3>Viewpoint 1 (Supporting)</h3><ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> [Follow local example instruction if applicable] ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
+<h3>Viewpoint 2 (Supporting)</h3><ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> [Follow local example instruction if applicable] ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
+<h3>Viewpoint 3 (Supporting)</h3><ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> [Follow local example instruction if applicable] ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
 
 <h2>Opposing Viewpoints</h2>
-<h3>Viewpoint 1 (Opposing)</h3>
-<ul>
-    <li><strong>Point:</strong> [Clear opposing viewpoint related to the 'Opposing Stance'].</li>
-    <li><strong>Example:</strong> [Specific, concrete, preferably recent example illustrating the point].</li>
-    <li><strong>Rebuttal:</strong> [A potential counter-argument or limitation to this specific opposing point].</li>
-</ul>
-<!-- Repeat Viewpoint 2 & 3 -->
-<h3>Viewpoint 2 (Opposing)</h3>
-<ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
-<h3>Viewpoint 3 (Opposing)</h3>
-<ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
-
+<h3>Viewpoint 1 (Opposing)</h3><ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> [Follow local example instruction if applicable] ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
+<h3>Viewpoint 2 (Opposing)</h3><ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> [Follow local example instruction if applicable] ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
+<h3>Viewpoint 3 (Opposing)</h3><ul><li><strong>Point:</strong> ...</li><li><strong>Example:</strong> [Follow local example instruction if applicable] ...</li><li><strong>Rebuttal:</strong> ...</li></ul>
 
 <h2>Suggested Conclusions</h2>
-<h4>Conclusion (If Arguing For/Supporting)</h4>
-<p>A concluding paragraph (3-4 sentences) assuming the essay primarily argued FOR the proposition. Summarise key supporting points and offer a nuanced final thought.</p>
-<h4>Conclusion (If Arguing Against/Opposing)</h4>
-<p>A concluding paragraph (3-4 sentences) assuming the essay primarily argued AGAINST the proposition. Summarise key opposing points and offer a nuanced final thought.</p>
+<h4>Conclusion (If Arguing For/Supporting)</h4><p>...</p>
+<h4>Conclusion (If Arguing Against/Opposing)</h4><p>...</p>
 <!-- END OF REQUIRED HTML STRUCTURE -->
 
 Ensure all lists use <ul> and <li> tags. Use <strong> tags only for labels like <strong>Point:</strong>, <strong>Example:</strong>, <strong>Rebuttal:</strong>. Use British English spelling.
@@ -591,18 +490,12 @@ Ensure all lists use <ul> and <li> tags. Use <strong> tags only for labels like 
                 // --- API Call for Pointers ---
                 const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
                 const response = await fetch(API_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: pointerPrompt }] }],
-                        generationConfig: { responseMimeType: "text/plain" },
-                        // safetySettings: [...]
-                    }),
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: pointerPrompt }] }], generationConfig: { responseMimeType: "text/plain" } }),
                 });
 
                  if (!response.ok) { /* ... Standard error handling ... */
-                    let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; }
-                    throw new Error(errorData.error?.message || `Pointer generation API failed (${response.status})`);
+                      let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; } throw new Error(errorData.error?.message || `Pointer generation API failed (${response.status})`);
                  }
                  const data = await response.json();
 
@@ -614,144 +507,128 @@ Ensure all lists use <ul> and <li> tags. Use <strong> tags only for labels like 
                     if (generatedHtml.includes('<') && generatedHtml.includes('>')) {
                         displayGeneratedContent(generatedHtml);
                         clearStatus();
-                        await generateVocabulary(outputContentDiv.textContent); // Trigger vocabulary generation
-                        generateBtn.disabled = false; // Final enable
+
+                        // Accordion Logic
+                        if (questionSource === "generated") {
+                            planningDoneBtn.style.display = 'block';
+                            outputContentDiv.classList.add('hidden');
+                        } else {
+                            planningDoneBtn.style.display = 'none';
+                            outputContentDiv.classList.remove('hidden');
+                        }
+
+                        await generateVocabulary(outputContentDiv.textContent);
+                        generateBtn.disabled = false;
                     } else {
                          throw new Error("The AI did not return the expected HTML format for pointers.");
                     }
                 } else {
                      // Handle empty/filtered pointer response
-                     const finishReason = data.candidates?.[0]?.finishReason; /* ... Standard handling ... */
-                     let message = "Received an empty or unexpected response from the AI for pointers.";
-                     if (finishReason === 'SAFETY') message = `Pointer generation stopped due to safety concerns.`;
-                     else if (finishReason) message = `Pointer generation finished unexpectedly: ${finishReason}`;
-                     if (data.promptFeedback?.blockReason) message += ` (Prompt Feedback: Blocked - ${data.promptFeedback.blockReason})`;
-                     throw new Error(message);
+                       const finishReason = data.candidates?.[0]?.finishReason; /* ... Standard handling ... */ let message = "Received an empty or unexpected response from the AI for pointers."; if (finishReason === 'SAFETY') message = `Pointer generation stopped due to safety concerns.`; else if (finishReason) message = `Pointer generation finished unexpectedly: ${finishReason}`; if (data.promptFeedback?.blockReason) message += ` (Prompt Feedback: Blocked - ${data.promptFeedback.blockReason})`; throw new Error(message);
                 }
 
             } catch (error) {
                 console.error("Error during generation process:", error);
-                showError(`Failed: ${error.message}`); // Display combined error
-                 // Make sure button is enabled on error
-                 generateBtn.disabled = false;
-                 displayedQuestionContainer.style.display = 'none'; // Hide question container on error
+                showError(`Failed: ${error.message}`);
+                generateBtn.disabled = false;
+                displayedQuestionContainer.style.display = 'none';
+                outputContentDiv.classList.add('hidden');
+                planningDoneBtn.style.display = 'none';
             }
         }
 
-        // --- Displaying Generated HTML Content (Keep as before) ---
+        // --- Displaying Generated HTML Content ---
         function displayGeneratedContent(htmlContent) { /* ... same function ... */
-             outputContentDiv.innerHTML = htmlContent; // Trusting the API output - SANITIZE IN PRODUCTION
-            if (!outputContentDiv.hasChildNodes() || outputContentDiv.textContent.trim().length < 50) {
-                 outputContentDiv.innerHTML = '<p><em>Received content, but it appears empty or incomplete. The AI might not have fully followed the format. Check console for raw output if needed.</em></p>';
-                 console.warn("Injected HTML resulted in little/no visible content. Raw response was:", htmlContent);
-            }
+             outputContentDiv.innerHTML = htmlContent;
+             if (!outputContentDiv.hasChildNodes() || outputContentDiv.textContent.trim().length < 50) { outputContentDiv.innerHTML = '<p><em>Received content, but it appears empty or incomplete. Check console.</em></p>'; console.warn("Injected HTML resulted in little/no visible content. Raw:", htmlContent); }
         }
 
-        // --- Vocabulary Generation Function (Revised for Frequency) ---
+
+        // --- Vocabulary Generation Function (Revised Count) ---
         async function generateVocabulary(textContent) {
-            if (!apiKey) {
-                console.warn("Skipping vocabulary generation: API key not available.");
-                return;
-            }
-            vocabularySectionDiv.innerHTML = '<h2>Vocabulary Focus</h2><p><em>Analysing text for least common words...</em></p>';
+             if (!apiKey) { console.warn("Skipping vocabulary generation: API key not available."); return; }
+             if (!textContent || textContent.trim().length < 100) {
+                 vocabularySectionDiv.innerHTML = '<h2>Vocabulary Focus</h2><p><em>Not enough text content generated to analyse for vocabulary.</em></p>';
+                 return;
+             }
+            vocabularySectionDiv.innerHTML = '<h2>Vocabulary Focus</h2><p><em>Identifying advanced vocabulary and fetching definitions...</em></p>';
 
             try {
-                // 1. Extract words
-                const words = textContent.toLowerCase().split(/[\s\n.,!?;:()"“”*]+/);
-
-                // 2. Filter and Count Frequencies
-                const freqMap = new Map();
-                words.forEach(word => {
-                    if (word.length > 7 && // Keep length filter (adjust if needed)
-                        !commonWords.has(word) &&
-                        /^[a-z]+$/.test(word))
-                    {
-                        freqMap.set(word, (freqMap.get(word) || 0) + 1);
-                    }
-                });
-
-                if (freqMap.size === 0) {
-                     vocabularySectionDiv.innerHTML = '<h2>Vocabulary Focus</h2><p><em>No suitable words identified for frequency analysis in the generated text.</em></p>';
-                    return;
-                }
-
-                // 3. Sort by frequency (ascending)
-                const sortedWords = [...freqMap.entries()].sort((a, b) => a[1] - b[1]); // Sort by count [word, count]
-
-                // 4. Select top 5 least frequent
-                const wordsToDefine = sortedWords.slice(0, 5).map(entry => entry[0]); // Get just the words
-
-                if (wordsToDefine.length === 0) { // Should be covered by freqMap.size check, but good practice
-                    vocabularySectionDiv.innerHTML = '<h2>Vocabulary Focus</h2><p><em>Could not select words for definition.</em></p>';
-                    return;
-                }
-
-                vocabularySectionDiv.innerHTML = `<h2>Vocabulary Focus</h2><p><em>Fetching definitions for least frequent words: ${wordsToDefine.join(', ')}...</em></p>`;
-
-                // 5. Create prompt for definitions (same as before)
+                // **CHANGE: Ask for 10 words**
                 const vocabPrompt = `
-Provide concise, British English definitions suitable for a GCE 'A' Level student for the following words.
-Format the output as a simple list, like:
-Word1: Definition here.
-Word2: Definition here.
+From the following text, please identify exactly 10 single words that are considered advanced or college-level vocabulary, suitable for a GCE 'A' Level student aiming to enhance their lexicon.
 
-List of words:
-${wordsToDefine.map(word => `- ${word}`).join('\n')}
+Then, provide concise, British English definitions for ONLY those 10 identified words.
 
-Ensure definitions use British English spelling. Keep definitions brief and relevant to academic use where possible. Output only the list.`;
+Format the output strictly as a simple list, like:
+Word1: Definition here using British English spelling.
+Word2: Definition here using British English spelling.
+... (up to 10 words)
 
-                // 6. Make the second API call (same as before)
+Do not include any words that are proper nouns, hyphenated, or very common. Focus on sophisticated academic or analytical vocabulary found within the text. Output only the list of 10 words and their definitions.
+
+Text to analyse:
+---
+${textContent.substring(0, 3000)}
+---
+`;
+                // Make the API call
                  const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
-                 const response = await fetch(API_ENDPOINT, { /* ... */
+                 const response = await fetch(API_ENDPOINT, {
                      method: 'POST', headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ contents: [{ parts: [{ text: vocabPrompt }] }], generationConfig: { temperature: 0.3 } })
+                     body: JSON.stringify({ contents: [{ parts: [{ text: vocabPrompt }] }], generationConfig: { temperature: 0.4 } })
                  });
                  if (!response.ok) { /* ... error handling ... */
-                      let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; }
-                      throw new Error(errorData.error?.message || `Vocabulary API request failed (${response.status})`);
+                      let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; } throw new Error(errorData.error?.message || `Vocabulary API request failed (${response.status})`);
                  }
                  const data = await response.json();
 
-                // 7. Process and display definitions (same as before)
+                // Process and display definitions
                  if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
                      const definitionsText = data.candidates[0].content.parts[0].text.trim();
-                     displayVocabulary(definitionsText, wordsToDefine);
+                     displayVocabulary(definitionsText, []); // Pass empty array
                  } else {
                      throw new Error("Received an empty or unexpected response for vocabulary definitions.");
                  }
-
             } catch (error) {
                 console.error("Error during vocabulary generation:", error);
                 showError(error.message, true); // isVocabError = true
             }
         }
 
-        // --- Display Vocabulary Function (Keep as before) ---
-        function displayVocabulary(definitionsText, originalWords) { /* ... same function ... */
+        // --- Display Vocabulary Function (Revised Count Check) ---
+        function displayVocabulary(definitionsText, originalWords) {
              vocabularySectionDiv.innerHTML = '<h2>Vocabulary Focus</h2>';
              const dl = document.createElement('dl');
              const lines = definitionsText.split('\n');
              let foundDefinitions = 0;
              lines.forEach(line => {
-                 const parts = line.split(/:\s+/);
-                 const potentialWord = parts[0]?.trim().replace(/^- /, '').toLowerCase();
-                 if (parts.length >= 2 && originalWords.includes(potentialWord)) {
+                 const parts = line.split(/:\s*(.*)/);
+                 if (parts.length >= 2 && parts[0].trim().length > 0 && parts[1].trim().length > 0) {
                      const term = document.createElement('dt'); term.textContent = parts[0].trim().replace(/^- /, '');
-                     const definition = document.createElement('dd'); definition.textContent = parts.slice(1).join(': ').trim();
+                     const definition = document.createElement('dd'); definition.textContent = parts[1].trim();
                      dl.appendChild(term); dl.appendChild(definition); foundDefinitions++;
-                 }
+                 } else if (line.trim() && !line.startsWith('---')) { console.warn("Could not parse vocabulary line:", line); }
              });
              if (foundDefinitions > 0) { vocabularySectionDiv.appendChild(dl); }
-             else { vocabularySectionDiv.innerHTML += `<p><em>Could not automatically parse definitions. Raw response:</em></p><pre>${escapeHtml(definitionsText)}</pre>`; }
-             if (foundDefinitions < originalWords.length) { vocabularySectionDiv.innerHTML += `<p><em>Note: Definitions for some requested words might be missing or could not be parsed.</em></p>`; }
+             else { vocabularySectionDiv.innerHTML += `<p><em>Could not automatically parse definitions, or no advanced words were identified by the AI. Raw response:</em></p><pre>${escapeHtml(definitionsText)}</pre>`; }
+
+             // **CHANGE: Check against 10 words**
+             if (foundDefinitions < 10 && foundDefinitions > 0) {
+                 vocabularySectionDiv.innerHTML += `<p><em>Note: The AI identified fewer than 10 advanced words from the text.</em></p>`;
+             }
         }
 
-        // --- Initial Setup (Keep as before) ---
+        // --- Initial Setup ---
         function initializeApp() {
             populateDropdown(questionTypeSelect, csvData.questionTypes);
             populateDropdown(categorySelect, csvData.categories);
             populateDropdown(topicSelect, csvData.topics);
             generateBtn.addEventListener('click', generateEssayPointers);
+            planningDoneBtn.addEventListener('click', () => {
+                outputContentDiv.classList.remove('hidden');
+                planningDoneBtn.style.display = 'none';
+            });
         }
 
         // --- Run Initialization ---
