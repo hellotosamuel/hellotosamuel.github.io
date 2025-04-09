@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en-GB"> <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Practice App (GCE 'O' Level)</title>
+    <style>
+        :root {
+            --primary-color: #005A9C;
+            --secondary-color: #6c757d;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --white: #fff;
+            --danger-color: #dc3545;
+            --success-color: #28a745;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--white);
+            padding: 25px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 0.75em;
+        }
+        h1 { font-size: 1.8em; text-align: center; margin-bottom: 1em; color: var(--primary-color);}
+        h2 { font-size: 1.4em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 0.4em; margin-top: 1.5em;}
+        h3 { font-size: 1.15em; font-weight: 600; margin-top: 1.2em; margin-bottom: 0.5em; color: #333; }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Custom Dropdown styling */
+        .custom-select-wrapper { position: relative; cursor: pointer; }
+        .custom-select-trigger { border: 1px solid var(--border-color); padding: 10px 15px; background-color: var(--white); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; min-height: 40px; transition: border-color 0.2s ease; }
+        .custom-select-trigger:hover, .custom-select-trigger:focus { border-color: var(--primary-color); }
+        .custom-select-trigger .placeholder { color: var(--secondary-color); }
+        .custom-select-trigger::after { content: '▼'; font-size: 0.8em; margin-left: 10px; color: var(--secondary-color); }
+        .custom-options { position: absolute; top: 100%; left: 0; right: 0; background-color: var(--white); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 4px 4px; z-index: 10; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .custom-options.open { display: block; } /* This class toggles visibility */
+        .custom-option { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.15s ease; }
+        .custom-option:last-child { border-bottom: none; }
+        .custom-option:hover { background-color: #e9ecef; }
+        .option-line-1 { font-weight: bold; display: block; }
+        .option-line-2 { font-size: 0.9em; color: var(--secondary-color); display: block; margin-top: 2px; }
+
+        button {
+            background-color: var(--primary-color); color: var(--white); border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease; display: block; width: 100%; margin-top: 10px; text-align: center;
+        }
+        button:disabled { background-color: var(--secondary-color); cursor: not-allowed; opacity: 0.7; }
+        button:not(:disabled):hover { background-color: #004a80; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+
+        #question-display {
+            margin-top: 2rem; padding: 15px; background-color: #e9f5ff; border: 1px solid #bde0fe; border-left: 5px solid var(--primary-color); border-radius: 4px; min-height: 50px;
+        }
+         #question-display h2 { margin-top: 0; border-bottom: none; color: var(--primary-color); }
+         #question-text { font-weight: 500; font-size: 1.05em; }
+
+        #writing-guide-container {
+            margin-top: 1.5rem; padding: 20px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--white);
+        }
+        #writing-guide-container h2 { margin-top: 0; }
+        #writing-guide-container h3 { margin-top: 1.5em; margin-bottom: 0.5em; color: var(--primary-color); padding-bottom: 0.2em; border-bottom: 1px solid #eee; }
+        #writing-guide-container h3:first-of-type { margin-top: 0; }
+
+         /* General list styling within guide-content */
+         #guide-content ul { list-style: none; padding-left: 0; margin-left: 0; }
+         #guide-content li { margin-bottom: 0.7em; padding-left: 1.5em; position: relative; }
+         #guide-content li::before { content: '•'; color: var(--primary-color); font-weight: bold; display: inline-block; position: absolute; left: 0; top: 0; }
+
+         #writing-guide-container p,
+         #guide-content div { margin-bottom: 1em; margin-left: 5px; }
+
+        /* --- SIMPLIFIED VOCABULARY STYLING --- */
+        #advanced-vocabulary { margin-top: 1.5em; }
+        #advanced-vocabulary ul { /* Use browser defaults + basic spacing */ margin-left: 20px; padding-left: 20px; }
+        #advanced-vocabulary li { margin-bottom: 0.5em; }
+        #advanced-vocabulary strong { color: #333; font-weight: 600; }
+        #advanced-vocabulary .definition { color: var(--secondary-color); font-style: normal; margin-left: 5px; }
+        /* --- END OF VOCABULARY STYLE CHANGES --- */
+
+        .hidden { display: none; }
+
+        .message-area { margin-top: 15px; padding: 10px 15px; border-radius: 4px; text-align: center; font-weight: 500; }
+        .error-message { color: var(--danger-color); background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .success-message { color: var(--success-color); background-color: #d4edda; border: 1px solid #c3e6cb; }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; } .container { padding: 15px; } h1 { font-size: 1.6em; } h2 { font-size: 1.25em; } h3 { font-size: 1.1em; } button { padding: 10px 15px; font-size: 0.95em; } .custom-option { padding: 8px 12px; } .option-line-1 { font-size: 0.95em; } .option-line-2 { font-size: 0.85em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Essay Practice App (GCE 'O' Level)</h1>
+        <p>Select an essay type, generate a question, and get a detailed writing guide tailored for the Singapore context. Aim for 5-7 paragraphs and under 500 words.</p>
+
+        <div class="form-group">
+            <label for="essay-type-trigger">Select Essay Type:</label>
+            <div class="custom-select-wrapper">
+                 <div class="custom-select-trigger" id="essay-type-trigger" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="essay-type-label">
+                    <span id="essay-type-label" class="placeholder">-- Choose a category --</span>
+                </div>
+                <div class="custom-options" id="essay-type-options" role="listbox">
+                    </div>
+            </div>
+            <input type="hidden" id="selected-essay-type" value="">
+        </div>
+
+        <button id="generate-guide-btn">Generate Guide</button>
+
+        <div id="message-area" class="message-area hidden"></div>
+
+        <div id="question-display" class="hidden">
+             <h2>Generated Question</h2>
+             <p id="question-text">Generating question...</p>
+        </div>
+
+        <button id="show-guide-btn" class="hidden">Generating guide...</button>
+
+        <div id="writing-guide-container" class="hidden">
+             <h2>Writing Guide</h2>
+             <div id="guide-content">
+                 </div>
+             <div id="advanced-vocabulary">
+                 </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const essayTypes = { // (Ensure examples are expanded if needed)
+             "Descriptive": { sample: "Describe a special meal...", examples: ["Describe a special meal you enjoy with friends or family.","What is your idea of a perfect afternoon? Describe what you like to do.","Describe your perfect place where you want to relax.","Describe the sights and sounds at a busy shopping centre.","Describe the things that you do to relax after being busy.","Which person has had the most positive impact on your life? Describe this individual.","Describe an event that you looked forward to which turned out to be disappointing."] },
+             "Personal Reflective": { sample: "Write about a time...", examples: ["Write about a time when you experienced a difficult but interesting journey.","‘As I looked back, I realised I had made the right decision.’ Write about a time when you felt like this.","‘I realised I was much stronger than I previously thought.’ Write about a time when you felt like this.","‘I felt as though I was on top of the world!’ Write about a time when you felt like this.","Write about a time when you did something just to impress someone and later regretted.","‘It was my proudest moment.’ Write about a time when you felt like this.","‘I had never seen my friend laugh so much!’ Write about a time when you felt like this."] },
+             "Argumentative": { sample: "‘Social media does more harm...’", examples: ["‘Social media does more harm than good.’ Do you agree?","‘Schools should teach practical skills such as cooking.’ Do you agree?","‘Young people spend so much time thinking about the future...’ What is your opinion?","‘People today are far too easily persuaded to spend money...’ Do you agree?","‘Young people are changing the world for the better.’ What is your opinion?","‘Learning how to respond to mistakes is essential for success.’ What is your opinion?","‘Most young people today are obsessed with fame.’ What are your views?","‘People can only be happy if treated fairly.’ Do you agree?","Some people like to stand out; others want to blend in. Which do you prefer and why?","Which modern invention is essential for your family and which could you live without?"] },
+             "Discursive": { sample: "‘We should all value time spent alone...’", examples: ["‘We should all value time spent alone.’ How far would you agree?","‘All you need to succeed in life is a positive attitude.’ How far would you agree?","‘A happy person is a healthy person.’ How far would you agree?","‘There is no place like home.’ How true is this for you?"] }
+        };
+        const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+        // --- DOM Elements --- Ensure these are correct
+        const selectTrigger = document.getElementById('essay-type-trigger');
+        const selectOptions = document.getElementById('essay-type-options');
+        const selectedTypeInput = document.getElementById('selected-essay-type');
+        const generateBtn = document.getElementById('generate-guide-btn');
+        const showGuideBtn = document.getElementById('show-guide-btn');
+        const questionDisplay = document.getElementById('question-display');
+        const questionText = document.getElementById('question-text');
+        const writingGuideContainer = document.getElementById('writing-guide-container');
+        const guideContent = document.getElementById('guide-content');
+        const advancedVocabulary = document.getElementById('advanced-vocabulary');
+        const messageArea = document.getElementById('message-area');
+
+        // --- State Variables ---
+        let apiKey = null;
+        let generatedQuestion = '';
+        let currentEssayType = '';
+
+        // --- Functions ---
+
+        // Populate custom dropdown - Ensure listeners are added correctly
+        function populateDropdown() {
+            selectOptions.innerHTML = '';
+            for (const type in essayTypes) {
+                const option = document.createElement('div');
+                option.classList.add('custom-option');
+                option.dataset.value = type; // Store value in data attribute
+                option.setAttribute('role', 'option');
+                option.setAttribute('tabindex', '-1'); // Important for keyboard navigation if implemented later
+                option.innerHTML = `
+                    <span class="option-line-1">${type}</span>
+                    <span class="option-line-2">Sample – ${essayTypes[type].sample}</span>
+                `;
+                 // *** CRITICAL: Ensure this listener is correctly added ***
+                option.addEventListener('click', () => {
+                     console.log(`DEBUG: Option "${type}" clicked!`); // Optional debug
+                     handleOptionSelect(type, option.innerHTML);
+                });
+                 // Optional: Add keydown listener for Enter/Space on options
+                 option.addEventListener('keydown', (e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                         e.preventDefault();
+                         handleOptionSelect(type, option.innerHTML);
+                     }
+                 });
+                selectOptions.appendChild(option);
+            }
+        }
+
+        // Handle dropdown trigger click/keypress - Ensure this is correct
+        selectTrigger.addEventListener('click', () => {
+            console.log("DEBUG: selectTrigger clicked!"); // Optional debug
+            const isOpen = selectOptions.classList.toggle('open'); // Toggle and check state
+            selectTrigger.setAttribute('aria-expanded', isOpen); // Update ARIA state
+        });
+
+         selectTrigger.addEventListener('keydown', (e) => {
+             if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                 if (!selectOptions.classList.contains('open')) { // Only open if closed
+                    selectOptions.classList.add('open');
+                    selectTrigger.setAttribute('aria-expanded', 'true');
+                     // Optional: focus first option
+                    const firstOption = selectOptions.querySelector('.custom-option');
+                    if(firstOption) firstOption.focus();
+                 }
+             } else if (e.key === 'Escape') { // Close on Escape
+                 selectOptions.classList.remove('open');
+                 selectTrigger.setAttribute('aria-expanded', 'false');
+             }
+         });
+
+        // Handle option selection - Ensure this is correct
+        function handleOptionSelect(value, html) {
+            selectedTypeInput.value = value; // Update hidden input
+            currentEssayType = value; // Update state variable
+            // Extract only the type name (first line) for display in the trigger
+            const typeName = html.match(/<span class="option-line-1">(.*?)<\/span>/)[1];
+            selectTrigger.querySelector('span').textContent = typeName; // Update trigger text
+            selectTrigger.querySelector('span').classList.remove('placeholder'); // Remove placeholder style if needed
+            selectOptions.classList.remove('open'); // Close the options list
+            selectTrigger.setAttribute('aria-expanded', 'false'); // Update ARIA
+            selectTrigger.focus(); // Return focus to the trigger button
+            hideMessage(); // Hide any previous messages
+        }
+
+        // Close dropdown if clicking outside - Ensure this is correct
+        document.addEventListener('click', (event) => {
+            // Check if the click is outside the trigger AND outside the options container
+            if (!selectTrigger.contains(event.target) && !selectOptions.contains(event.target)) {
+                 if (selectOptions.classList.contains('open')) { // Only act if it's open
+                    console.log("DEBUG: Click outside detected, closing dropdown."); // Optional debug
+                    selectOptions.classList.remove('open');
+                    selectTrigger.setAttribute('aria-expanded', 'false');
+                 }
+            }
+        });
+
+        // --- Gemini API Interaction (remains the same) ---
+        async function callGemini(promptText) {
+             if (!apiKey) throw new Error("API Key not provided.");
+             const requestBody = { contents: [{ parts: [{ text: promptText }] }], safetySettings: [ { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" } ], generationConfig: { maxOutputTokens: 1800 } };
+             console.log("Sending request to:", API_ENDPOINT);
+             try {
+                 const response = await fetch(`${API_ENDPOINT}?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+                 const responseData = await response.json();
+                 if (!response.ok) { console.error("API Error Response:", responseData); const errMsg = responseData.error?.message || `HTTP ${response.status}`; throw new Error(`API Error: ${errMsg}. Check API key/model.`); }
+                 console.log("API Success Response (truncated):", JSON.stringify(responseData).substring(0, 200) + "..."); // Truncate long log
+                 if (!responseData.candidates?.[0]?.content?.parts?.[0]?.text) { if (responseData.promptFeedback?.blockReason) throw new Error(`API blocked: ${responseData.promptFeedback.blockReason}`); else throw new Error("API returned empty/unexpected response."); }
+                 return responseData.candidates[0].content.parts[0].text;
+             } catch (error) { console.error("Error during Gemini API call:", error); if (error.message.startsWith("API Error:")) throw error; else throw new Error(`Network/parsing error: ${error.message}`); }
+        }
+
+        // --- Prompt Generation (remains the same) ---
+        function createQuestionPrompt(essayType) { const examplesString = essayTypes[essayType].examples.join('; '); return `Generate exactly one realistic essay question suitable for a Singapore GCE 'O' Level English examination practice test, based on the '${essayType}' category. Ensure the question uses British English spelling and phrasing. Make it similar in style and scope to these examples: "${examplesString}". Do NOT include quotation marks around the entire question unless it's quoting something within the question itself like the examples ('xyz'). Output only the single question text and nothing else.`; }
+        function createGuidePrompt(essayType, question) { const commonInstructions = `\nYou are assisting a Singapore GCE 'O' Level student preparing for their English Paper 1 essay. The essay question is: "${question.trim()}" The essay type is: ${essayType}. Provide a concise writing guide using British English spelling and phrasing. The target audience is a secondary school student in Singapore. The points provided must be brief guides requiring elaboration, not full sentences or paragraphs. The maximum essay word count should be around 500 words. Include exactly 5 single advanced vocabulary words relevant to the question's potential topic, listed under "**Advanced Vocabulary:**" with a brief definition or synonym in parentheses (e.g., *Ephemeral (fleeting)*). Structure the output clearly using Markdown bold headings as specified below. Respond ONLY with the guide content, starting directly with the first heading. Do not include introductory pleasantries.\n`; let specificInstructions = ''; switch (essayType) { case 'Descriptive': specificInstructions = `Structure:\n**Hook Examples:**(...)\n**Introduction:**(...)\n**Body Paragraphs:**(...)\n**Conclusion:**(...)\n`; break; case 'Personal Reflective': specificInstructions = `Structure:\n**Question Analysis:**(...)\n**Hook Examples:**(...)\n**Introduction:**(...)\n**Body Paragraphs:**(...)\n**Conclusion:**(...)\n`; break; case 'Argumentative': specificInstructions = `Structure:\n**Introduction:** (incl. **Thesis Statement**...)\n**Body Paragraph 1 (Supporting Argument 1):**(...)\n**Body Paragraph 2 (Counter Argument):**(...)\n**Body Paragraph 3 (Rebuttal):**(...)\n**Body Paragraph 4 (Supporting Argument 2):**(...)\n**Conclusion:**(...)\n`; break; case 'Discursive': specificInstructions = `Structure:\n**Introduction:** (incl. balanced **Thesis Statement**...)\n**Body Paragraph 1 (Supporting Argument 1):**(...)\n**Body Paragraph 2 (Supporting Argument 2):**(...)\n**Body Paragraph 3 (Counter Argument 1):**(...)\n**Body Paragraph 4 (Counter Argument 2):**(...)\n**Conclusion:**(...)\n`; break; default: specificInstructions = "**Error:** Invalid type."; } return commonInstructions + specificInstructions + "\n**Advanced Vocabulary:**"; }
+
+        // --- Main Application Logic (remains the same) ---
+        generateBtn.addEventListener('click', async () => {
+            currentEssayType = selectedTypeInput.value;
+            if (!currentEssayType) { showMessage("Please select an essay type first.", "error"); return; }
+            generateBtn.disabled = true; generateBtn.textContent = 'Generating...';
+            hideMessage(); resetUI();
+            if (!apiKey) { apiKey = prompt("API Key Required:\nPlease enter your Google AI Gemini API Key:"); if (!apiKey) { showMessage("API Key is required.", "error"); generateBtn.disabled = false; generateBtn.textContent = 'Generate Guide'; return; } }
+            questionDisplay.classList.remove('hidden'); questionText.textContent = 'Generating question...';
+            showGuideBtn.textContent = 'Generating guide...'; showGuideBtn.disabled = true; showGuideBtn.classList.remove('hidden');
+            writingGuideContainer.classList.add('hidden');
+            try {
+                const questionPrompt = createQuestionPrompt(currentEssayType);
+                generatedQuestion = await callGemini(questionPrompt);
+                questionText.textContent = generatedQuestion.trim();
+                const guidePrompt = createGuidePrompt(currentEssayType, generatedQuestion);
+                const fullGuideText = await callGemini(guidePrompt);
+                console.log("--- RAW GUIDE TEXT FROM API ---\n", fullGuideText, "\n--- END RAW GUIDE TEXT ---");
+                processAndPrepareGuide(fullGuideText);
+                showGuideBtn.textContent = 'Show Writing Guide'; showGuideBtn.disabled = false;
+            } catch (error) { showMessage(`Error: ${error.message}. Check console.`, "error"); console.error("Detailed Error during generation:", error); generateBtn.disabled = false; generateBtn.textContent = 'Generate Guide'; questionDisplay.classList.add('hidden'); showGuideBtn.classList.add('hidden'); }
+        });
+
+        // --- Guide Parsing and Display (remains the same) ---
+        function processAndPrepareGuide(rawText) {
+            guideContent.innerHTML = ''; advancedVocabulary.innerHTML = '';
+            const sections = [ { id: "analysis", title: "Question Analysis", regex: /\*\*Question Analysis:\*\*((?:.|\n)*?)(?=\*\*Hook Examples:|\*\*Introduction:|\*\*Body Paragraph|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "hooks", title: "Hook Examples", regex: /\*\*Hook Examples:\*\*((?:.|\n)*?)(?=\*\*Introduction:|\*\*Body Paragraph|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "intro", title: "Introduction", regex: /\*\*Introduction:\*\*((?:.|\n)*?)(?=\*\*Body Paragraph|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body_group", title: "Body Paragraphs", regex: /\*\*Body Paragraphs:\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 1:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body1", title: "Body Paragraph 1", regex: /\*\*Body Paragraph 1(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 2:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body2", title: "Body Paragraph 2", regex: /\*\*Body Paragraph 2(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 3:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body3", title: "Body Paragraph 3", regex: /\*\*Body Paragraph 3(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 4:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body4", title: "Body Paragraph 4", regex: /\*\*Body Paragraph 4(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "conclusion", title: "Conclusion", regex: /\*\*Conclusion:\*\*((?:.|\n)*?)(?=\*\*Advanced Vocabulary:|$)/i }, { id: "vocab", title: "Advanced Vocabulary", regex: /\*\*Advanced Vocabulary:\*\*((?:.|\n)*?)$/i } ];
+            let foundContent = false;
+            sections.forEach(section => {
+                const match = rawText.match(section.regex);
+                if (match && match[1] && match[1].trim()) {
+                    const content = match[1].trim(); const displayTitle = section.title; foundContent = true;
+                    if (section.id === "vocab") { const formattedVocabList = formatVocabulary(content); if (advancedVocabulary) { advancedVocabulary.innerHTML = `<h3>${displayTitle}</h3><ul>${formattedVocabList}</ul>`; console.log(`Processed/Set HTML for: ${displayTitle}`); } else { console.error("Cannot find #advanced-vocabulary element!"); } }
+                    else { console.log(`Processing section: ${displayTitle}`); guideContent.innerHTML += `<h3>${displayTitle}</h3><div>${formatPoints(content)}</div>`; }
+                }
+            });
+            if (!foundContent) { console.warn("Parsing failed. Displaying raw text."); guideContent.innerHTML = `<p>Could not parse guide. Raw output (check console):</p><pre style="white-space: pre-wrap; word-wrap: break-word;">${rawText.substring(0, 500)}...</pre>`; }
+        }
+
+        // formatPoints (remains the same)
+        function formatPoints(text) { let formatted = text.trim(); formatted = formatted.replace(/(\*\*Thesis Statement:\*\*|\bThesis Statement:)/gi, '<strong>Thesis Statement:</strong>'); formatted = formatted.replace(/(\(e\.g\.,?.*?\))/gi, '<em>$1</em>'); const lines = formatted.split('\n'); let html = ''; let inList = false; lines.forEach(line => { line = line.trim(); if (line.startsWith('- ') || line.startsWith('* ') || /^\d+\.\s/.test(line)) { if (!inList) { html += '<ul>'; inList = true; } html += `<li>${line.replace(/^[-*]\s|^\d+\.\s/, '')}</li>`; } else { if (inList) { html += '</ul>'; inList = false; } if (line) { if (html && !html.endsWith('</ul>') && !html.endsWith('</div>') && !html.endsWith('<br>')) { html += '<br>'; } html += `<div>${line}</div>`; } } }); if (inList) html += '</ul>'; return html || "No points generated."; }
+
+        // formatVocabulary (use updated version)
+        function formatVocabulary(text) {
+            return text.trim()
+                       .split('\n')
+                       .map(line => line.trim())
+                       .filter(line => line.length > 1 && !line.startsWith('*') && !line.startsWith('-'))
+                       .slice(0, 5)
+                       .map(line => {
+                           const match = line.match(/^([\w\s-]+)\s*\((.*?)\)\s*$/);
+                           if (match) {
+                               const word = match[1].trim();
+                               const definition = match[2].trim();
+                               return `<li><strong>${word}</strong>: <span class="definition">${definition}</span></li>`; // Word: definition format
+                           }
+                           return `<li>${line}</li>`; // Fallback
+                       })
+                       .join('');
+        }
+
+        // --- UI Updates --- (remain the same)
+        showGuideBtn.addEventListener('click', () => { writingGuideContainer.classList.remove('hidden'); writingGuideContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+        function showMessage(message, type = "info") { messageArea.textContent = message; messageArea.className = 'message-area'; if (type === 'error') messageArea.classList.add('error-message'); else if (type === 'success') messageArea.classList.add('success-message'); messageArea.classList.remove('hidden'); }
+        function hideMessage() { messageArea.classList.add('hidden'); messageArea.textContent = ''; messageArea.className = 'message-area hidden'; }
+        function resetUI() { questionText.textContent = ''; questionDisplay.classList.add('hidden'); showGuideBtn.classList.add('hidden'); writingGuideContainer.classList.add('hidden'); guideContent.innerHTML = ''; advancedVocabulary.innerHTML = ''; hideMessage(); }
+
+        // --- Initialisation --- Ensure dropdown is populated on load
+        populateDropdown(); // *** Make sure this runs ***
+        document.querySelector('.container > p').textContent = "Select an essay type, generate a question, and get a detailed writing guide tailored for the Singapore context. Aim for 5-7 paragraphs and under 500 words.";
+        generateBtn.textContent = "Generate Guide";
+
+    </script>
+</body>
+</html>
