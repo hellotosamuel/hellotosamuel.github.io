@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="en-GB"> <head>
+<html lang="en-GB">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Essay Practice App (GCE 'O' Level)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js"></script>
     <style>
         :root {
             --primary-color: #005A9C;
@@ -13,6 +15,8 @@
             --white: #fff;
             --danger-color: #dc3545;
             --success-color: #28a745;
+            --disabled-color: #adb5bd;
+            --disabled-bg: #e9ecef;
         }
 
         body {
@@ -21,335 +25,626 @@
             color: var(--text-color);
             background-color: var(--light-gray);
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
+            padding: 0; /* Remove body padding */
         }
 
         .container {
-            background-color: var(--white);
-            padding: 25px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            max-width: 800px;
-            width: 100%;
+            max-width: 850px; /* Slightly wider */
+            margin: 0 auto; /* Center container */
+            padding: 20px;
         }
 
-        h1, h2, h3 {
-            color: var(--text-color);
-            margin-bottom: 0.75em;
+        /* --- Header --- */
+        .app-header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        h1 { font-size: 1.8em; text-align: center; margin-bottom: 1em; color: var(--primary-color);}
-        h2 { font-size: 1.4em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 0.4em; margin-top: 1.5em;}
+        .app-header h1 {
+            font-size: 1.4em;
+            margin: 0;
+            color: var(--white);
+        }
+        .header-cta {
+            background-color: var(--white);
+            color: var(--primary-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+            margin-top: 0px; /* *** Added margin-top: 0px *** */
+        }
+        .header-cta:hover {
+            background-color: #eee;
+        }
+
+        /* --- General Styles --- */
+        h2 { font-size: 1.4em; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 0.4em; margin-top: 1.5em; margin-bottom: 1em;}
         h3 { font-size: 1.15em; font-weight: 600; margin-top: 1.2em; margin-bottom: 0.5em; color: #333; }
 
-        .form-group {
-            margin-bottom: 1.5rem;
+        p, label, .sub-label {
+            margin-bottom: 0.75em;
         }
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding in width */
+            margin-bottom: 10px;
         }
-
-        /* Custom Dropdown styling */
-        .custom-select-wrapper { position: relative; cursor: pointer; }
-        .custom-select-trigger { border: 1px solid var(--border-color); padding: 10px 15px; background-color: var(--white); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; min-height: 40px; transition: border-color 0.2s ease; }
-        .custom-select-trigger:hover, .custom-select-trigger:focus { border-color: var(--primary-color); }
-        .custom-select-trigger .placeholder { color: var(--secondary-color); }
-        .custom-select-trigger::after { content: '▼'; font-size: 0.8em; margin-left: 10px; color: var(--secondary-color); }
-        .custom-options { position: absolute; top: 100%; left: 0; right: 0; background-color: var(--white); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 4px 4px; z-index: 10; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .custom-options.open { display: block; } /* This class toggles visibility */
-        .custom-option { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); transition: background-color 0.15s ease; }
-        .custom-option:last-child { border-bottom: none; }
-        .custom-option:hover { background-color: #e9ecef; }
-        .option-line-1 { font-weight: bold; display: block; }
-        .option-line-2 { font-size: 0.9em; color: var(--secondary-color); display: block; margin-top: 2px; }
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 90, 156, 0.2);
+        }
 
         button {
-            background-color: var(--primary-color); color: var(--white); border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease; display: block; width: 100%; margin-top: 10px; text-align: center;
+            background-color: var(--primary-color); color: var(--white); border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease; display: inline-block; width: auto; margin-top: 10px; text-align: center;
         }
         button:disabled { background-color: var(--secondary-color); cursor: not-allowed; opacity: 0.7; }
         button:not(:disabled):hover { background-color: #004a80; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button.secondary { background-color: var(--secondary-color); }
+        button.secondary:not(:disabled):hover { background-color: #5a6268; }
 
-        #question-display {
-            margin-top: 2rem; padding: 15px; background-color: #e9f5ff; border: 1px solid #bde0fe; border-left: 5px solid var(--primary-color); border-radius: 4px; min-height: 50px;
+
+        .form-section {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
         }
-         #question-display h2 { margin-top: 0; border-bottom: none; color: var(--primary-color); }
-         #question-text { font-weight: 500; font-size: 1.05em; }
+        .form-section label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        .sub-label { font-size: 0.9em; color: var(--secondary-color); display: block; margin-top: -5px; margin-bottom: 15px; }
 
-        #writing-guide-container {
-            margin-top: 1.5rem; padding: 20px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--white);
+        /* --- Radio Button Styling --- */
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid */
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        #writing-guide-container h2 { margin-top: 0; }
-        #writing-guide-container h3 { margin-top: 1.5em; margin-bottom: 0.5em; color: var(--primary-color); padding-bottom: 0.2em; border-bottom: 1px solid #eee; }
-        #writing-guide-container h3:first-of-type { margin-top: 0; }
+        .radio-option {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px; /* Adjusted padding for better look */
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            position: relative;
+            background-color: var(--white); /* Default background */
+        }
+        .radio-option input[type="radio"] {
+            opacity: 0; /* Hide the actual radio button */
+            position: absolute;
+            width: 0; height: 0;
+        }
+        .radio-option .option-label { /* Wrap label content for better control */
+            display: block;
+            margin: 0; /* Reset margin */
+            cursor: pointer;
+        }
+        .radio-option .option-line-1 { font-weight: bold; display: block; margin-bottom: 5px;}
+        .radio-option .option-line-2 { font-size: 0.9em; color: var(--secondary-color); display: block; }
 
-         /* General list styling within guide-content */
-         #guide-content ul { list-style: none; padding-left: 0; margin-left: 0; }
-         #guide-content li { margin-bottom: 0.7em; padding-left: 1.5em; position: relative; }
-         #guide-content li::before { content: '•'; color: var(--primary-color); font-weight: bold; display: inline-block; position: absolute; left: 0; top: 0; }
+        /* Styling for the selected option div */
+        .radio-option.selected {
+             border-color: var(--primary-color);
+             box-shadow: 0 0 0 2px rgba(0, 90, 156, 0.3);
+             background-color: #e9f5ff;
+        }
 
-         #writing-guide-container p,
-         #guide-content div { margin-bottom: 1em; margin-left: 5px; }
+         /* Styling for the disabled option div */
+         .radio-option.disabled-option {
+            background-color: var(--disabled-bg);
+            color: var(--disabled-color);
+            cursor: not-allowed;
+            border-color: var(--border-color);
+            box-shadow: none;
+            opacity: 0.7; /* Apply opacity to the whole div */
+         }
+          .radio-option.disabled-option .option-line-1,
+          .radio-option.disabled-option .option-line-2 {
+              color: var(--disabled-color); /* Ensure text color matches */
+          }
+          /* Make label inside disabled also not-allowed */
+          .radio-option.disabled-option .option-label {
+              cursor: not-allowed;
+          }
 
-        /* --- SIMPLIFIED VOCABULARY STYLING --- */
-        #advanced-vocabulary { margin-top: 1.5em; }
-        #advanced-vocabulary ul { /* Use browser defaults + basic spacing */ margin-left: 20px; padding-left: 20px; }
-        #advanced-vocabulary li { margin-bottom: 0.5em; }
-        #advanced-vocabulary strong { color: #333; font-weight: 600; }
-        #advanced-vocabulary .definition { color: var(--secondary-color); font-style: normal; margin-left: 5px; }
-        /* --- END OF VOCABULARY STYLE CHANGES --- */
+
+        /* --- Specific Section Styling --- */
+        #question-display-area {
+             background-color: #e9f5ff; border: 1px solid #bde0fe; border-left: 5px solid var(--primary-color); padding: 20px; border-radius: 4px; margin-top: 20px;
+        }
+         #question-display-area h2 { margin-top: 0; border-bottom: none; color: var(--primary-color); }
+         #question-text { font-weight: 500; font-size: 1.1em; line-height: 1.5;}
+
+        #writing-guide-area .markdown-content {
+            border: 1px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 4px;
+            background-color: #fdfdfd;
+        }
+         /* Basic Markdown styles */
+         #writing-guide-area .markdown-content h1,
+         #writing-guide-area .markdown-content h2,
+         #writing-guide-area .markdown-content h3 { margin-top: 1em; margin-bottom: 0.5em; padding-bottom: 0.2em; border-bottom: 1px solid #eee; color: var(--primary-color);}
+         #writing-guide-area .markdown-content h1 { font-size: 1.5em; }
+         #writing-guide-area .markdown-content h2 { font-size: 1.3em; }
+         #writing-guide-area .markdown-content h3 { font-size: 1.1em; color: #333; }
+         #writing-guide-area .markdown-content ul { margin-left: 20px; padding-left: 20px; list-style: disc; }
+         #writing-guide-area .markdown-content li { margin-bottom: 0.5em; }
+         #writing-guide-area .markdown-content p { margin-bottom: 1em; }
+         #writing-guide-area .markdown-content strong { font-weight: 600; }
+         #writing-guide-area .markdown-content em { font-style: italic; }
+         #writing-guide-area .markdown-content pre { background-color: var(--light-gray); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+
+
+        #vocabulary-area ul {
+             margin-left: 20px; padding-left: 20px; margin-top: 10px;
+        }
+        #vocabulary-area li { margin-bottom: 0.5em; }
+        #vocabulary-area strong { color: #333; font-weight: 600; }
+        #vocabulary-area .definition { color: var(--secondary-color); font-style: normal; margin-left: 5px; }
 
         .hidden { display: none; }
 
         .message-area { margin-top: 15px; padding: 10px 15px; border-radius: 4px; text-align: center; font-weight: 500; }
         .error-message { color: var(--danger-color); background-color: #f8d7da; border: 1px solid #f5c6cb; }
         .success-message { color: var(--success-color); background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .loading-message { color: var(--secondary-color); font-style: italic; }
 
+        /* Responsive Adjustments */
         @media (max-width: 600px) {
-            body { padding: 10px; } .container { padding: 15px; } h1 { font-size: 1.6em; } h2 { font-size: 1.25em; } h3 { font-size: 1.1em; } button { padding: 10px 15px; font-size: 0.95em; } .custom-option { padding: 8px 12px; } .option-line-1 { font-size: 0.95em; } .option-line-2 { font-size: 0.85em; }
+            .app-header h1 { font-size: 1.2em; }
+            .header-cta { padding: 6px 10px; font-size: 0.9em; }
+            .container { padding: 15px; }
+            button { padding: 10px 15px; font-size: 0.95em; }
+            .radio-group { grid-template-columns: 1fr; /* Stack radios on mobile */ }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <header class="app-header">
         <h1>Essay Practice App (GCE 'O' Level)</h1>
-        <p>Select an essay type, generate a question, and get a detailed writing guide tailored for the Singapore context. Aim for 5-7 paragraphs and under 500 words.</p>
+        <!-- *** Changed onclick to mailto link *** -->
+        <button class="header-cta" onclick="window.location.href='mailto:samuel@webisig.com';">Contact</button>
+    </header>
 
-        <div class="form-group">
-            <label for="essay-type-trigger">Select Essay Type:</label>
-            <div class="custom-select-wrapper">
-                 <div class="custom-select-trigger" id="essay-type-trigger" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="essay-type-label">
-                    <span id="essay-type-label" class="placeholder">-- Choose a category --</span>
-                </div>
-                <div class="custom-options" id="essay-type-options" role="listbox">
-                    </div>
+    <div class="container">
+
+        <p class="instructions">Select an essay type that you would like to practice. Generate a question which you can attempt, and this app will generate a detailed writing guide for you to follow.</p>
+
+        <div class="form-section" id="setup-section">
+            <h2>Setup</h2>
+            <div class="form-group">
+                 <label for="api-key-input">Enter Key</label>
+                 <!-- *** Changed placeholder text *** -->
+                 <input type="password" id="api-key-input" placeholder="Enter the provided key">
+                 <div class="sub-label">Your key is used only for generating content during this session.</div>
             </div>
-            <input type="hidden" id="selected-essay-type" value="">
-        </div>
 
-        <button id="generate-guide-btn">Generate Guide</button>
-
-        <div id="message-area" class="message-area hidden"></div>
-
-        <div id="question-display" class="hidden">
-             <h2>Generated Question</h2>
-             <p id="question-text">Generating question...</p>
-        </div>
-
-        <button id="show-guide-btn" class="hidden">Generating guide...</button>
-
-        <div id="writing-guide-container" class="hidden">
-             <h2>Writing Guide</h2>
-             <div id="guide-content">
+            <div class="form-group">
+                 <label>Select Essay Type:</label>
+                 <div class="radio-group" id="essay-type-radios">
+                     <!-- Radio buttons will be populated by JS -->
                  </div>
-             <div id="advanced-vocabulary">
-                 </div>
+            </div>
+
+            <button id="generate-question-btn">Generate A Question</button>
+            <div id="message-area-setup" class="message-area hidden"></div>
         </div>
+
+        <div class="form-section hidden" id="question-display-area">
+            <h2>Generated Question</h2>
+            <p id="question-text">...</p>
+        </div>
+
+        <div class="form-section hidden" id="topic-input-area">
+            <h2>Your Focus</h2>
+            <div class="form-group">
+                <label for="user-topic-input">What would you like to write about based on this question?</label>
+                <input type="text" id="user-topic-input" placeholder="e.g., My holiday trip to Malaysia last year">
+                <div class="sub-label">Provide a brief idea or angle for your essay. This helps tailor the guide.</div>
+            </div>
+            <button id="generate-points-btn">Generate Writing Points</button>
+            <div id="message-area-topic" class="message-area hidden"></div>
+        </div>
+
+        <div class="form-section hidden" id="writing-guide-area">
+            <h2>Writing Guide</h2>
+            <div id="guide-content-markdown" class="markdown-content">
+                <p class="loading-message">Generating guide...</p>
+            </div>
+        </div>
+
+        <div class="form-section hidden" id="vocabulary-area">
+            <h2>Advanced Vocabulary</h2>
+            <button id="show-vocab-btn" class="secondary">Show Advanced Vocabulary</button>
+            <div id="vocabulary-content" class="hidden">
+                 <p class="loading-message" id="vocab-loading">Generating vocabulary...</p>
+                 <!-- Vocabulary list will be appended here by JS -->
+                 </div>
+            <div id="message-area-vocab" class="message-area hidden"></div>
+        </div>
+
     </div>
 
     <script>
         // --- Configuration ---
-        const essayTypes = { // (Ensure examples are expanded if needed)
-             "Descriptive": { sample: "Describe a special meal...", examples: ["Describe a special meal you enjoy with friends or family.","What is your idea of a perfect afternoon? Describe what you like to do.","Describe your perfect place where you want to relax.","Describe the sights and sounds at a busy shopping centre.","Describe the things that you do to relax after being busy.","Which person has had the most positive impact on your life? Describe this individual.","Describe an event that you looked forward to which turned out to be disappointing."] },
-             "Personal Reflective": { sample: "Write about a time...", examples: ["Write about a time when you experienced a difficult but interesting journey.","‘As I looked back, I realised I had made the right decision.’ Write about a time when you felt like this.","‘I realised I was much stronger than I previously thought.’ Write about a time when you felt like this.","‘I felt as though I was on top of the world!’ Write about a time when you felt like this.","Write about a time when you did something just to impress someone and later regretted.","‘It was my proudest moment.’ Write about a time when you felt like this.","‘I had never seen my friend laugh so much!’ Write about a time when you felt like this."] },
-             "Argumentative": { sample: "‘Social media does more harm...’", examples: ["‘Social media does more harm than good.’ Do you agree?","‘Schools should teach practical skills such as cooking.’ Do you agree?","‘Young people spend so much time thinking about the future...’ What is your opinion?","‘People today are far too easily persuaded to spend money...’ Do you agree?","‘Young people are changing the world for the better.’ What is your opinion?","‘Learning how to respond to mistakes is essential for success.’ What is your opinion?","‘Most young people today are obsessed with fame.’ What are your views?","‘People can only be happy if treated fairly.’ Do you agree?","Some people like to stand out; others want to blend in. Which do you prefer and why?","Which modern invention is essential for your family and which could you live without?"] },
-             "Discursive": { sample: "‘We should all value time spent alone...’", examples: ["‘We should all value time spent alone.’ How far would you agree?","‘All you need to succeed in life is a positive attitude.’ How far would you agree?","‘A happy person is a healthy person.’ How far would you agree?","‘There is no place like home.’ How true is this for you?"] }
+        const essayTypes = {
+            "Descriptive": {
+                sample: "Describe a special meal you enjoy with friends or family.",
+                enabled: true,
+                examples: ["Describe a special meal you enjoy with friends or family.","What is your idea of a perfect afternoon? Describe what you like to do.","Describe your perfect place where you want to relax.","Describe the sights and sounds at a busy shopping centre.","Describe the things that you do to relax after being busy.","Which person has had the most positive impact on your life? Describe this individual.","Describe an event that you looked forward to which turned out to be disappointing."]
+            },
+            "Personal Reflective": {
+                sample: "Write about a time when you experienced a difficult but interesting journey.",
+                enabled: true,
+                examples: ["Write about a time when you experienced a difficult but interesting journey.","‘As I looked back, I realised I had made the right decision.’ Write about a time when you felt like this.","‘I realised I was much stronger than I previously thought.’ Write about a time when you felt like this.","‘I felt as though I was on top of the world!’ Write about a time when you felt like this.","Write about a time when you did something just to impress someone and later regretted.","‘It was my proudest moment.’ Write about a time when you felt like this.","‘I had never seen my friend laugh so much!’ Write about a time when you felt like this."]
+            },
+            "Argumentative": {
+                sample: "‘Social media does more harm than good.’ Do you agree?",
+                enabled: false, // Disabled
+                examples: ["‘Social media does more harm than good.’ Do you agree?","‘Schools should teach practical skills such as cooking.’ Do you agree?","‘Young people spend so much time thinking about the future...’ What is your opinion?","‘People today are far too easily persuaded to spend money...’ Do you agree?","‘Young people are changing the world for the better.’ What is your opinion?","‘Learning how to respond to mistakes is essential for success.’ What is your opinion?","‘Most young people today are obsessed with fame.’ What are your views?","‘People can only be happy if treated fairly.’ Do you agree?","Some people like to stand out; others want to blend in. Which do you prefer and why?","Which modern invention is essential for your family and which could you live without?"]
+            },
+            "Discursive": {
+                sample: "‘We should all value time spent alone.’ How far would you agree?",
+                enabled: false, // Disabled
+                examples: ["‘We should all value time spent alone.’ How far would you agree?","‘All you need to succeed in life is a positive attitude.’ How far would you agree?","‘A happy person is a healthy person.’ How far would you agree?","‘There is no place like home.’ How true is this for you?"]
+            }
         };
+
         const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-        // --- DOM Elements --- Ensure these are correct
-        const selectTrigger = document.getElementById('essay-type-trigger');
-        const selectOptions = document.getElementById('essay-type-options');
-        const selectedTypeInput = document.getElementById('selected-essay-type');
-        const generateBtn = document.getElementById('generate-guide-btn');
-        const showGuideBtn = document.getElementById('show-guide-btn');
-        const questionDisplay = document.getElementById('question-display');
-        const questionText = document.getElementById('question-text');
-        const writingGuideContainer = document.getElementById('writing-guide-container');
-        const guideContent = document.getElementById('guide-content');
-        const advancedVocabulary = document.getElementById('advanced-vocabulary');
-        const messageArea = document.getElementById('message-area');
+        // --- DOM Elements ---
+        const apiKeyInput = document.getElementById('api-key-input');
+        const essayTypeRadiosContainer = document.getElementById('essay-type-radios');
+        const generateQuestionBtn = document.getElementById('generate-question-btn');
+        const setupMessageArea = document.getElementById('message-area-setup');
+        const questionDisplayArea = document.getElementById('question-display-area');
+        const questionTextElement = document.getElementById('question-text');
+        const topicInputArea = document.getElementById('topic-input-area');
+        const userTopicInput = document.getElementById('user-topic-input');
+        const generatePointsBtn = document.getElementById('generate-points-btn');
+        const topicMessageArea = document.getElementById('message-area-topic');
+        const writingGuideArea = document.getElementById('writing-guide-area');
+        const guideContentMarkdown = document.getElementById('guide-content-markdown');
+        const vocabularyArea = document.getElementById('vocabulary-area');
+        const showVocabBtn = document.getElementById('show-vocab-btn');
+        const vocabularyContent = document.getElementById('vocabulary-content');
+        const vocabLoadingElement = document.getElementById('vocab-loading');
+        const vocabMessageArea = document.getElementById('message-area-vocab');
 
         // --- State Variables ---
         let apiKey = null;
+        let selectedEssayType = null;
         let generatedQuestion = '';
-        let currentEssayType = '';
+        let generatedGuideMarkdown = '';
+
+        // --- Showdown Initialisation ---
+        let showdownConverter;
+        if (typeof showdown !== 'undefined') {
+             showdownConverter = new showdown.Converter({
+                 ghCompatibleHeaderId: true,
+                 simpleLineBreaks: true,
+                 strikethrough: true,
+                 tables: true
+             });
+            console.log("Showdown library loaded successfully.");
+        } else {
+            console.warn("Showdown library not found. Markdown will be displayed as raw text.");
+        }
 
         // --- Functions ---
 
-        // Populate custom dropdown - Ensure listeners are added correctly
-        function populateDropdown() {
-            selectOptions.innerHTML = '';
-            for (const type in essayTypes) {
-                const option = document.createElement('div');
-                option.classList.add('custom-option');
-                option.dataset.value = type; // Store value in data attribute
-                option.setAttribute('role', 'option');
-                option.setAttribute('tabindex', '-1'); // Important for keyboard navigation if implemented later
-                option.innerHTML = `
-                    <span class="option-line-1">${type}</span>
-                    <span class="option-line-2">Sample – ${essayTypes[type].sample}</span>
-                `;
-                 // *** CRITICAL: Ensure this listener is correctly added ***
-                option.addEventListener('click', () => {
-                     console.log(`DEBUG: Option "${type}" clicked!`); // Optional debug
-                     handleOptionSelect(type, option.innerHTML);
-                });
-                 // Optional: Add keydown listener for Enter/Space on options
-                 option.addEventListener('keydown', (e) => {
-                     if (e.key === 'Enter' || e.key === ' ') {
-                         e.preventDefault();
-                         handleOptionSelect(type, option.innerHTML);
-                     }
+        // *** Updated populateRadioButtons for CSS class handling ***
+        function populateRadioButtons() {
+            essayTypeRadiosContainer.innerHTML = ''; // Clear previous
+            Object.keys(essayTypes).forEach((typeKey, index) => {
+                const typeData = essayTypes[typeKey];
+                const optionDiv = document.createElement('div');
+                optionDiv.classList.add('radio-option');
+                // Add disabled class directly to div if needed
+                if (!typeData.enabled) {
+                    optionDiv.classList.add('disabled-option');
+                }
+
+                const inputId = `radio-type-${index}`;
+                const radioInput = document.createElement('input');
+                radioInput.type = 'radio';
+                radioInput.id = inputId;
+                radioInput.name = 'essay_type';
+                radioInput.value = typeKey;
+                radioInput.disabled = !typeData.enabled; // Still disable input for accessibility
+
+                // Listener to update selected type and manage classes
+                 radioInput.addEventListener('change', (event) => {
+                    // Remove 'selected' class from all options first
+                    document.querySelectorAll('.radio-option').forEach(div => div.classList.remove('selected'));
+
+                    if (event.target.checked) {
+                        selectedEssayType = event.target.value;
+                        console.log("Selected type:", selectedEssayType);
+                        // Add 'selected' class to the parent div of the checked radio
+                        event.target.closest('.radio-option').classList.add('selected');
+                        hideMessage(setupMessageArea); // Clear error on selection
+                        resetUI(); // Reset subsequent parts if type is changed after generation
+                    }
                  });
-                selectOptions.appendChild(option);
+
+                // Use a wrapper for the label content for better structure if needed
+                const label = document.createElement('label');
+                label.htmlFor = inputId;
+                label.classList.add('option-label'); // Add class to label itself
+                label.innerHTML = `
+                    <span class="option-line-1">${typeKey}</span>
+                    <span class="option-line-2">Sample – ${typeData.sample}</span>
+                `;
+
+                optionDiv.appendChild(radioInput);
+                optionDiv.appendChild(label);
+                essayTypeRadiosContainer.appendChild(optionDiv);
+            });
+        }
+
+        // Parse Markdown using Showdown, with fallback
+        function parseMarkdown(markdownText) {
+            if (showdownConverter) {
+                try {
+                    return showdownConverter.makeHtml(markdownText);
+                } catch (error) {
+                    console.error("Showdown conversion failed:", error);
+                    return `<p><em>Markdown parsing failed. Displaying raw text:</em></p><pre>${escapeHtml(markdownText)}</pre>`;
+                }
+            } else {
+                return `<p><em>Markdown library not loaded. Displaying raw text:</em></p><pre>${escapeHtml(markdownText)}</pre>`;
             }
         }
 
-        // Handle dropdown trigger click/keypress - Ensure this is correct
-        selectTrigger.addEventListener('click', () => {
-            console.log("DEBUG: selectTrigger clicked!"); // Optional debug
-            const isOpen = selectOptions.classList.toggle('open'); // Toggle and check state
-            selectTrigger.setAttribute('aria-expanded', isOpen); // Update ARIA state
-        });
-
-         selectTrigger.addEventListener('keydown', (e) => {
-             if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                 if (!selectOptions.classList.contains('open')) { // Only open if closed
-                    selectOptions.classList.add('open');
-                    selectTrigger.setAttribute('aria-expanded', 'true');
-                     // Optional: focus first option
-                    const firstOption = selectOptions.querySelector('.custom-option');
-                    if(firstOption) firstOption.focus();
-                 }
-             } else if (e.key === 'Escape') { // Close on Escape
-                 selectOptions.classList.remove('open');
-                 selectTrigger.setAttribute('aria-expanded', 'false');
-             }
-         });
-
-        // Handle option selection - Ensure this is correct
-        function handleOptionSelect(value, html) {
-            selectedTypeInput.value = value; // Update hidden input
-            currentEssayType = value; // Update state variable
-            // Extract only the type name (first line) for display in the trigger
-            const typeName = html.match(/<span class="option-line-1">(.*?)<\/span>/)[1];
-            selectTrigger.querySelector('span').textContent = typeName; // Update trigger text
-            selectTrigger.querySelector('span').classList.remove('placeholder'); // Remove placeholder style if needed
-            selectOptions.classList.remove('open'); // Close the options list
-            selectTrigger.setAttribute('aria-expanded', 'false'); // Update ARIA
-            selectTrigger.focus(); // Return focus to the trigger button
-            hideMessage(); // Hide any previous messages
+        // Helper to escape HTML for safe display in <pre> tags
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
         }
 
-        // Close dropdown if clicking outside - Ensure this is correct
-        document.addEventListener('click', (event) => {
-            // Check if the click is outside the trigger AND outside the options container
-            if (!selectTrigger.contains(event.target) && !selectOptions.contains(event.target)) {
-                 if (selectOptions.classList.contains('open')) { // Only act if it's open
-                    console.log("DEBUG: Click outside detected, closing dropdown."); // Optional debug
-                    selectOptions.classList.remove('open');
-                    selectTrigger.setAttribute('aria-expanded', 'false');
-                 }
-            }
-        });
+        // --- API Call Logic ---
+        async function callGemini(promptText, callingFunction) {
+            apiKey = apiKeyInput.value; // Get key each time
+            if (!apiKey) throw new Error("API Key is required. Please enter it above.");
 
-        // --- Gemini API Interaction (remains the same) ---
-        async function callGemini(promptText) {
-             if (!apiKey) throw new Error("API Key not provided.");
-             const requestBody = { contents: [{ parts: [{ text: promptText }] }], safetySettings: [ { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" } ], generationConfig: { maxOutputTokens: 1800 } };
-             console.log("Sending request to:", API_ENDPOINT);
-             try {
+            const requestBody = { contents: [{ parts: [{ text: promptText }] }], safetySettings: [ { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" } ], generationConfig: { maxOutputTokens: 1800 } };
+
+            console.log(`Sending request from ${callingFunction} with prompt (truncated):`, promptText.substring(0, 150) + "...");
+            try {
                  const response = await fetch(`${API_ENDPOINT}?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
                  const responseData = await response.json();
                  if (!response.ok) { console.error("API Error Response:", responseData); const errMsg = responseData.error?.message || `HTTP ${response.status}`; throw new Error(`API Error: ${errMsg}. Check API key/model.`); }
-                 console.log("API Success Response (truncated):", JSON.stringify(responseData).substring(0, 200) + "..."); // Truncate long log
-                 if (!responseData.candidates?.[0]?.content?.parts?.[0]?.text) { if (responseData.promptFeedback?.blockReason) throw new Error(`API blocked: ${responseData.promptFeedback.blockReason}`); else throw new Error("API returned empty/unexpected response."); }
+                 console.log(`API Success Response for ${callingFunction} (truncated):`, JSON.stringify(responseData).substring(0, 200) + "...");
+                 if (responseData.promptFeedback?.blockReason) {
+                    console.error("API blocked response:", responseData.promptFeedback);
+                    throw new Error(`Content blocked by safety filter: ${responseData.promptFeedback.blockReason}`);
+                 }
+                 if (!responseData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    console.warn("API returned unexpected or empty response structure:", responseData);
+                    throw new Error("API returned empty or unexpected response format.");
+                 }
                  return responseData.candidates[0].content.parts[0].text;
-             } catch (error) { console.error("Error during Gemini API call:", error); if (error.message.startsWith("API Error:")) throw error; else throw new Error(`Network/parsing error: ${error.message}`); }
+             } catch (error) { console.error(`Error during Gemini API call from ${callingFunction}:`, error); if (error.message.startsWith("API Error:") || error.message.startsWith("Content blocked")) throw error; else throw new Error(`Network/parsing error: ${error.message}`); }
         }
 
-        // --- Prompt Generation (remains the same) ---
-        function createQuestionPrompt(essayType) { const examplesString = essayTypes[essayType].examples.join('; '); return `Generate exactly one realistic essay question suitable for a Singapore GCE 'O' Level English examination practice test, based on the '${essayType}' category. Ensure the question uses British English spelling and phrasing. Make it similar in style and scope to these examples: "${examplesString}". Do NOT include quotation marks around the entire question unless it's quoting something within the question itself like the examples ('xyz'). Output only the single question text and nothing else.`; }
-        function createGuidePrompt(essayType, question) { const commonInstructions = `\nYou are assisting a Singapore GCE 'O' Level student preparing for their English Paper 1 essay. The essay question is: "${question.trim()}" The essay type is: ${essayType}. Provide a concise writing guide using British English spelling and phrasing. The target audience is a secondary school student in Singapore. The points provided must be brief guides requiring elaboration, not full sentences or paragraphs. The maximum essay word count should be around 500 words. Include exactly 5 single advanced vocabulary words relevant to the question's potential topic, listed under "**Advanced Vocabulary:**" with a brief definition or synonym in parentheses (e.g., *Ephemeral (fleeting)*). Structure the output clearly using Markdown bold headings as specified below. Respond ONLY with the guide content, starting directly with the first heading. Do not include introductory pleasantries.\n`; let specificInstructions = ''; switch (essayType) { case 'Descriptive': specificInstructions = `Structure:\n**Hook Examples:**(...)\n**Introduction:**(...)\n**Body Paragraphs:**(...)\n**Conclusion:**(...)\n`; break; case 'Personal Reflective': specificInstructions = `Structure:\n**Question Analysis:**(...)\n**Hook Examples:**(...)\n**Introduction:**(...)\n**Body Paragraphs:**(...)\n**Conclusion:**(...)\n`; break; case 'Argumentative': specificInstructions = `Structure:\n**Introduction:** (incl. **Thesis Statement**...)\n**Body Paragraph 1 (Supporting Argument 1):**(...)\n**Body Paragraph 2 (Counter Argument):**(...)\n**Body Paragraph 3 (Rebuttal):**(...)\n**Body Paragraph 4 (Supporting Argument 2):**(...)\n**Conclusion:**(...)\n`; break; case 'Discursive': specificInstructions = `Structure:\n**Introduction:** (incl. balanced **Thesis Statement**...)\n**Body Paragraph 1 (Supporting Argument 1):**(...)\n**Body Paragraph 2 (Supporting Argument 2):**(...)\n**Body Paragraph 3 (Counter Argument 1):**(...)\n**Body Paragraph 4 (Counter Argument 2):**(...)\n**Conclusion:**(...)\n`; break; default: specificInstructions = "**Error:** Invalid type."; } return commonInstructions + specificInstructions + "\n**Advanced Vocabulary:**"; }
+        // --- Event Handlers ---
+        generateQuestionBtn.addEventListener('click', async () => {
+            apiKey = apiKeyInput.value;
+             if (!apiKey) { showMessage("Please enter the provided key.", "error", setupMessageArea); return; } // Updated msg
+             if (!selectedEssayType) { showMessage("Please select an Essay Type.", "error", setupMessageArea); return; }
 
-        // --- Main Application Logic (remains the same) ---
-        generateBtn.addEventListener('click', async () => {
-            currentEssayType = selectedTypeInput.value;
-            if (!currentEssayType) { showMessage("Please select an essay type first.", "error"); return; }
-            generateBtn.disabled = true; generateBtn.textContent = 'Generating...';
-            hideMessage(); resetUI();
-            if (!apiKey) { apiKey = prompt("API Key Required:\nPlease enter your Google AI Gemini API Key:"); if (!apiKey) { showMessage("API Key is required.", "error"); generateBtn.disabled = false; generateBtn.textContent = 'Generate Guide'; return; } }
-            questionDisplay.classList.remove('hidden'); questionText.textContent = 'Generating question...';
-            showGuideBtn.textContent = 'Generating guide...'; showGuideBtn.disabled = true; showGuideBtn.classList.remove('hidden');
-            writingGuideContainer.classList.add('hidden');
+            generateQuestionBtn.disabled = true;
+            generateQuestionBtn.textContent = 'Generating...';
+            hideMessage(setupMessageArea);
+            resetUI();
+
             try {
-                const questionPrompt = createQuestionPrompt(currentEssayType);
-                generatedQuestion = await callGemini(questionPrompt);
-                questionText.textContent = generatedQuestion.trim();
-                const guidePrompt = createGuidePrompt(currentEssayType, generatedQuestion);
-                const fullGuideText = await callGemini(guidePrompt);
-                console.log("--- RAW GUIDE TEXT FROM API ---\n", fullGuideText, "\n--- END RAW GUIDE TEXT ---");
-                processAndPrepareGuide(fullGuideText);
-                showGuideBtn.textContent = 'Show Writing Guide'; showGuideBtn.disabled = false;
-            } catch (error) { showMessage(`Error: ${error.message}. Check console.`, "error"); console.error("Detailed Error during generation:", error); generateBtn.disabled = false; generateBtn.textContent = 'Generate Guide'; questionDisplay.classList.add('hidden'); showGuideBtn.classList.add('hidden'); }
+                 const questionPrompt = createQuestionPrompt(selectedEssayType);
+                 generatedQuestion = await callGemini(questionPrompt, 'GenerateQuestion');
+                 questionTextElement.textContent = generatedQuestion.trim();
+                 questionDisplayArea.classList.remove('hidden');
+                 topicInputArea.classList.remove('hidden');
+                 topicInputArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (error) {
+                 showMessage(`Error generating question: ${error.message}`, "error", setupMessageArea);
+                 resetUI();
+            } finally {
+                 generateQuestionBtn.disabled = false;
+                 generateQuestionBtn.textContent = 'Generate A Question';
+            }
         });
 
-        // --- Guide Parsing and Display (remains the same) ---
-        function processAndPrepareGuide(rawText) {
-            guideContent.innerHTML = ''; advancedVocabulary.innerHTML = '';
-            const sections = [ { id: "analysis", title: "Question Analysis", regex: /\*\*Question Analysis:\*\*((?:.|\n)*?)(?=\*\*Hook Examples:|\*\*Introduction:|\*\*Body Paragraph|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "hooks", title: "Hook Examples", regex: /\*\*Hook Examples:\*\*((?:.|\n)*?)(?=\*\*Introduction:|\*\*Body Paragraph|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "intro", title: "Introduction", regex: /\*\*Introduction:\*\*((?:.|\n)*?)(?=\*\*Body Paragraph|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body_group", title: "Body Paragraphs", regex: /\*\*Body Paragraphs:\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 1:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body1", title: "Body Paragraph 1", regex: /\*\*Body Paragraph 1(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 2:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body2", title: "Body Paragraph 2", regex: /\*\*Body Paragraph 2(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 3:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body3", title: "Body Paragraph 3", regex: /\*\*Body Paragraph 3(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Body Paragraph 4:|\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "body4", title: "Body Paragraph 4", regex: /\*\*Body Paragraph 4(?:.*?):\*\*((?:.|\n)*?)(?=\*\*Conclusion:|\*\*Advanced Vocabulary:|$)/i }, { id: "conclusion", title: "Conclusion", regex: /\*\*Conclusion:\*\*((?:.|\n)*?)(?=\*\*Advanced Vocabulary:|$)/i }, { id: "vocab", title: "Advanced Vocabulary", regex: /\*\*Advanced Vocabulary:\*\*((?:.|\n)*?)$/i } ];
-            let foundContent = false;
-            sections.forEach(section => {
-                const match = rawText.match(section.regex);
-                if (match && match[1] && match[1].trim()) {
-                    const content = match[1].trim(); const displayTitle = section.title; foundContent = true;
-                    if (section.id === "vocab") { const formattedVocabList = formatVocabulary(content); if (advancedVocabulary) { advancedVocabulary.innerHTML = `<h3>${displayTitle}</h3><ul>${formattedVocabList}</ul>`; console.log(`Processed/Set HTML for: ${displayTitle}`); } else { console.error("Cannot find #advanced-vocabulary element!"); } }
-                    else { console.log(`Processing section: ${displayTitle}`); guideContent.innerHTML += `<h3>${displayTitle}</h3><div>${formatPoints(content)}</div>`; }
-                }
-            });
-            if (!foundContent) { console.warn("Parsing failed. Displaying raw text."); guideContent.innerHTML = `<p>Could not parse guide. Raw output (check console):</p><pre style="white-space: pre-wrap; word-wrap: break-word;">${rawText.substring(0, 500)}...</pre>`; }
+        generatePointsBtn.addEventListener('click', async () => {
+            const userTopic = userTopicInput.value.trim();
+            if (!userTopic) { showMessage("Please provide a brief idea for your essay focus.", "error", topicMessageArea); return; }
+             if (!generatedQuestion || !selectedEssayType) { showMessage("Error: Missing question or essay type context.", "error", topicMessageArea); return; }
+
+             generatePointsBtn.disabled = true;
+             generatePointsBtn.textContent = 'Generating...';
+             hideMessage(topicMessageArea);
+             writingGuideArea.classList.remove('hidden');
+             guideContentMarkdown.innerHTML = '<p class="loading-message">Generating guide...</p>';
+             vocabularyArea.classList.add('hidden');
+
+            try {
+                const guidePrompt = createGuidePrompt(selectedEssayType, generatedQuestion, userTopic);
+                generatedGuideMarkdown = await callGemini(guidePrompt, 'GenerateGuide');
+                const guideHtml = parseMarkdown(generatedGuideMarkdown);
+                guideContentMarkdown.innerHTML = guideHtml;
+                 vocabularyArea.classList.remove('hidden');
+                 vocabularyContent.classList.add('hidden');
+                 vocabularyContent.querySelector('ul')?.remove();
+                 showVocabBtn.disabled = false;
+                 showVocabBtn.textContent = 'Show Advanced Vocabulary';
+                 writingGuideArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (error) {
+                 showMessage(`Error generating writing points: ${error.message}`, "error", topicMessageArea);
+                 writingGuideArea.classList.add('hidden');
+            } finally {
+                 generatePointsBtn.disabled = false;
+                 generatePointsBtn.textContent = 'Generate Writing Points';
+            }
+        });
+
+        showVocabBtn.addEventListener('click', async () => {
+            if (!generatedGuideMarkdown) { showMessage("Error: Writing guide content is missing.", "error", vocabMessageArea); return; }
+
+            showVocabBtn.disabled = true;
+            showVocabBtn.textContent = 'Generating...';
+            hideMessage(vocabMessageArea);
+            vocabularyContent.classList.remove('hidden');
+            vocabLoadingElement.classList.remove('hidden');
+            vocabularyContent.querySelector('ul')?.remove();
+
+            try {
+                 const vocabPrompt = createVocabPrompt(generatedGuideMarkdown); // Uses the updated prompt
+                 const vocabResponse = await callGemini(vocabPrompt, 'ExtractVocabulary');
+                 const vocabHtmlList = formatVocabulary(vocabResponse);
+                 vocabLoadingElement.classList.add('hidden');
+                 const ul = document.createElement('ul');
+                 ul.innerHTML = vocabHtmlList;
+                 vocabularyContent.appendChild(ul);
+            } catch (error) {
+                showMessage(`Error generating vocabulary: ${error.message}`, "error", vocabMessageArea);
+                 vocabLoadingElement.classList.add('hidden');
+                 showVocabBtn.disabled = false;
+                 showVocabBtn.textContent = 'Retry Vocabulary';
+            }
+             // Button remains disabled after success unless changed
+        });
+
+        // --- Prompt Generation ---
+        function createQuestionPrompt(essayType) {
+            const prompt = `
+You are assisting a Singapore GCE 'O' Level student preparing for their English Language exam (Paper 1, Section C Continuous Writing).
+Your task is to generate ONE suitable essay question of the "${essayType}" type.
+The question should be similar in style, topic, and difficulty to those found in actual Singapore GCE 'O' Level English papers. Examples include: "${essayTypes[essayType].sample}"
+Use British English spelling and phrasing.
+
+Respond ONLY with the generated essay question text itself. Do not add any surrounding text, explanations, or quotation marks unless the question itself requires them (e.g., for a quote to reflect on).
+`;
+            console.log("Generating question with prompt:", prompt);
+            return prompt.trim();
         }
 
-        // formatPoints (remains the same)
-        function formatPoints(text) { let formatted = text.trim(); formatted = formatted.replace(/(\*\*Thesis Statement:\*\*|\bThesis Statement:)/gi, '<strong>Thesis Statement:</strong>'); formatted = formatted.replace(/(\(e\.g\.,?.*?\))/gi, '<em>$1</em>'); const lines = formatted.split('\n'); let html = ''; let inList = false; lines.forEach(line => { line = line.trim(); if (line.startsWith('- ') || line.startsWith('* ') || /^\d+\.\s/.test(line)) { if (!inList) { html += '<ul>'; inList = true; } html += `<li>${line.replace(/^[-*]\s|^\d+\.\s/, '')}</li>`; } else { if (inList) { html += '</ul>'; inList = false; } if (line) { if (html && !html.endsWith('</ul>') && !html.endsWith('</div>') && !html.endsWith('<br>')) { html += '<br>'; } html += `<div>${line}</div>`; } } }); if (inList) html += '</ul>'; return html || "No points generated."; }
+        function createGuidePrompt(essayType, question, userTopic) {
+             const commonInstructions = `
+You are assisting a Singapore GCE 'O' Level student.
+The essay question is: "${question.trim()}"
+The essay type is: ${essayType}.
+The student wants to focus on: "${userTopic}"
 
-        // formatVocabulary (use updated version)
+Provide a detailed writing guide in Markdown format using British English spelling and phrasing.
+The target audience is a secondary school student in Singapore.
+The points provided must be brief guides requiring elaboration, not full sentences or paragraphs.
+The maximum essay word count should be around 500 words.
+Structure the output clearly using Markdown bold headings as specified below.
+Respond ONLY with the guide content in Markdown. Do not include introductory pleasantries or concluding remarks outside the guide structure.
+`;
+            let specificInstructions = '';
+             if (essayType === 'Descriptive') {
+                 specificInstructions = `Structure the guide strictly as follows:\n**Hook Examples:** (Provide exactly 3 distinct examples relevant to the question and user focus. Use Singapore context naturally but avoid being overly specific unless the user topic is very specific.)\n**Introduction:** (1-2 points outlining subject/scene based on question and user focus.)\n**Body Paragraphs:** (Suggest 3-4 body paragraphs. For each, provide 1-2 bullet points focusing on sensory details, feelings, atmosphere related to user focus and question. Suggest specific Singapore context or elements where appropriate.)\n**Conclusion:** (1-2 points summarising impression or key feeling related to user focus.)\n`;
+             } else if (essayType === 'Personal Reflective') {
+                 specificInstructions = `Structure the guide strictly as follows:\n**Question Analysis:** (Briefly analyse the main question - literal/figurative/both aspects.)\n**Hook Examples:** (Provide exactly 3 distinct examples relevant to the question and user focus. Use Singapore context naturally but avoid being overly specific unless the user topic is very specific.)\n**Introduction:** (1-2 points setting scene/context based on user focus and linking to the question's core idea.)\n**Body Paragraphs:** (Suggest 3-4 body paragraphs. For each, provide 1-2 bullet points guiding the student through moments, thoughts, feelings, development, or lessons learned related to user focus and question theme. Suggest specific Singapore context or elements where appropriate.)\n**Conclusion:** (1-2 points summarising the significance, reflection, or lesson learned related to user focus and question theme.)\n`;
+             } else {
+                  return `Error: Guide generation for type "${essayType}" is not currently supported.`;
+             }
+            return commonInstructions + specificInstructions;
+        }
+
+        // *** Updated createVocabPrompt with new explanation requirement ***
+         function createVocabPrompt(guideMarkdown) {
+            const maxLength = 3500;
+            const truncatedGuide = guideMarkdown.length > maxLength ? guideMarkdown.substring(0, maxLength) + "..." : guideMarkdown;
+            return `From the following writing guide text provided for a Singapore GCE 'O' Level student:\n\n---\n${truncatedGuide}\n---\n\nIdentify exactly 5 distinct, advanced vocabulary words or short phrases (2-3 words max) suitable for this educational level that appear within the guide text itself. List only these 5 words/phrases, each on a new line, followed by a simple explanation using only simple, straightforward, and understandable words, up to 12 words long, enclosed in parentheses. Example format:\nWord1 (a simple explanation using basic words, max 12 words)\nPhrase 2 (another simple explanation, max 12 words)\nWord3 (third simple explanation, max 12 words)\nWord4 (fourth simple explanation, max 12 words)\nWord5 (fifth simple explanation, max 12 words)\n\nDo not include any other text, headings, lists, or explanations. Focus only on words/phrases found *within* the provided guide text. Ensure the explanations are very simple and clear for a secondary school student and strictly adhere to the word limit.`;
+        }
+
+        // formatVocabulary (remains the same, handles the output format)
         function formatVocabulary(text) {
             return text.trim()
                        .split('\n')
                        .map(line => line.trim())
-                       .filter(line => line.length > 1 && !line.startsWith('*') && !line.startsWith('-'))
+                       .filter(line => line.length > 3 && line.includes('(') && line.includes(')'))
                        .slice(0, 5)
                        .map(line => {
-                           const match = line.match(/^([\w\s-]+)\s*\((.*?)\)\s*$/);
+                           const match = line.match(/^([\w\s'-]+?)\s*\((.*?)\)\s*$/);
                            if (match) {
-                               const word = match[1].trim();
+                               const term = match[1].trim();
                                const definition = match[2].trim();
-                               return `<li><strong>${word}</strong>: <span class="definition">${definition}</span></li>`; // Word: definition format
+                               return `<li><strong>${escapeHtml(term)}</strong>: <span class="definition">${escapeHtml(definition)}</span></li>`;
                            }
-                           return `<li>${line}</li>`; // Fallback
+                           return `<li>${escapeHtml(line)}</li>`;
                        })
                        .join('');
         }
 
-        // --- UI Updates --- (remain the same)
-        showGuideBtn.addEventListener('click', () => { writingGuideContainer.classList.remove('hidden'); writingGuideContainer.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-        function showMessage(message, type = "info") { messageArea.textContent = message; messageArea.className = 'message-area'; if (type === 'error') messageArea.classList.add('error-message'); else if (type === 'success') messageArea.classList.add('success-message'); messageArea.classList.remove('hidden'); }
-        function hideMessage() { messageArea.classList.add('hidden'); messageArea.textContent = ''; messageArea.className = 'message-area hidden'; }
-        function resetUI() { questionText.textContent = ''; questionDisplay.classList.add('hidden'); showGuideBtn.classList.add('hidden'); writingGuideContainer.classList.add('hidden'); guideContent.innerHTML = ''; advancedVocabulary.innerHTML = ''; hideMessage(); }
+        // --- UI Updates ---
+        function showMessage(message, type = "info", areaElement) {
+            if (!areaElement) {
+                console.warn("showMessage called without specifying an areaElement.");
+                areaElement = setupMessageArea;
+            }
+            areaElement.textContent = message;
+            areaElement.className = 'message-area';
+            if (type === 'error') areaElement.classList.add('error-message');
+            else if (type === 'success') areaElement.classList.add('success-message');
+            else if (type === 'loading') areaElement.classList.add('loading-message');
+            areaElement.classList.remove('hidden');
+        }
+        function hideMessage(areaElement = null) {
+            const areas = areaElement ? [areaElement] : [setupMessageArea, topicMessageArea, vocabMessageArea];
+            areas.forEach(area => {
+                 if(area) {
+                    area.classList.add('hidden');
+                    area.textContent = '';
+                    area.className = 'message-area hidden';
+                 }
+            });
+        }
+        function resetUI() {
+            questionDisplayArea.classList.add('hidden');
+            questionTextElement.textContent = '';
+            topicInputArea.classList.add('hidden');
+            userTopicInput.value = '';
+            writingGuideArea.classList.add('hidden');
+            guideContentMarkdown.innerHTML = '';
+            vocabularyArea.classList.add('hidden');
+            vocabularyContent.classList.add('hidden');
+            vocabularyContent.querySelector('ul')?.remove();
+            hideMessage(topicMessageArea);
+            hideMessage(vocabMessageArea);
+            generatedQuestion = '';
+            generatedGuideMarkdown = '';
+        }
 
-        // --- Initialisation --- Ensure dropdown is populated on load
-        populateDropdown(); // *** Make sure this runs ***
-        document.querySelector('.container > p').textContent = "Select an essay type, generate a question, and get a detailed writing guide tailored for the Singapore context. Aim for 5-7 paragraphs and under 500 words.";
-        generateBtn.textContent = "Generate Guide";
+        // --- Initialisation ---
+        populateRadioButtons();
+        apiKeyInput.addEventListener('input', () => hideMessage(setupMessageArea));
 
     </script>
+
 </body>
 </html>
