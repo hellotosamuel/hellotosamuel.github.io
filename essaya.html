@@ -382,7 +382,7 @@
         async function generateQuestionFromParams(type, category, topic) { /* ... same function ... */
             if (!apiKey) throw new Error("API Key not available for question generation.");
             const prompt = `Generate a single, clear GCE 'A' Level General Paper style essay question based on these parameters:\n- Question Type: "${type}"\n- Category: "${category}"\n- Topic: "${topic}"\n\nUse British English spelling. Output *only* the generated question as a single string, without any extra text or quotation marks around it.`;
-            const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+            const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
              try {
                  const response = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.5 } }) });
                  if (!response.ok) { let errorData; try { errorData = await response.json(); } catch (e) { errorData = { error: { message: `HTTP error! Status: ${response.status}`}}; } throw new Error(errorData.error?.message || `Question generation API failed (${response.status})`); }
@@ -488,7 +488,7 @@ Ensure all lists use <ul> and <li> tags. Use <strong> tags only for labels like 
                 `;
 
                 // --- API Call for Pointers ---
-                const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 const response = await fetch(API_ENDPOINT, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: pointerPrompt }] }], generationConfig: { responseMimeType: "text/plain" } }),
@@ -573,7 +573,7 @@ ${textContent.substring(0, 3000)}
 ---
 `;
                 // Make the API call
-                 const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                 const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                  const response = await fetch(API_ENDPOINT, {
                      method: 'POST', headers: { 'Content-Type': 'application/json' },
                      body: JSON.stringify({ contents: [{ parts: [{ text: vocabPrompt }] }], generationConfig: { temperature: 0.4 } })
