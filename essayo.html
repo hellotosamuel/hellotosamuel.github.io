@@ -25,12 +25,12 @@
             color: var(--text-color);
             background-color: var(--light-gray);
             margin: 0;
-            padding: 0; /* Remove body padding */
+            padding: 0;
         }
 
         .container {
-            max-width: 850px; /* Slightly wider */
-            margin: 0 auto; /* Center container */
+            max-width: 850px;
+            margin: 0 auto;
             padding: 20px;
         }
 
@@ -58,7 +58,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: background-color 0.2s ease;
-            margin-top: 0px; /* *** Added margin-top: 0px *** */
+            margin-top: 0px;
         }
         .header-cta:hover {
             background-color: #eee;
@@ -79,7 +79,7 @@
             border: 1px solid var(--border-color);
             border-radius: 4px;
             font-size: 1em;
-            box-sizing: border-box; /* Include padding in width */
+            box-sizing: border-box;
             margin-bottom: 10px;
         }
         input[type="text"]:focus,
@@ -112,57 +112,52 @@
         /* --- Radio Button Styling --- */
         .radio-group {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive grid */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
         .radio-option {
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 15px; /* Adjusted padding for better look */
+            padding: 15px;
             cursor: pointer;
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
             position: relative;
-            background-color: var(--white); /* Default background */
+            background-color: var(--white);
         }
         .radio-option input[type="radio"] {
-            opacity: 0; /* Hide the actual radio button */
+            opacity: 0;
             position: absolute;
             width: 0; height: 0;
         }
-        .radio-option .option-label { /* Wrap label content for better control */
+        .radio-option .option-label {
             display: block;
-            margin: 0; /* Reset margin */
+            margin: 0;
             cursor: pointer;
         }
         .radio-option .option-line-1 { font-weight: bold; display: block; margin-bottom: 5px;}
         .radio-option .option-line-2 { font-size: 0.9em; color: var(--secondary-color); display: block; }
 
-        /* Styling for the selected option div */
         .radio-option.selected {
              border-color: var(--primary-color);
              box-shadow: 0 0 0 2px rgba(0, 90, 156, 0.3);
              background-color: #e9f5ff;
         }
-
-         /* Styling for the disabled option div */
          .radio-option.disabled-option {
             background-color: var(--disabled-bg);
             color: var(--disabled-color);
             cursor: not-allowed;
             border-color: var(--border-color);
             box-shadow: none;
-            opacity: 0.7; /* Apply opacity to the whole div */
+            opacity: 0.7;
          }
           .radio-option.disabled-option .option-line-1,
           .radio-option.disabled-option .option-line-2 {
-              color: var(--disabled-color); /* Ensure text color matches */
+              color: var(--disabled-color);
           }
-          /* Make label inside disabled also not-allowed */
           .radio-option.disabled-option .option-label {
               cursor: not-allowed;
           }
-
 
         /* --- Specific Section Styling --- */
         #question-display-area {
@@ -171,29 +166,30 @@
          #question-display-area h2 { margin-top: 0; border-bottom: none; color: var(--primary-color); }
          #question-text { font-weight: 500; font-size: 1.1em; line-height: 1.5;}
 
+        /* Style for Guiding Questions and Writing Guide Areas */
+        #guiding-questions-area .markdown-content,
         #writing-guide-area .markdown-content {
             border: 1px solid var(--border-color);
             padding: 15px 20px;
             border-radius: 4px;
-            background-color: #fdfdfd;
+            background-color: #fdfdfd; /* Slightly off-white background */
         }
-         /* Basic Markdown styles */
-         #writing-guide-area .markdown-content h1,
-         #writing-guide-area .markdown-content h2,
-         #writing-guide-area .markdown-content h3 { margin-top: 1em; margin-bottom: 0.5em; padding-bottom: 0.2em; border-bottom: 1px solid #eee; color: var(--primary-color);}
-         #writing-guide-area .markdown-content h1 { font-size: 1.5em; }
-         #writing-guide-area .markdown-content h2 { font-size: 1.3em; }
-         #writing-guide-area .markdown-content h3 { font-size: 1.1em; color: #333; }
-         #writing-guide-area .markdown-content ul { margin-left: 20px; padding-left: 20px; list-style: disc; }
-         #writing-guide-area .markdown-content li { margin-bottom: 0.5em; }
-         #writing-guide-area .markdown-content p { margin-bottom: 1em; }
-         #writing-guide-area .markdown-content strong { font-weight: 600; }
-         #writing-guide-area .markdown-content em { font-style: italic; }
-         #writing-guide-area .markdown-content pre { background-color: var(--light-gray); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
-
+         /* Basic Markdown styles (apply to both areas) */
+         .markdown-content h1,
+         .markdown-content h2,
+         .markdown-content h3 { margin-top: 1em; margin-bottom: 0.5em; padding-bottom: 0.2em; border-bottom: 1px solid #eee; color: var(--primary-color);}
+         .markdown-content h1 { font-size: 1.5em; }
+         .markdown-content h2 { font-size: 1.3em; }
+         .markdown-content h3 { font-size: 1.1em; color: #333; }
+         .markdown-content ul { margin-left: 20px; padding-left: 20px; list-style: disc; }
+         .markdown-content li { margin-bottom: 0.5em; }
+         .markdown-content p { margin-bottom: 1em; }
+         .markdown-content strong { font-weight: 600; }
+         .markdown-content em { font-style: italic; }
+         .markdown-content pre { background-color: var(--light-gray); border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
 
         #vocabulary-area ul {
-             margin-left: 20px; padding-left: 20px; margin-top: 10px;
+             margin-left: 20px; padding-left: 20px; margin-top: 10px; list-style: disc;
         }
         #vocabulary-area li { margin-bottom: 0.5em; }
         #vocabulary-area strong { color: #333; font-weight: 600; }
@@ -212,7 +208,7 @@
             .header-cta { padding: 6px 10px; font-size: 0.9em; }
             .container { padding: 15px; }
             button { padding: 10px 15px; font-size: 0.95em; }
-            .radio-group { grid-template-columns: 1fr; /* Stack radios on mobile */ }
+            .radio-group { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -220,64 +216,76 @@
 
     <header class="app-header">
         <h1>Essay Practice App (GCE 'O' Level)</h1>
-        <!-- *** Changed onclick to mailto link *** -->
         <button class="header-cta" onclick="window.location.href='mailto:samuel@webisig.com';">Contact</button>
     </header>
 
     <div class="container">
 
-        <p class="instructions">Select an essay type that you would like to practice. Generate a question which you can attempt, and this app will generate a detailed writing guide for you to follow.</p>
+        <p class="instructions">Select an essay type, generate a question, specify your topic, and get guiding questions followed by a detailed writing guide.</p>
 
+        <!-- Step 1: Setup -->
         <div class="form-section" id="setup-section">
-            <h2>Setup</h2>
+            <h2>1. Setup</h2>
             <div class="form-group">
                  <label for="api-key-input">Enter Key</label>
-                 <!-- *** Changed placeholder text *** -->
                  <input type="password" id="api-key-input" placeholder="Enter the provided key">
                  <div class="sub-label">Your key is used only for generating content during this session.</div>
             </div>
-
             <div class="form-group">
                  <label>Select Essay Type:</label>
                  <div class="radio-group" id="essay-type-radios">
-                     <!-- Radio buttons will be populated by JS -->
+                     <!-- Radio buttons populated by JS -->
                  </div>
             </div>
-
             <button id="generate-question-btn">Generate A Question</button>
             <div id="message-area-setup" class="message-area hidden"></div>
         </div>
 
+        <!-- Step 2: Generated Question -->
         <div class="form-section hidden" id="question-display-area">
-            <h2>Generated Question</h2>
+            <h2>2. Generated Question</h2>
             <p id="question-text">...</p>
         </div>
 
+        <!-- Step 3: User Topic Input -->
         <div class="form-section hidden" id="topic-input-area">
-            <h2>Your Focus</h2>
+            <h2>3. Your Focus</h2>
             <div class="form-group">
                 <label for="user-topic-input">What would you like to write about based on this question?</label>
-                <input type="text" id="user-topic-input" placeholder="e.g., My holiday trip to Malaysia last year">
-                <div class="sub-label">Provide a brief idea or angle for your essay. This helps tailor the guide.</div>
+                <input type="text" id="user-topic-input" placeholder="e.g., Visiting the Geylang Serai Wet Market during Hari Raya">
+                <div class="sub-label">Provide a brief idea or angle for your essay. This helps tailor the guiding questions and guide.</div>
             </div>
-            <button id="generate-points-btn">Generate Writing Points</button>
+            <button id="generate-guiding-questions-btn">Generate Guiding Questions</button>
             <div id="message-area-topic" class="message-area hidden"></div>
         </div>
 
+        <!-- Step 4: Guiding Questions -->
+        <div class="form-section hidden" id="guiding-questions-area">
+            <h2>4. Guiding Questions</h2>
+            <p>Use these tailored questions to brainstorm ideas before writing.</p>
+            <div id="guiding-questions-content" class="markdown-content">
+                 <p class="loading-message">Generating guiding questions...</p>
+            </div>
+            <button id="generate-guide-btn" class="hidden">Generate Writing Guide</button>
+            <div id="message-area-guiding" class="message-area hidden"></div>
+        </div>
+
+        <!-- Step 5: Writing Guide -->
         <div class="form-section hidden" id="writing-guide-area">
-            <h2>Writing Guide</h2>
+            <h2>5. Writing Guide</h2>
             <div id="guide-content-markdown" class="markdown-content">
                 <p class="loading-message">Generating guide...</p>
             </div>
         </div>
 
+        <!-- Step 6: Vocabulary -->
         <div class="form-section hidden" id="vocabulary-area">
-            <h2>Advanced Vocabulary</h2>
+            <h2>6. Advanced Vocabulary</h2>
             <button id="show-vocab-btn" class="secondary">Show Advanced Vocabulary</button>
             <div id="vocabulary-content" class="hidden">
                  <p class="loading-message" id="vocab-loading">Generating vocabulary...</p>
-                 <!-- Vocabulary list will be appended here by JS -->
-                 </div>
+                 <!-- Vocabulary list appended here -->
+            </div>
             <div id="message-area-vocab" class="message-area hidden"></div>
         </div>
 
@@ -286,27 +294,23 @@
     <script>
         // --- Configuration ---
         const essayTypes = {
-            "Descriptive": {
+             "Descriptive": {
                 sample: "Describe a special meal you enjoy with friends or family.",
                 enabled: true,
                 examples: ["Describe a special meal you enjoy with friends or family.","What is your idea of a perfect afternoon? Describe what you like to do.","Describe your perfect place where you want to relax.","Describe the sights and sounds at a busy shopping centre.","Describe the things that you do to relax after being busy.","Which person has had the most positive impact on your life? Describe this individual.","Describe an event that you looked forward to which turned out to be disappointing."]
             },
-            "Personal Reflective": {
+             "Personal Reflective": {
                 sample: "Write about a time when you experienced a difficult but interesting journey.",
                 enabled: true,
                 examples: ["Write about a time when you experienced a difficult but interesting journey.","‘As I looked back, I realised I had made the right decision.’ Write about a time when you felt like this.","‘I realised I was much stronger than I previously thought.’ Write about a time when you felt like this.","‘I felt as though I was on top of the world!’ Write about a time when you felt like this.","Write about a time when you did something just to impress someone and later regretted.","‘It was my proudest moment.’ Write about a time when you felt like this.","‘I had never seen my friend laugh so much!’ Write about a time when you felt like this."]
-            },
-            "Argumentative": {
-                sample: "‘Social media does more harm than good.’ Do you agree?",
-                enabled: false, // Disabled
-                examples: ["‘Social media does more harm than good.’ Do you agree?","‘Schools should teach practical skills such as cooking.’ Do you agree?","‘Young people spend so much time thinking about the future...’ What is your opinion?","‘People today are far too easily persuaded to spend money...’ Do you agree?","‘Young people are changing the world for the better.’ What is your opinion?","‘Learning how to respond to mistakes is essential for success.’ What is your opinion?","‘Most young people today are obsessed with fame.’ What are your views?","‘People can only be happy if treated fairly.’ Do you agree?","Some people like to stand out; others want to blend in. Which do you prefer and why?","Which modern invention is essential for your family and which could you live without?"]
-            },
-            "Discursive": {
-                sample: "‘We should all value time spent alone.’ How far would you agree?",
-                enabled: false, // Disabled
-                examples: ["‘We should all value time spent alone.’ How far would you agree?","‘All you need to succeed in life is a positive attitude.’ How far would you agree?","‘A happy person is a healthy person.’ How far would you agree?","‘There is no place like home.’ How true is this for you?"]
-            }
+             },
+             "Argumentative": { sample: "‘Social media does more harm than good.’ Do you agree?", enabled: false, examples: [/*...*/] },
+             "Discursive": { sample: "‘We should all value time spent alone.’ How far would you agree?", enabled: false, examples: [/*...*/] }
         };
+        // Full examples for disabled types if needed later
+        essayTypes["Argumentative"].examples = ["‘Social media does more harm than good.’ Do you agree?","‘Schools should teach practical skills such as cooking.’ Do you agree?","‘Young people spend so much time thinking about the future...’ What is your opinion?","‘People today are far too easily persuaded to spend money...’ Do you agree?","‘Young people are changing the world for the better.’ What is your opinion?","‘Learning how to respond to mistakes is essential for success.’ What is your opinion?","‘Most young people today are obsessed with fame.’ What are your views?","‘People can only be happy if treated fairly.’ Do you agree?","Some people like to stand out; others want to blend in. Which do you prefer and why?","Which modern invention is essential for your family and which could you live without?"];
+        essayTypes["Discursive"].examples = ["‘We should all value time spent alone.’ How far would you agree?","‘All you need to succeed in life is a positive attitude.’ How far would you agree?","‘A happy person is a healthy person.’ How far would you agree?","‘There is no place like home.’ How true is this for you?"];
+
 
         const API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
@@ -319,8 +323,12 @@
         const questionTextElement = document.getElementById('question-text');
         const topicInputArea = document.getElementById('topic-input-area');
         const userTopicInput = document.getElementById('user-topic-input');
-        const generatePointsBtn = document.getElementById('generate-points-btn');
+        const generateGuidingQuestionsBtn = document.getElementById('generate-guiding-questions-btn');
         const topicMessageArea = document.getElementById('message-area-topic');
+        const guidingQuestionsArea = document.getElementById('guiding-questions-area');
+        const guidingQuestionsContent = document.getElementById('guiding-questions-content');
+        const generateGuideBtn = document.getElementById('generate-guide-btn');
+        const guidingMessageArea = document.getElementById('message-area-guiding');
         const writingGuideArea = document.getElementById('writing-guide-area');
         const guideContentMarkdown = document.getElementById('guide-content-markdown');
         const vocabularyArea = document.getElementById('vocabulary-area');
@@ -333,35 +341,25 @@
         let apiKey = null;
         let selectedEssayType = null;
         let generatedQuestion = '';
+        let generatedGuidingQuestions = '';
         let generatedGuideMarkdown = '';
 
         // --- Showdown Initialisation ---
         let showdownConverter;
         if (typeof showdown !== 'undefined') {
-             showdownConverter = new showdown.Converter({
-                 ghCompatibleHeaderId: true,
-                 simpleLineBreaks: true,
-                 strikethrough: true,
-                 tables: true
-             });
+             showdownConverter = new showdown.Converter({ ghCompatibleHeaderId: true, simpleLineBreaks: true, strikethrough: true, tables: true });
             console.log("Showdown library loaded successfully.");
-        } else {
-            console.warn("Showdown library not found. Markdown will be displayed as raw text.");
-        }
+        } else { console.warn("Showdown library not found. Markdown will be displayed as raw text."); }
 
         // --- Functions ---
 
-        // *** Updated populateRadioButtons for CSS class handling ***
         function populateRadioButtons() {
-            essayTypeRadiosContainer.innerHTML = ''; // Clear previous
+            essayTypeRadiosContainer.innerHTML = '';
             Object.keys(essayTypes).forEach((typeKey, index) => {
                 const typeData = essayTypes[typeKey];
                 const optionDiv = document.createElement('div');
                 optionDiv.classList.add('radio-option');
-                // Add disabled class directly to div if needed
-                if (!typeData.enabled) {
-                    optionDiv.classList.add('disabled-option');
-                }
+                if (!typeData.enabled) { optionDiv.classList.add('disabled-option'); }
 
                 const inputId = `radio-type-${index}`;
                 const radioInput = document.createElement('input');
@@ -369,31 +367,23 @@
                 radioInput.id = inputId;
                 radioInput.name = 'essay_type';
                 radioInput.value = typeKey;
-                radioInput.disabled = !typeData.enabled; // Still disable input for accessibility
+                radioInput.disabled = !typeData.enabled;
 
-                // Listener to update selected type and manage classes
                  radioInput.addEventListener('change', (event) => {
-                    // Remove 'selected' class from all options first
                     document.querySelectorAll('.radio-option').forEach(div => div.classList.remove('selected'));
-
                     if (event.target.checked) {
                         selectedEssayType = event.target.value;
                         console.log("Selected type:", selectedEssayType);
-                        // Add 'selected' class to the parent div of the checked radio
                         event.target.closest('.radio-option').classList.add('selected');
-                        hideMessage(setupMessageArea); // Clear error on selection
-                        resetUI(); // Reset subsequent parts if type is changed after generation
+                        hideMessage(setupMessageArea);
+                        resetUI(); // Reset fully on type change
                     }
                  });
 
-                // Use a wrapper for the label content for better structure if needed
                 const label = document.createElement('label');
                 label.htmlFor = inputId;
-                label.classList.add('option-label'); // Add class to label itself
-                label.innerHTML = `
-                    <span class="option-line-1">${typeKey}</span>
-                    <span class="option-line-2">Sample – ${typeData.sample}</span>
-                `;
+                label.classList.add('option-label');
+                label.innerHTML = `<span class="option-line-1">${typeKey}</span><span class="option-line-2">Sample – ${typeData.sample}</span>`;
 
                 optionDiv.appendChild(radioInput);
                 optionDiv.appendChild(label);
@@ -401,114 +391,168 @@
             });
         }
 
-        // Parse Markdown using Showdown, with fallback
         function parseMarkdown(markdownText) {
-            if (showdownConverter) {
-                try {
-                    return showdownConverter.makeHtml(markdownText);
-                } catch (error) {
-                    console.error("Showdown conversion failed:", error);
-                    return `<p><em>Markdown parsing failed. Displaying raw text:</em></p><pre>${escapeHtml(markdownText)}</pre>`;
-                }
-            } else {
-                return `<p><em>Markdown library not loaded. Displaying raw text:</em></p><pre>${escapeHtml(markdownText)}</pre>`;
-            }
+            if (showdownConverter) { try { return showdownConverter.makeHtml(markdownText); } catch (error) { console.error("Showdown conversion failed:", error); return `<p><em>Markdown parsing failed. Displaying raw text:</em></p><pre>${escapeHtml(markdownText)}</pre>`; } }
+            else { return `<p><em>Markdown library not loaded. Displaying raw text:</em></p><pre>${escapeHtml(markdownText)}</pre>`; }
         }
 
-        // Helper to escape HTML for safe display in <pre> tags
-        function escapeHtml(unsafe) {
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
-        }
+        function escapeHtml(unsafe) { return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
-        // --- API Call Logic ---
         async function callGemini(promptText, callingFunction) {
-            apiKey = apiKeyInput.value; // Get key each time
+            apiKey = apiKeyInput.value;
             if (!apiKey) throw new Error("API Key is required. Please enter it above.");
-
             const requestBody = { contents: [{ parts: [{ text: promptText }] }], safetySettings: [ { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }, { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" } ], generationConfig: { maxOutputTokens: 1800 } };
-
             console.log(`Sending request from ${callingFunction} with prompt (truncated):`, promptText.substring(0, 150) + "...");
             try {
                  const response = await fetch(`${API_ENDPOINT}?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
                  const responseData = await response.json();
                  if (!response.ok) { console.error("API Error Response:", responseData); const errMsg = responseData.error?.message || `HTTP ${response.status}`; throw new Error(`API Error: ${errMsg}. Check API key/model.`); }
                  console.log(`API Success Response for ${callingFunction} (truncated):`, JSON.stringify(responseData).substring(0, 200) + "...");
-                 if (responseData.promptFeedback?.blockReason) {
-                    console.error("API blocked response:", responseData.promptFeedback);
-                    throw new Error(`Content blocked by safety filter: ${responseData.promptFeedback.blockReason}`);
-                 }
-                 if (!responseData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    console.warn("API returned unexpected or empty response structure:", responseData);
-                    throw new Error("API returned empty or unexpected response format.");
-                 }
+                 if (responseData.promptFeedback?.blockReason) { console.error("API blocked response:", responseData.promptFeedback); throw new Error(`Content blocked by safety filter: ${responseData.promptFeedback.blockReason}`); }
+                 if (!responseData.candidates?.[0]?.content?.parts?.[0]?.text) { console.warn("API returned unexpected or empty response structure:", responseData); throw new Error("API returned empty or unexpected response format."); }
                  return responseData.candidates[0].content.parts[0].text;
              } catch (error) { console.error(`Error during Gemini API call from ${callingFunction}:`, error); if (error.message.startsWith("API Error:") || error.message.startsWith("Content blocked")) throw error; else throw new Error(`Network/parsing error: ${error.message}`); }
         }
 
         // --- Event Handlers ---
+
+        // *** 1. Generate Question (FIXED: Random selection for Descriptive, AI for others) ***
         generateQuestionBtn.addEventListener('click', async () => {
             apiKey = apiKeyInput.value;
-             if (!apiKey) { showMessage("Please enter the provided key.", "error", setupMessageArea); return; } // Updated msg
-             if (!selectedEssayType) { showMessage("Please select an Essay Type.", "error", setupMessageArea); return; }
+             // API key needed ONLY if not Descriptive (and enabled)
+             if (!apiKey && selectedEssayType && selectedEssayType !== 'Descriptive' && essayTypes[selectedEssayType]?.enabled) {
+                showMessage("Please enter the provided key (required for this essay type).", "error", setupMessageArea);
+                return;
+             }
+             if (!selectedEssayType) {
+                 showMessage("Please select an Essay Type.", "error", setupMessageArea);
+                 return;
+             }
 
             generateQuestionBtn.disabled = true;
             generateQuestionBtn.textContent = 'Generating...';
             hideMessage(setupMessageArea);
-            resetUI();
+            resetUI(); // Reset downstream sections
 
             try {
-                 const questionPrompt = createQuestionPrompt(selectedEssayType);
-                 generatedQuestion = await callGemini(questionPrompt, 'GenerateQuestion');
+                // --- Core Logic Change Here ---
+                if (selectedEssayType === 'Descriptive') {
+                    // ** FIX: Randomly select from the predefined examples **
+                    const examples = essayTypes[selectedEssayType]?.examples;
+                    if (examples && examples.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * examples.length);
+                        generatedQuestion = examples[randomIndex];
+                        console.log(`Selected random Descriptive question: ${generatedQuestion}`);
+                        // No API call needed for this type, simulate slight delay for UX if desired
+                        await new Promise(resolve => setTimeout(resolve, 100)); // Optional small delay
+                    } else {
+                        // Fallback if examples are missing (shouldn't happen with current config)
+                        throw new Error("Descriptive essay examples are missing in configuration.");
+                    }
+                } else if (essayTypes[selectedEssayType]?.enabled) { // Check if the selected type is enabled for AI generation
+                    // ** For other *enabled* types (e.g., Personal Reflective), use the AI **
+                     if (!apiKey) { // Double-check API key here for AI types
+                        throw new Error("API Key is required for generating this essay type.");
+                     }
+                    const questionPrompt = createQuestionPrompt(selectedEssayType);
+                    generatedQuestion = await callGemini(questionPrompt, 'GenerateQuestion');
+                    console.log(`Generated ${selectedEssayType} question via AI: ${generatedQuestion}`);
+                } else {
+                    // Handle cases where the type is selected but not enabled (shouldn't happen with UI)
+                    throw new Error(`Question generation for type "${selectedEssayType}" is not enabled.`);
+                }
+                // --- End of Core Logic Change ---
+
+                 // Display Question & Show Next Step (same for both paths)
                  questionTextElement.textContent = generatedQuestion.trim();
                  questionDisplayArea.classList.remove('hidden');
-                 topicInputArea.classList.remove('hidden');
+                 topicInputArea.classList.remove('hidden'); // Show next step
                  topicInputArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             } catch (error) {
                  showMessage(`Error generating question: ${error.message}`, "error", setupMessageArea);
-                 resetUI();
+                 resetUI(); // Ensure reset on error
             } finally {
                  generateQuestionBtn.disabled = false;
                  generateQuestionBtn.textContent = 'Generate A Question';
             }
         });
 
-        generatePointsBtn.addEventListener('click', async () => {
+        // 2. Generate Guiding Questions
+        generateGuidingQuestionsBtn.addEventListener('click', async () => {
             const userTopic = userTopicInput.value.trim();
             if (!userTopic) { showMessage("Please provide a brief idea for your essay focus.", "error", topicMessageArea); return; }
-             if (!generatedQuestion || !selectedEssayType) { showMessage("Error: Missing question or essay type context.", "error", topicMessageArea); return; }
+            if (!generatedQuestion || !selectedEssayType) { showMessage("Error: Missing question or essay type context.", "error", topicMessageArea); return; }
 
-             generatePointsBtn.disabled = true;
-             generatePointsBtn.textContent = 'Generating...';
+             generateGuidingQuestionsBtn.disabled = true;
+             generateGuidingQuestionsBtn.textContent = 'Generating...';
              hideMessage(topicMessageArea);
-             writingGuideArea.classList.remove('hidden');
-             guideContentMarkdown.innerHTML = '<p class="loading-message">Generating guide...</p>';
+             guidingQuestionsArea.classList.remove('hidden');
+             guidingQuestionsContent.innerHTML = '<p class="loading-message">Generating guiding questions...</p>';
+             generateGuideBtn.classList.add('hidden');
+             hideMessage(guidingMessageArea);
+             writingGuideArea.classList.add('hidden');
              vocabularyArea.classList.add('hidden');
 
             try {
-                const guidePrompt = createGuidePrompt(selectedEssayType, generatedQuestion, userTopic);
-                generatedGuideMarkdown = await callGemini(guidePrompt, 'GenerateGuide');
-                const guideHtml = parseMarkdown(generatedGuideMarkdown);
-                guideContentMarkdown.innerHTML = guideHtml;
+                // Call 2: Generate Guiding Questions
+                const guidingPrompt = createGuidingQuestionsPrompt(selectedEssayType, generatedQuestion, userTopic);
+                generatedGuidingQuestions = await callGemini(guidingPrompt, 'GenerateGuidingQuestions');
+                const guidingQuestionsHtml = parseMarkdown(generatedGuidingQuestions);
+                guidingQuestionsContent.innerHTML = guidingQuestionsHtml;
+                generateGuideBtn.classList.remove('hidden');
+                guidingQuestionsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (error) {
+                 showMessage(`Error generating guiding questions: ${error.message}`, "error", topicMessageArea);
+                 guidingQuestionsArea.classList.add('hidden');
+            } finally {
+                 generateGuidingQuestionsBtn.disabled = false;
+                 generateGuidingQuestionsBtn.textContent = 'Generate Guiding Questions';
+            }
+        });
+
+        // 3. Generate Writing Guide
+        generateGuideBtn.addEventListener('click', async () => {
+            const userTopic = userTopicInput.value.trim();
+            if (!generatedQuestion || !selectedEssayType || !userTopic || !generatedGuidingQuestions) {
+                showMessage("Error: Missing context (Question, Type, Topic, or Guiding Questions). Please restart.", "error", guidingMessageArea);
+                return;
+            }
+
+            generateGuideBtn.disabled = true;
+            generateGuideBtn.textContent = 'Generating...';
+            hideMessage(guidingMessageArea);
+            writingGuideArea.classList.remove('hidden');
+            guideContentMarkdown.innerHTML = '<p class="loading-message">Generating writing guide...</p>';
+            vocabularyArea.classList.add('hidden');
+
+            try {
+                 // Call 3: Generate Final Guide
+                 const guidePrompt = createGuidePrompt(selectedEssayType, generatedQuestion, userTopic);
+                 generatedGuideMarkdown = await callGemini(guidePrompt, 'GenerateGuide');
+                 const guideHtml = parseMarkdown(generatedGuideMarkdown);
+                 guideContentMarkdown.innerHTML = guideHtml;
+
+                 // Show vocab section
                  vocabularyArea.classList.remove('hidden');
                  vocabularyContent.classList.add('hidden');
                  vocabularyContent.querySelector('ul')?.remove();
                  showVocabBtn.disabled = false;
                  showVocabBtn.textContent = 'Show Advanced Vocabulary';
+                 hideMessage(vocabMessageArea);
+
                  writingGuideArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (error) {
-                 showMessage(`Error generating writing points: ${error.message}`, "error", topicMessageArea);
-                 writingGuideArea.classList.add('hidden');
+            } catch(error) {
+                showMessage(`Error generating writing guide: ${error.message}`, "error", guidingMessageArea);
+                writingGuideArea.classList.add('hidden');
             } finally {
-                 generatePointsBtn.disabled = false;
-                 generatePointsBtn.textContent = 'Generate Writing Points';
+                 generateGuideBtn.disabled = false;
+                 generateGuideBtn.textContent = 'Generate Writing Guide';
             }
         });
 
+
+        // 4. Show Vocabulary
         showVocabBtn.addEventListener('click', async () => {
             if (!generatedGuideMarkdown) { showMessage("Error: Writing guide content is missing.", "error", vocabMessageArea); return; }
 
@@ -520,7 +564,8 @@
             vocabularyContent.querySelector('ul')?.remove();
 
             try {
-                 const vocabPrompt = createVocabPrompt(generatedGuideMarkdown); // Uses the updated prompt
+                 // Call 4: Extract Vocabulary (uses updated prompt)
+                 const vocabPrompt = createVocabPrompt(generatedGuideMarkdown);
                  const vocabResponse = await callGemini(vocabPrompt, 'ExtractVocabulary');
                  const vocabHtmlList = formatVocabulary(vocabResponse);
                  vocabLoadingElement.classList.add('hidden');
@@ -533,20 +578,66 @@
                  showVocabBtn.disabled = false;
                  showVocabBtn.textContent = 'Retry Vocabulary';
             }
-             // Button remains disabled after success unless changed
         });
 
+
         // --- Prompt Generation ---
-        function createQuestionPrompt(essayType) {
+        function createQuestionPrompt(essayType) { // Used only for AI-generated types now
             const prompt = `
 You are assisting a Singapore GCE 'O' Level student preparing for their English Language exam (Paper 1, Section C Continuous Writing).
 Your task is to generate ONE suitable essay question of the "${essayType}" type.
-The question should be similar in style, topic, and difficulty to those found in actual Singapore GCE 'O' Level English papers. Examples include: "${essayTypes[essayType].sample}"
+The question should be similar in style, topic, and difficulty to those found in actual Singapore GCE 'O' Level English papers. Examples include: "${essayTypes[essayType]?.sample || 'relevant topics'}".
 Use British English spelling and phrasing.
-
-Respond ONLY with the generated essay question text itself. Do not add any surrounding text, explanations, or quotation marks unless the question itself requires them (e.g., for a quote to reflect on).
-`;
+Respond ONLY with the generated essay question text itself. Do not add any surrounding text, explanations, or quotation marks unless the question itself requires them (e.g., for a quote to reflect on).`;
             console.log("Generating question with prompt:", prompt);
+            return prompt.trim();
+        }
+
+        function createGuidingQuestionsPrompt(essayType, question, userTopic) {
+            const baseQuestions = `
+Introduction
+(a) How can I create an engaging opening sentence to capture the reader's attention?
+(b) What is the overall scene or subject I will be describing/reflecting on?
+(c) What is the main impression or feeling I want to convey?
+
+Paragraph 1 (Setting the scene/Starting the narrative)
+(a) What are the key sights, sounds, smells, textures relevant here?
+(b) How can I establish the initial context or situation?
+
+Paragraph 2 (Developing Details/Focusing)
+(a) Is there a particular object, person, moment, or feeling that stands out?
+(b) What specific details make this element interesting or significant?
+(c) How can I use vivid language (sensory details, figurative language) effectively?
+
+Paragraph 3 (Incorporating Action/Emotion/Reflection)
+(a) Is there any action, interaction, or internal thought process happening? How can I describe it?
+(b) What emotions are involved? How can I show these feelings?
+(c) How does this part connect to the overall theme or the core idea of the question?
+
+Conclusion
+(a) How can I summarise the main impressions or the journey described?
+(b) What is the lasting feeling, thought, or lesson learned I want to leave?
+(c) How can I create a sense of closure?`;
+
+            const prompt = `
+You are assisting a Singapore GCE 'O' Level student (${essayType} essay).
+The essay question is: "${question.trim()}"
+The student's specific focus/topic is: "${userTopic.trim()}"
+
+Your task is to generate a set of guiding questions to help the student brainstorm ideas for their essay.
+Use the following base structure and questions as a starting point:
+--- BASE QUESTIONS ---
+${baseQuestions}
+--- END BASE QUESTIONS ---
+
+IMPORTANT: Adapt and tailor these base questions specifically to the context of the essay question ("${question.trim()}") and the student's chosen topic ("${userTopic.trim()}").
+Rephrase the questions naturally using details from the question and topic. Make them directly relevant to brainstorming *for this specific essay*.
+For example, if the question is 'Describe a busy marketplace' and the topic is 'Geylang Serai Wet Market', adapt 'What are the sights...' to 'What specific sights dominate the Geylang Serai market scene (e.g., colourful stalls, crowds)?'
+
+Maintain the section structure (Introduction, Paragraph 1, etc.) from the base questions.
+Keep the language simple and encouraging for a secondary school student.
+Respond ONLY with the adapted guiding questions in Markdown format (use bold for section titles like **Introduction**, and (a), (b), (c) for sub-questions). Do not include any other introductory or concluding text.`;
+            console.log("Generating guiding questions with prompt:", prompt);
             return prompt.trim();
         }
 
@@ -556,88 +647,73 @@ You are assisting a Singapore GCE 'O' Level student.
 The essay question is: "${question.trim()}"
 The essay type is: ${essayType}.
 The student wants to focus on: "${userTopic}"
+The student has already brainstormed using tailored guiding questions based on this context.
 
-Provide a detailed writing guide in Markdown format using British English spelling and phrasing.
+Now, provide a detailed writing guide (around 300-400 words total for the guide itself) in Markdown format using British English spelling and phrasing.
 The target audience is a secondary school student in Singapore.
-The points provided must be brief guides requiring elaboration, not full sentences or paragraphs.
-The maximum essay word count should be around 500 words.
+The points provided must be brief guides requiring elaboration, not full sentences or paragraphs. Suggest key ideas, techniques, or details to include.
+The final essay word count should be around 500 words.
 Structure the output clearly using Markdown bold headings as specified below.
-Respond ONLY with the guide content in Markdown. Do not include introductory pleasantries or concluding remarks outside the guide structure.
-`;
+Respond ONLY with the guide content in Markdown. Do not include introductory pleasantries or concluding remarks outside the guide structure.`;
             let specificInstructions = '';
              if (essayType === 'Descriptive') {
-                 specificInstructions = `Structure the guide strictly as follows:\n**Hook Examples:** (Provide exactly 3 distinct examples relevant to the question and user focus. Use Singapore context naturally but avoid being overly specific unless the user topic is very specific.)\n**Introduction:** (1-2 points outlining subject/scene based on question and user focus.)\n**Body Paragraphs:** (Suggest 3-4 body paragraphs. For each, provide 1-2 bullet points focusing on sensory details, feelings, atmosphere related to user focus and question. Suggest specific Singapore context or elements where appropriate.)\n**Conclusion:** (1-2 points summarising impression or key feeling related to user focus.)\n`;
+                 specificInstructions = `Structure the guide strictly as follows:\n**Hook Examples:** (Provide exactly 3 distinct hook sentences relevant to the question and user focus. Use Singapore context naturally.)\n**Introduction:** (1-2 points outlining subject/scene based on question and user focus, establishing the main mood/impression.)\n**Body Paragraphs:** (Suggest 3-4 body paragraphs. For each, provide 1-2 bullet points focusing on developing specific sensory details, atmosphere, feelings, or a specific aspect related to user focus and question. Suggest specific Singapore context or elements where appropriate. Encourage varied sentence structure and vocabulary.)\n**Conclusion:** (1-2 points summarising the overall impression or key feeling related to user focus, providing a sense of closure.)\n`;
              } else if (essayType === 'Personal Reflective') {
-                 specificInstructions = `Structure the guide strictly as follows:\n**Question Analysis:** (Briefly analyse the main question - literal/figurative/both aspects.)\n**Hook Examples:** (Provide exactly 3 distinct examples relevant to the question and user focus. Use Singapore context naturally but avoid being overly specific unless the user topic is very specific.)\n**Introduction:** (1-2 points setting scene/context based on user focus and linking to the question's core idea.)\n**Body Paragraphs:** (Suggest 3-4 body paragraphs. For each, provide 1-2 bullet points guiding the student through moments, thoughts, feelings, development, or lessons learned related to user focus and question theme. Suggest specific Singapore context or elements where appropriate.)\n**Conclusion:** (1-2 points summarising the significance, reflection, or lesson learned related to user focus and question theme.)\n`;
-             } else {
-                  return `Error: Guide generation for type "${essayType}" is not currently supported.`;
-             }
+                 specificInstructions = `Structure the guide strictly as follows:\n**Question Analysis:** (Briefly re-iterate the core theme/idea of the question.)\n**Hook Examples:** (Provide exactly 3 distinct hook sentences relevant to the question and user focus. Use Singapore context naturally.)\n**Introduction:** (1-2 points setting scene/context based on user focus and linking to the question's core idea/theme.)\n**Body Paragraphs:** (Suggest 3-4 body paragraphs. For each, provide 1-2 bullet points guiding the student through specific moments, thoughts, feelings, character development, challenges, or lessons learned related to user focus and question theme. Suggest specific Singapore context or elements where appropriate. Encourage reflection and showing rather than telling.)\n**Conclusion:** (1-2 points summarising the significance, reflection, or lesson learned related to user focus and question theme. Provide a final impactful thought.)\n`;
+             } else { return `Error: Guide generation for type "${essayType}" is not currently supported.`; }
             return commonInstructions + specificInstructions;
         }
 
-        // *** Updated createVocabPrompt with new explanation requirement ***
+        // *** Updated createVocabPrompt to exclude 'Literal' and 'Figurative' ***
          function createVocabPrompt(guideMarkdown) {
             const maxLength = 3500;
             const truncatedGuide = guideMarkdown.length > maxLength ? guideMarkdown.substring(0, maxLength) + "..." : guideMarkdown;
-            return `From the following writing guide text provided for a Singapore GCE 'O' Level student:\n\n---\n${truncatedGuide}\n---\n\nIdentify exactly 5 distinct, advanced vocabulary words or short phrases (2-3 words max) suitable for this educational level that appear within the guide text itself. List only these 5 words/phrases, each on a new line, followed by a simple explanation using only simple, straightforward, and understandable words, up to 12 words long, enclosed in parentheses. Example format:\nWord1 (a simple explanation using basic words, max 12 words)\nPhrase 2 (another simple explanation, max 12 words)\nWord3 (third simple explanation, max 12 words)\nWord4 (fourth simple explanation, max 12 words)\nWord5 (fifth simple explanation, max 12 words)\n\nDo not include any other text, headings, lists, or explanations. Focus only on words/phrases found *within* the provided guide text. Ensure the explanations are very simple and clear for a secondary school student and strictly adhere to the word limit.`;
+            return `From the following writing guide text provided for a Singapore GCE 'O' Level student:\n\n---\n${truncatedGuide}\n---\n\nIdentify exactly 5 distinct, advanced vocabulary words or short phrases (2-3 words max) suitable for this educational level that appear within the guide text itself. List only these 5 words/phrases, each on a new line, followed by a simple explanation using only simple, straightforward, and understandable words, up to 12 words long, enclosed in parentheses. Example format:\nWord1 (a simple explanation using basic words, max 12 words)\nPhrase 2 (another simple explanation, max 12 words)\nWord3 (third simple explanation, max 12 words)\nWord4 (fourth simple explanation, max 12 words)\nWord5 (fifth simple explanation, max 12 words)\n\nIMPORTANT: Do NOT select the words 'Literal' or 'Figurative' as part of the vocabulary list. Focus only on other suitable words/phrases found *within* the provided guide text.\nDo not include any other text, headings, lists, or explanations beyond the 5 required items. Ensure the explanations are very simple and clear for a secondary school student and strictly adhere to the word limit.`;
         }
 
-        // formatVocabulary (remains the same, handles the output format)
         function formatVocabulary(text) {
-            return text.trim()
-                       .split('\n')
-                       .map(line => line.trim())
-                       .filter(line => line.length > 3 && line.includes('(') && line.includes(')'))
-                       .slice(0, 5)
-                       .map(line => {
-                           const match = line.match(/^([\w\s'-]+?)\s*\((.*?)\)\s*$/);
-                           if (match) {
-                               const term = match[1].trim();
-                               const definition = match[2].trim();
-                               return `<li><strong>${escapeHtml(term)}</strong>: <span class="definition">${escapeHtml(definition)}</span></li>`;
-                           }
-                           return `<li>${escapeHtml(line)}</li>`;
-                       })
-                       .join('');
+             return text.trim().split('\n').map(line => line.trim()).filter(line => line.length > 3 && line.includes('(') && line.includes(')')).slice(0, 5).map(line => { const match = line.match(/^([\w\s'-]+?)\s*\((.*?)\)\s*$/); if (match) { const term = match[1].trim(); const definition = match[2].trim(); return `<li><strong>${escapeHtml(term)}</strong>: <span class="definition">${escapeHtml(definition)}</span></li>`; } return `<li>${escapeHtml(line)}</li>`; }).join('');
         }
+
 
         // --- UI Updates ---
         function showMessage(message, type = "info", areaElement) {
-            if (!areaElement) {
-                console.warn("showMessage called without specifying an areaElement.");
-                areaElement = setupMessageArea;
-            }
+            if (!areaElement) { console.warn("showMessage called without specifying an areaElement."); areaElement = setupMessageArea; }
             areaElement.textContent = message;
             areaElement.className = 'message-area';
-            if (type === 'error') areaElement.classList.add('error-message');
-            else if (type === 'success') areaElement.classList.add('success-message');
-            else if (type === 'loading') areaElement.classList.add('loading-message');
+            if (type === 'error') areaElement.classList.add('error-message'); else if (type === 'success') areaElement.classList.add('success-message'); else if (type === 'loading') areaElement.classList.add('loading-message');
             areaElement.classList.remove('hidden');
         }
+
         function hideMessage(areaElement = null) {
-            const areas = areaElement ? [areaElement] : [setupMessageArea, topicMessageArea, vocabMessageArea];
-            areas.forEach(area => {
-                 if(area) {
-                    area.classList.add('hidden');
-                    area.textContent = '';
-                    area.className = 'message-area hidden';
-                 }
-            });
+             const areas = areaElement ? [areaElement] : [setupMessageArea, topicMessageArea, guidingMessageArea, vocabMessageArea];
+             areas.forEach(area => { if(area) { area.classList.add('hidden'); area.textContent = ''; area.className = 'message-area hidden'; } });
         }
+
         function resetUI() {
+            // Hide sections
             questionDisplayArea.classList.add('hidden');
-            questionTextElement.textContent = '';
             topicInputArea.classList.add('hidden');
-            userTopicInput.value = '';
+            guidingQuestionsArea.classList.add('hidden');
             writingGuideArea.classList.add('hidden');
-            guideContentMarkdown.innerHTML = '';
             vocabularyArea.classList.add('hidden');
+            // Clear content
+            questionTextElement.textContent = '';
+            userTopicInput.value = '';
+            guidingQuestionsContent.innerHTML = '';
+            guideContentMarkdown.innerHTML = '';
             vocabularyContent.classList.add('hidden');
             vocabularyContent.querySelector('ul')?.remove();
+            // Hide messages
             hideMessage(topicMessageArea);
+            hideMessage(guidingMessageArea);
             hideMessage(vocabMessageArea);
-            generatedQuestion = '';
-            generatedGuideMarkdown = '';
+            // Reset buttons
+             generateGuideBtn.classList.add('hidden');
+            // Reset state
+             generatedQuestion = '';
+             generatedGuidingQuestions = '';
+             generatedGuideMarkdown = '';
         }
 
         // --- Initialisation ---
