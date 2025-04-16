@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Level</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #4a4a4a;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .level-button {
+            position: relative;
+            height: 200px;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .level-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+            z-index: 1;
+        }
+
+        .level-button span {
+            position: relative;
+            z-index: 2;
+            padding: 0.5rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .level-button::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+
+        .n-level {
+            background: url('https://hellotosamuel.github.io/gallery/images/pexels-elina-sazonova-1907050.jpg') center/cover no-repeat;
+        }
+
+        .n-level::after {
+            background-color: #ff7e5f;
+        }
+
+        .o-level {
+            background: url('https://hellotosamuel.github.io/gallery/images/pexels-pixabay-434576.jpg') center/cover no-repeat;
+        }
+
+        .o-level::after {
+            background-color: #feb47b;
+        }
+
+        .a-level {
+            background: url('https://hellotosamuel.github.io/gallery/images/pixelbard-ZL-NcA965js-unsplash.jpg') center/cover no-repeat;
+        }
+
+        .a-level::after {
+            background-color: #7ee8fa;
+        }
+
+        .coming-soon {
+            background: url('/api/placeholder/600/400') center/cover no-repeat;
+            filter: grayscale(30%);
+        }
+
+        .coming-soon::after {
+            background-color: #c0c0c0;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        @media (min-width: 768px) {
+            .button-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .level-button {
+                height: 250px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .button-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .level-button {
+                height: 300px;
+            }
+
+            h1 {
+                font-size: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Choose Your Level</h1>
+            <p class="subtitle">Select your level for essay practice</p>
+        </header>
+
+        <div class="button-grid">
+            <a href="#" class="level-button n-level">
+                <span>'N' Level</span>
+            </a>
+            <a href="#" class="level-button o-level">
+                <span>'O' Level</span>
+            </a>
+            <a href="#" class="level-button a-level">
+                <span>'A' Level</span>
+            </a>
+            <a href="#" class="level-button coming-soon">
+                <span>Coming Soon</span>
+            </a>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 <a href="https://webisig.com">Webisig</a>. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
