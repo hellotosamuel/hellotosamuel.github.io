@@ -357,30 +357,30 @@
         // (Populate with full text - omitted for brevity)
         baseGuidingQuestions.Descriptive = `
 Introduction
-(a) How can I create an engaging opening sentence to capture the reader's attention?
-(b) What is the overall scene or subject I will be describing?
-(c) What is the main impression or feeling I want to convey to the reader?
+- How can I create an engaging opening sentence to capture the reader's attention?
+- What is the overall scene or subject I will be describing?
+- What is the main impression or feeling I want to convey to the reader?
 
 Paragraph 1 (setting the scene)
-(a) What are the sights that dominate the scene? What colors, shapes, and sizes do I notice?
-(b) What sounds can be heard? Are they loud or soft, distinct or muffled?
-(c) What smells are present in the air? Are they pleasant or unpleasant, strong or faint?
-(d) What textures can be felt? Are they rough or smooth, hard or soft?
+- What are the sights that dominate the scene? What colors, shapes, and sizes do I notice?
+- What sounds can be heard? Are they loud or soft, distinct or muffled?
+- What smells are present in the air? Are they pleasant or unpleasant, strong or faint?
+- What textures can be felt? Are they rough or smooth, hard or soft?
 
 Paragraph 2 (Focusing on a Specific Element)
-(a) Is there a particular object or person that stands out in the scene?
-(b) What are the specific details about this element that make it interesting or significant?
-(c) How can I use figurative language (similes, metaphors, personification) to describe this element vividly?
+- Is there a particular object or person that stands out in the scene?
+- What are the specific details about this element that make it interesting or significant?
+- How can I use figurative language (similes, metaphors, personification) to describe this element vividly?
 
 Paragraph 3 (Incorporating Action or Emotion)
-(a) Is there any action taking place in the scene? How can I describe the movements and interactions?
-(b) What emotions do I feel when observing this scene? How can I convey these feelings through my writing?
-(c) How does this scene connect to a broader theme or idea?
+- Is there any action taking place in the scene? How can I describe the movements and interactions?
+- What emotions do I feel when observing this scene? How can I convey these feelings through my writing?
+- How does this scene connect to a broader theme or idea?
 
 Conclusion
-(a) How can I summarise the main impressions I have described?
-(b) What is the lasting feeling or thought I want to leave with the reader?
-(c) How can I create a sense of closure to the essay?
+- How can I summarise the main impressions I have described?
+- What is the lasting feeling or thought I want to leave with the reader?
+- How can I create a sense of closure to the essay?
             `.trim();
         baseGuidingQuestions.PersonalReflective = `
 Introduction:
@@ -391,25 +391,25 @@ Introduction:
 
 Body Paragraphs
 
-Describing the Experience:
--- Pinpoint the crucial events or key moments that occurred during the experience. Focus on the most important aspects.
--- Recall what you observed through your senses: sight, hearing, smell, taste, and touch. Use sensory details to create a vivid and immersive narrative for the reader.
--- Identify if there was a specific moment that stands out prominently in your memory of the experience.
--- Consider how to employ descriptive language to effectively illustrate what happened, rather than simply stating the events.
+- Describing the Experience:
+  - Pinpoint the crucial events or key moments that occurred during the experience. Focus on the most important aspects.
+  - Recall what you observed through your senses: sight, hearing, smell, taste, and touch. Use sensory details to create a vivid and immersive narrative for the reader.
+  - Identify if there was a specific moment that stands out prominently in your memory of the experience.
+  - Consider how to employ descriptive language to effectively illustrate what happened, rather than simply stating the events.
 
-Reflecting on Thoughts and Feelings:
--- Reflect on your initial thoughts and emotions as the experience unfolded.
--- Consider if your emotions changed during the experience. If so, explore how and why these changes occurred.
--- Identify some of the key thoughts that you had at different points throughout the experience.
--- Explain the reasons behind your emotional and mental responses to the events as they happened.
--- Reflect on any internal conflicts or moments of realization that you experienced during this time.
+- Reflecting on Thoughts and Feelings:
+  - Reflect on your initial thoughts and emotions as the experience unfolded.
+  - Consider if your emotions changed during the experience. If so, explore how and why these changes occurred.
+  - Identify some of the key thoughts that you had at different points throughout the experience.
+  - Explain the reasons behind your emotional and mental responses to the events as they happened.
+  - Reflect on any internal conflicts or moments of realization that you experienced during this time.
 
-Lessons Learned and Significance (Optional):
--- Determine the most significant lesson or key takeaway that you gained from this experience.
--- Consider how this experience has influenced your perspective on yourself, on others, or on the world around you.
--- Reflect on whether this experience has led to any changes in your beliefs, attitudes, or behavior.
--- Explore the broader significance or deeper meaning of this experience in the context of your own life.
--- Consider if you can connect this personal experience to any universal themes or broader ideas.
+- Lessons Learned and Significance (Optional):
+  - Determine the most significant lesson or key takeaway that you gained from this experience.
+  - Consider how this experience has influenced your perspective on yourself, on others, or on the world around you.
+  - Reflect on whether this experience has led to any changes in your beliefs, attitudes, or behavior.
+  - Explore the broader significance or deeper meaning of this experience in the context of your own life.
+  - Consider if you can connect this personal experience to any universal themes or broader ideas.
 
 Conclusion
 - Think about how to briefly summarize the main insights or key lessons that you have reflected upon in your essay.
@@ -494,7 +494,7 @@ Your task is to generate a set of guiding questions to help the student brainsto
 --- BASE QUESTIONS for ${essayType} ---
 ${baseQuestions}
 --- END BASE QUESTIONS ---
-IMPORTANT: Adapt and tailor these base questions specifically to the context of the essay question ("${question.trim()}") and the student's chosen topic ("${userTopic.trim() || 'Not specified'}"). Rephrase the questions naturally using details from the question and topic. Make them directly relevant to brainstorming *for this specific essay*. Maintain the section structure (e.g., Introduction, Body Paragraph 1, etc.) from the base questions. Keep the language simple and encouraging. Respond ONLY with the adapted guiding questions in Markdown format (use bold for section titles like **Introduction**, and use the original list format like (a), (b), (c) or - / -- for sub-questions). Do not include any other introductory or concluding text.`;
+IMPORTANT: Adapt and tailor these base questions specifically to the context of the essay question ("${question.trim()}") and the student's chosen topic ("${userTopic.trim() || 'Not specified'}"). Rephrase the questions naturally using details from the question and topic. Make them directly relevant to brainstorming *for this specific essay*. Maintain the section structure (e.g., Introduction, Body Paragraph 1, etc.) from the base questions. Keep the language simple and encouraging. Respond ONLY with the adapted guiding questions in Markdown format (use bold for section titles like **Introduction**, and use "-" / "  -" for sub-questions). Do not include any other introductory or concluding text.`;
                 console.log("Generating guiding questions with prompt:", prompt); return prompt.trim();
             },
             createGuidePrompt: (essayType, question, userTopic) => {
@@ -517,7 +517,7 @@ Now, provide a detailed writing guide (around 300-400 words total for the guide 
                 console.log("Generating guide with prompt:", fullPrompt); return fullPrompt;
             },
             createVocabPrompt: (guideMarkdown) => {
-                 const maxLength = 3500; const truncatedGuide = guideMarkdown.length > maxLength ? guideMarkdown.substring(0, maxLength) + "..." : guideMarkdown; const prompt = `From the following writing guide text provided for a Singapore GCE 'O' Level student:\n\n---\n${truncatedGuide}\n---\n\nIdentify exactly 5 distinct, advanced vocabulary words or short phrases (2-3 words max) suitable for this educational level that appear within the guide text itself. List only these 5 words/phrases, each on a new line, followed by a simple explanation using only simple, straightforward, and understandable words, up to 12 words long, enclosed in parentheses. Example format:\nWord1 (a simple explanation using basic words, max 12 words)\nPhrase 2 (another simple explanation, max 12 words)\nWord3 (third simple explanation, max 12 words)\nWord4 (fourth simple explanation, max 12 words)\nWord5 (fifth simple explanation, max 12 words)\n\nIMPORTANT: Do NOT select the words 'Literal' or 'Figurative' as part of the vocabulary list. Focus only on other suitable words/phrases found *within* the provided guide text.\nDo not include any other text, headings, lists, or explanations beyond the 5 required items. Ensure the explanations are very simple and clear for a secondary school student and strictly adhere to the word limit.`; console.log("Generating vocab prompt"); return prompt.trim();
+                 const maxLength = 3500; const truncatedGuide = guideMarkdown.length > maxLength ? guideMarkdown.substring(0, maxLength) + "..." : guideMarkdown; const prompt = `From the following writing guide text provided for a Singapore GCE 'O' Level student:\n\n---\n${truncatedGuide}\n---\n\nIdentify exactly 5 distinct, advanced vocabulary words or short phrases (2-3 words max) suitable for this educational level that appear within the guide text itself. List only these 5 words/phrases, each on a new line, followed by a simple explanation using only simple, straightforward, and understandable words, up to 12 words long, enclosed in parentheses. Example format:\nWord1 (a simple explanation using basic words, max 12 words)\nPhrase 2 (another simple explanation, max 12 words)\nWord3 (third simple explanation, max 12 words)\nWord4 (fourth simple explanation, max 12 words)\nWord5 (fifth simple explanation, max 12 words)\n\nIMPORTANT: Do NOT select the words 'Literal', 'Figurative', 'Contrast', or 'Articulate' as part of the vocabulary list. Focus only on other suitable words/phrases found *within* the provided guide text.\nDo not include any other text, headings, lists, or explanations beyond the 5 required items. Ensure the explanations are very simple and clear for a secondary school student and strictly adhere to the word limit.`; console.log("Generating vocab prompt"); return prompt.trim();
             }
         };
 
