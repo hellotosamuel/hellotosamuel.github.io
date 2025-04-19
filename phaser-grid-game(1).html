@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Matching Game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #333333;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 390px;  /* iPhone 13 width */
+            height: 844px; /* iPhone 13 height */
+        }
+        /* Apply scaling for different screen sizes while maintaining aspect ratio */
+        @media (max-width: 390px), (max-height: 844px) {
+            #game-container {
+                transform: scale(0.9);
+            }
+        }
+        @media (max-width: 350px), (max-height: 760px) {
+            #game-container {
+                transform: scale(0.8);
+            }
+        }
+        @media (max-width: 310px), (max-height: 675px) {
+            #game-container {
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container"></div>
+    <script>
+        class MainScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'MainScene' });
+                this.gridSize = 5;
+                this.tileGraphics = [];
+                this.tiles = [];
+                this.selectedTiles = [];
+                this.isProcessingMatch = false; // Add flag to track match processing
+                
+                // iPhone 13 dimensions
+                this.gameWidth = 390;
+                this.gameHeight = 844;
+                
+                // Game timer values
+                this.gameTime = 90; // 90 seconds
+                this.timeRemaining = this.gameTime;
+                
+                // Define tile colors (9 distinct colors)
+                this.tileColors = [
+                    0x9A6324, // Brown
+                    0xe6194B, // Red
+                    0xf58231, // Orange
+                    0xffe119, // Yellow
+                    0x3cb44b, // Green
+                    0x42d4f4, // Cyan
+                    0x4363d8, // Blue
+                    0xf032e6, // Magenta
+                    0xa9a9a9  // Grey
+                ];
+                
+                // Color names for the matching card
+                this.colorNames = {
+                    0x9A6324: 'Brown',
+                    0xe6194B: 'Red',
+                    0xf58231: 'Orange',
+                    0xffe119: 'Yellow',
+                    0x3cb44b: 'Green',
+                    0x42d4f4: 'Cyan',
+                    0x4363d8: 'Blue',
+                    0xf032e6: 'Magenta',
+                    0xa9a9a9: 'Grey'
+                };
+                
+                this.shadowColor = 0x000000;
+                this.highlightColor = 0xffffff; // White highlight for selected tiles
+                this.matchColor = 0xaaffc3; // Mint color for correct matches
+                this.score = 0;
+            }
+
+            create() {
+                // Reset game state
+                this.score = 0;
+                this.timeRemaining = this.gameTime;
+                this.isProcessingMatch = false;
+                this.selectedTiles = [];
+                
+                // Set the game's background
+                this.cameras.main.setBackgroundColor('#333333');
+                
+                // Create graphics group for tiles
+                this.tileGroup = this.add.group();
+                
+                // Calculate grid size to fill width with appropriate padding
+                const gridPadding = 20; // Padding around the grid
+                const availableWidth = this.gameWidth - (gridPadding * 2);
+                const cellPadding = 10; // Space between tiles
+                
+                // Calculate tile size to fit 5 tiles with padding between them
+                this.tileSize = (availableWidth - (cellPadding * (this.gridSize - 1))) / this.gridSize;
+                this.padding = cellPadding;
+                
+                // Create tiles
+                this.createGrid(gridPadding);
+                
+                // Add score display centered at top
+                this.scoreText = this.add.text(
+                    this.gameWidth / 2,
+                    20,
+                    'Score: 0',
+                    { 
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        fill: '#ffffff',
+                        fontWeight: 'bold'
+                    }
+                ).setOrigin(0.5);
+                
+                // Create timer display and progress bar
+                this.createTimer();
+                
+                // Start the game timer
+                this.startGameTimer();
+            }
+            
+            createTimer() {
+                const timerGroupY = 60; // Position below score
+                
+                // Add timer text
+                this.timerText = this.add.text(
+                    this.gameWidth / 2 - 100, // Position to the left of progress bar
+                    timerGroupY,
+                    '90s',
+                    { 
+                        fontFamily: 'Arial',
+                        fontSize: '20px',
+                        fill: '#ffffff',
+                        fontWeight: 'bold'
+                    }
+                ).setOrigin(0.5);
+                
+                // Calculate progress bar width and position
+                const barWidth = 180;
+                const totalWidth = barWidth + this.timerText.width + 8; // Total width including spacing
+                const startX = (this.gameWidth - totalWidth) / 2 + this.timerText.width + 8; // Center the group
+                
+                // Create progress bar background with rounded corners
+                const barBg = this.add.graphics();
+                barBg.fillStyle(0x444444);
+                barBg.fillRoundedRect(
+                    startX,
+                    timerGroupY - 7, // Center vertically with text
+                    barWidth,
+                    14,
+                    7
+                );
+                
+                // Add white border to progress bar background
+                barBg.lineStyle(1, 0xffffff);
+                barBg.strokeRoundedRect(
+                    startX,
+                    timerGroupY - 7,
+                    barWidth,
+                    14,
+                    7
+                );
+                
+                // Create progress bar fill with rounded corners
+                this.timerBarFill = this.add.graphics();
+                this.timerBarFill.fillStyle(0x00ffff);
+                this.timerBarFill.fillRoundedRect(
+                    startX,
+                    timerGroupY - 7,
+                    barWidth,
+                    14,
+                    7
+                );
+                
+                // Store the bar position and width for updates
+                this.barStartX = startX;
+                this.barWidth = barWidth;
+                this.barY = timerGroupY - 7;
+            }
+            
+            startGameTimer() {
+                // Clear any existing timer
+                if (this.gameTimer) {
+                    this.gameTimer.remove();
+                }
+                
+                // Create timer event
+                this.gameTimer = this.time.addEvent({
+                    delay: 1000,
+                    callback: this.updateTimer,
+                    callbackScope: this,
+                    loop: true
+                });
+            }
+            
+            updateTimer() {
+                this.timeRemaining--;
+                
+                // Update timer text
+                this.timerText.setText(`${this.timeRemaining}s`);
+                
+                // Update progress bar (shrink from right to left)
+                const progress = this.timeRemaining / this.gameTime;
+                this.timerBarFill.clear();
+                this.timerBarFill.fillStyle(0x00ffff);
+                this.timerBarFill.fillRoundedRect(
+                    this.barStartX,
+                    this.barY,
+                    this.barWidth * progress,
+                    14,
+                    7
+                );
+                
+                // Change color as time runs out
+                if (this.timeRemaining <= 30) {
+                    this.timerBarFill.clear();
+                    this.timerBarFill.fillStyle(0xff9900); // Orange
+                    this.timerBarFill.fillRoundedRect(
+                        this.barStartX,
+                        this.barY,
+                        this.barWidth * progress,
+                        14,
+                        7
+                    );
+                }
+                if (this.timeRemaining <= 10) {
+                    this.timerBarFill.clear();
+                    this.timerBarFill.fillStyle(0xff3300); // Red
+                    this.timerBarFill.fillRoundedRect(
+                        this.barStartX,
+                        this.barY,
+                        this.barWidth * progress,
+                        14,
+                        7
+                    );
+                }
+                
+                // End game when timer runs out
+                if (this.timeRemaining <= 0) {
+                    this.gameTimer.remove();
+                    this.gameOver();
+                }
+            }
+            
+            gameOver() {
+                // Clear any existing timers
+                if (this.gameTimer) {
+                    this.gameTimer.remove();
+                    this.gameTimer = null;
+                }
+                
+                // Display game over message
+                const gameOverText = this.add.text(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2,
+                    'GAME OVER',
+                    { 
+                        fontFamily: 'Arial',
+                        fontSize: '40px',
+                        fill: '#ffffff',
+                        fontWeight: 'bold'
+                    }
+                ).setOrigin(0.5);
+                
+                // Display final score
+                const finalScoreText = this.add.text(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 50,
+                    `Final Score: ${this.score}`,
+                    { 
+                        fontFamily: 'Arial',
+                        fontSize: '30px',
+                        fill: '#ffffff'
+                    }
+                ).setOrigin(0.5);
+                
+                // Create restart button
+                const restartButton = this.add.rectangle(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 120,
+                    180,
+                    50,
+                    0x4caf50
+                ).setInteractive();
+                
+                const restartText = this.add.text(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 120,
+                    'Play Again',
+                    { 
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        fill: '#ffffff'
+                    }
+                ).setOrigin(0.5);
+                
+                // Add restart functionality
+                restartButton.on('pointerdown', () => {
+                    // Clean up game over elements
+                    gameOverText.destroy();
+                    finalScoreText.destroy();
+                    restartButton.destroy();
+                    restartText.destroy();
+                    
+                    // Clean up any existing game elements
+                    if (this.tileGroup) {
+                        this.tileGroup.clear(true, true);
+                    }
+                    if (this.scoreText) {
+                        this.scoreText.destroy();
+                    }
+                    if (this.timerText) {
+                        this.timerText.destroy();
+                    }
+                    if (this.timerBarFill) {
+                        this.timerBarFill.destroy();
+                    }
+                    
+                    // Restart the scene
+                    this.scene.restart();
+                });
+                
+                // Add hover effect to restart button
+                restartButton.on('pointerover', () => {
+                    restartButton.setFillStyle(0x66bb6a);
+                });
+                restartButton.on('pointerout', () => {
+                    restartButton.setFillStyle(0x4caf50);
+                });
+            }
+            
+            createGrid(gridPadding) {
+                // Calculate total grid width
+                const totalWidth = this.gridSize * this.tileSize + (this.gridSize - 1) * this.padding;
+                
+                // Calculate starting position 
+                const startX = gridPadding;
+                const startY = (this.gameHeight - totalWidth) / 2;
+                
+                // Create new tiles
+                for (let row = 0; row < this.gridSize; row++) {
+                    this.tiles[row] = [];
+                    this.tileGraphics[row] = [];
+                    for (let col = 0; col < this.gridSize; col++) {
+                        const x = startX + col * (this.tileSize + this.padding) + this.tileSize / 2;
+                        const y = startY + row * (this.tileSize + this.padding) + this.tileSize / 2;
+                        
+                        // Randomly select a color for this tile
+                        const colorIndex = Math.floor(Math.random() * this.tileColors.length);
+                        const tileColor = this.tileColors[colorIndex];
+                        
+                        // Create graphics object for tile with rounded corners
+                        const graphics = this.add.graphics();
+                        
+                        // Draw the tile with rounded corners
+                        this.drawTile(graphics, x, y, tileColor, false);
+                        
+                        // Create interactive zone over the graphics
+                        const tile = this.add.zone(
+                            x, 
+                            y, 
+                            this.tileSize, 
+                            this.tileSize
+                        ).setInteractive();
+                        
+                        // Store initial state and position data
+                        tile.isSelected = false;
+                        tile.isMatched = false;
+                        tile.gridRow = row;
+                        tile.gridCol = col;
+                        tile.colorIndex = colorIndex;
+                        tile.color = tileColor;
+                        
+                        // Add click handler
+                        tile.on('pointerdown', () => this.selectTile(tile, graphics));
+                        
+                        // Store the tile and its graphics in our arrays
+                        this.tiles[row][col] = tile;
+                        this.tileGraphics[row][col] = graphics;
+                        
+                        // Add to group for easy management
+                        this.tileGroup.add(tile);
+                    }
+                }
+            }
+            
+            drawTile(graphics, x, y, color, selected) {
+                // Clear existing graphics
+                graphics.clear();
+                
+                if (selected) {
+                    // Draw shadow for selected tile
+                    graphics.fillStyle(this.shadowColor, 0.3);
+                    graphics.fillRoundedRect(
+                        x - this.tileSize / 2 + 4, 
+                        y - this.tileSize / 2 + 4, 
+                        this.tileSize, 
+                        this.tileSize, 
+                        8
+                    );
+                    
+                    // Use highlight color for selected tiles, but keep original color visible
+                    graphics.fillStyle(color);
+                    graphics.fillRoundedRect(
+                        x - this.tileSize / 2 - 2, 
+                        y - this.tileSize / 2 - 2, 
+                        this.tileSize, 
+                        this.tileSize, 
+                        8
+                    );
+                    
+                    // Add white highlight border
+                    graphics.lineStyle(4, this.highlightColor);
+                    graphics.strokeRoundedRect(
+                        x - this.tileSize / 2 - 2, 
+                        y - this.tileSize / 2 - 2, 
+                        this.tileSize, 
+                        this.tileSize, 
+                        8
+                    );
+                } else {
+                    // Draw normal tile
+                    graphics.fillStyle(color);
+                    graphics.fillRoundedRect(
+                        x - this.tileSize / 2, 
+                        y - this.tileSize / 2, 
+                        this.tileSize, 
+                        this.tileSize, 
+                        8
+                    );
+                }
+            }
+            
+            selectTile(tile, graphics) {
+                // Ignore if tile is already matched or being processed or match is being processed
+                if (tile.isMatched || tile.isProcessing || this.isProcessingMatch || this.timeRemaining <= 0) {
+                    return;
+                }
+                
+                // Toggle selection if already selected
+                if (tile.isSelected) {
+                    tile.isSelected = false;
+                    this.drawTile(graphics, tile.x, tile.y, tile.color, false);
+                    
+                    // Remove from selected tiles array
+                    const index = this.selectedTiles.indexOf(tile);
+                    if (index !== -1) {
+                        this.selectedTiles.splice(index, 1);
+                    }
+                    return;
+                }
+                
+                // Select the tile
+                tile.isSelected = true;
+                this.selectedTiles.push(tile);
+                
+                // Add selection effect (raised with shadow) and white highlight
+                this.drawTile(graphics, tile.x, tile.y, tile.color, true);
+                
+                // Play selection animation
+                this.tweens.add({
+                    targets: tile,
+                    scaleX: 1.1,
+                    scaleY: 1.1,
+                    duration: 100,
+                    yoyo: true
+                });
+                
+                // Check for matches if we have two selected tiles
+                if (this.selectedTiles.length === 2) {
+                    this.checkForMatch();
+                }
+            }
+            
+            checkForMatch() {
+                const tile1 = this.selectedTiles[0];
+                const tile2 = this.selectedTiles[1];
+                
+                // Check if they have the same color
+                if (tile1.colorIndex === tile2.colorIndex) {
+                    // Match found!
+                    this.processMatch(tile1, tile2);
+                } else {
+                    // No match, deselect both tiles after a short delay
+                    this.time.delayedCall(500, () => {
+                        this.deselectTiles();
+                    });
+                }
+            }
+            
+            processMatch(tile1, tile2) {
+                // Mark tiles as matched and processing
+                tile1.isMatched = true;
+                tile2.isMatched = true;
+                tile1.isProcessing = true;
+                tile2.isProcessing = true;
+                this.isProcessingMatch = true; // Set processing flag
+                
+                // Keep the white highlight on matched tiles
+                const graphics1 = this.tileGraphics[tile1.gridRow][tile1.gridCol];
+                const graphics2 = this.tileGraphics[tile2.gridRow][tile2.gridCol];
+                
+                // Show color matching card
+                this.showColorMatchingCard(tile1.color, tile1, tile2, graphics1, graphics2);
+            }
+            
+            showColorMatchingCard(correctColor, tile1, tile2, graphics1, graphics2) {
+                // Create semi-transparent background
+                const overlay = this.add.rectangle(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2,
+                    this.gameWidth,
+                    this.gameHeight,
+                    0x000000,
+                    0.7
+                );
+                
+                // Calculate card dimensions and position
+                const cardWidth = this.gameWidth - 40;
+                const cardHeight = 300; // Increased height
+                const cardY = this.gameHeight + cardHeight/2; // Position relative to center
+                
+                // Create card background
+                const card = this.add.rectangle(
+                    this.gameWidth / 2,
+                    cardY,
+                    cardWidth,
+                    cardHeight,
+                    0xffffff
+                ).setStrokeStyle(2, 0x000000);
+                
+                // Create title text
+                const titleText = this.add.text(
+                    this.gameWidth / 2,
+                    cardY - 100,
+                    'Select the matching color:',
+                    {
+                        fontFamily: 'Arial',
+                        fontSize: '24px',
+                        fill: '#000000',
+                        fontWeight: 'bold'
+                    }
+                ).setOrigin(0.5);
+                
+                // Generate color options (including the correct one)
+                const colorOptions = [correctColor];
+                const availableColors = [...this.tileColors];
+                availableColors.splice(availableColors.indexOf(correctColor), 1);
+                
+                // Add 3 random colors
+                for (let i = 0; i < 3; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableColors.length);
+                    colorOptions.push(availableColors[randomIndex]);
+                    availableColors.splice(randomIndex, 1);
+                }
+                
+                // Shuffle the options
+                colorOptions.sort(() => Math.random() - 0.5);
+                
+                // Create color option buttons
+                const optionButtons = [];
+                const optionTexts = [];
+                const buttonWidth = 130;
+                const buttonHeight = 50;
+                const spacing = 20;
+                
+                // Calculate total grid width and height
+                const totalGridWidth = (buttonWidth * 2) + spacing;
+                const totalGridHeight = (buttonHeight * 2) + spacing;
+                
+                // Calculate starting position to center the grid
+                const gridStartX = this.gameWidth/2 - totalGridWidth/2 + buttonWidth/2;
+                const gridStartY = cardY - 30; // Positioned relative to card center
+                
+                for (let i = 0; i < 4; i++) {
+                    const row = Math.floor(i / 2);
+                    const col = i % 2;
+                    
+                    const x = gridStartX + col * (buttonWidth + spacing);
+                    const y = gridStartY + row * (buttonHeight + spacing);
+                    
+                    // Create button with white background
+                    const button = this.add.rectangle(
+                        x,
+                        y,
+                        buttonWidth,
+                        buttonHeight,
+                        0xffffff
+                    )
+                    .setStrokeStyle(2, 0x000000)
+                    .setInteractive();
+                    
+                    const text = this.add.text(
+                        x,
+                        y,
+                        this.colorNames[colorOptions[i]],
+                        {
+                            fontFamily: 'Arial',
+                            fontSize: '20px',
+                            fill: '#000000'
+                        }
+                    ).setOrigin(0.5);
+                    
+                    optionButtons.push(button);
+                    optionTexts.push(text);
+                    
+                    // Add click handler
+                    button.on('pointerdown', () => {
+                        if (colorOptions[i] === correctColor) {
+                            // Highlight correct button
+                            button.setFillStyle(0x90EE90); // Light green
+                            
+                            // Correct color selected
+                            this.score += 10;
+                            this.scoreText.setText(`Score: ${this.score}`);
+                            
+                            // Animate card away after a short delay
+                            this.time.delayedCall(300, () => {
+                                this.tweens.add({
+                                    targets: [card, titleText, ...optionButtons, ...optionTexts, overlay],
+                                    y: '+=300',
+                                    duration: 500,
+                                    ease: 'Back.easeIn',
+                                    onComplete: () => {
+                                        // Clean up
+                                        card.destroy();
+                                        titleText.destroy();
+                                        optionButtons.forEach(btn => btn.destroy());
+                                        optionTexts.forEach(txt => txt.destroy());
+                                        overlay.destroy();
+                                        
+                                        // Now turn tiles lime green and animate them
+                                        this.drawTile(graphics1, tile1.x, tile1.y, this.matchColor, true);
+                                        this.drawTile(graphics2, tile2.x, tile2.y, this.matchColor, true);
+                                        
+                                        // Zoom out animation from tile centers
+                                        this.tweens.add({
+                                            targets: [tile1, tile2],
+                                            scaleX: 0.1,
+                                            scaleY: 0.1,
+                                            alpha: 0,
+                                            duration: 500,
+                                            onComplete: () => {
+                                                // Replace with new tiles using fade in
+                                                this.replaceTilesWithFade(tile1, tile2);
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        } else {
+                            // Wrong color selected - shake animation
+                            this.tweens.add({
+                                targets: [button, text],
+                                x: button.x + 10,
+                                duration: 50,
+                                yoyo: true,
+                                repeat: 3
+                            });
+                        }
+                    });
+                    
+                    // Add hover effect
+                    button.on('pointerover', () => {
+                        button.setFillStyle(0xf0f0f0);
+                    });
+                    
+                    button.on('pointerout', () => {
+                        button.setFillStyle(0xffffff);
+                    });
+                }
+                
+                // Animate card in
+                const elements = [card, titleText, ...optionButtons, ...optionTexts];
+                this.tweens.add({
+                    targets: elements,
+                    y: '-=300',
+                    duration: 500,
+                    ease: 'Back.easeOut'
+                });
+            }
+            
+            replaceTilesWithFade(tile1, tile2) {
+                // Generate new random colors for both tiles
+                const newColorIndex1 = Math.floor(Math.random() * this.tileColors.length);
+                const newColorIndex2 = Math.floor(Math.random() * this.tileColors.length);
+                
+                // Get graphics for both tiles
+                const graphics1 = this.tileGraphics[tile1.gridRow][tile1.gridCol];
+                const graphics2 = this.tileGraphics[tile2.gridRow][tile2.gridCol];
+                
+                // Update tile properties
+                tile1.colorIndex = newColorIndex1;
+                tile1.color = this.tileColors[newColorIndex1];
+                tile1.isSelected = false;
+                tile1.isMatched = false;
+                tile1.isProcessing = false;
+                tile1.alpha = 0;
+                tile1.scaleX = 1;
+                tile1.scaleY = 1;
+                
+                tile2.colorIndex = newColorIndex2;
+                tile2.color = this.tileColors[newColorIndex2];
+                tile2.isSelected = false;
+                tile2.isMatched = false;
+                tile2.isProcessing = false;
+                tile2.alpha = 0;
+                tile2.scaleX = 1;
+                tile2.scaleY = 1;
+                
+                // Draw new tiles (initially invisible)
+                this.drawTile(graphics1, tile1.x, tile1.y, tile1.color, false);
+                this.drawTile(graphics2, tile2.x, tile2.y, tile2.color, false);
+                
+                // Fade in animation
+                this.tweens.add({
+                    targets: [tile1, tile2],
+                    alpha: 1,
+                    duration: 200,
+                    ease: 'Linear',
+                    onComplete: () => {
+                        // Reset match processing flag
+                        this.isProcessingMatch = false;
+                        // Clear selected tiles array
+                        this.selectedTiles = [];
+                    }
+                });
+            }
+            
+            deselectTiles() {
+                // Deselect all selected tiles
+                for (let i = 0; i < this.selectedTiles.length; i++) {
+                    const tile = this.selectedTiles[i];
+                    const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
+                    
+                    tile.isSelected = false;
+                    this.drawTile(graphics, tile.x, tile.y, tile.color, false);
+                }
+                
+                // Clear selected tiles array
+                this.selectedTiles = [];
+            }
+        }
+
+        // Game configuration with fixed dimensions
+        const config = {
+            type: Phaser.AUTO,
+            width: 390,  // iPhone 13 width
+            height: 844, // iPhone 13 height
+            parent: 'game-container',
+            scene: [MainScene],
+            backgroundColor: '#333333'
+        };
+
+        // Initialize the game
+        const game = new Phaser.Game(config);
+    </script>
+</body>
+</html>
