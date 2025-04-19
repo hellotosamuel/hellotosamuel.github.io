@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Color Matching Game</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <style>
@@ -19,24 +19,17 @@
         }
         #game-container {
             position: relative;
-            width: 390px;  /* iPhone 13 width */
-            height: 844px; /* iPhone 13 height */
+            width: 100%;
+            height: 100%;
+            max-width: 440px;  /* iPhone 16 Pro Max width */
+            max-height: 954px; /* iPhone 16 Pro Max height */
+            min-width: 390px;  /* iPhone 13 width */
+            min-height: 844px; /* iPhone 13 height */
         }
-        /* Apply scaling for different screen sizes while maintaining aspect ratio */
-        @media (max-width: 390px), (max-height: 844px) {
-            #game-container {
-                transform: scale(0.9);
-            }
-        }
-        @media (max-width: 350px), (max-height: 760px) {
-            #game-container {
-                transform: scale(0.8);
-            }
-        }
-        @media (max-width: 310px), (max-height: 675px) {
-            #game-container {
-                transform: scale(0.7);
-            }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -52,9 +45,9 @@
                 this.selectedTiles = [];
                 this.isProcessingMatch = false; // Add flag to track match processing
                 
-                // iPhone 13 dimensions
-                this.gameWidth = 390;
-                this.gameHeight = 844;
+                // Base dimensions (iPhone 13)
+                this.baseWidth = 390;
+                this.baseHeight = 844;
                 
                 // Game timer values
                 this.gameTime = 90; // 90 seconds
@@ -99,6 +92,10 @@
                 this.isProcessingMatch = false;
                 this.selectedTiles = [];
                 
+                // Get current game dimensions
+                this.gameWidth = this.scale.width;
+                this.gameHeight = this.scale.height;
+                
                 // Set the game's background
                 this.cameras.main.setBackgroundColor('#333333');
                 
@@ -106,9 +103,9 @@
                 this.tileGroup = this.add.group();
                 
                 // Calculate grid size to fill width with appropriate padding
-                const gridPadding = 20; // Padding around the grid
+                const gridPadding = Math.floor(this.gameWidth * 0.05); // 5% of width
                 const availableWidth = this.gameWidth - (gridPadding * 2);
-                const cellPadding = 10; // Space between tiles
+                const cellPadding = Math.floor(availableWidth * 0.025); // 2.5% of available width
                 
                 // Calculate tile size to fit 5 tiles with padding between them
                 this.tileSize = (availableWidth - (cellPadding * (this.gridSize - 1))) / this.gridSize;
@@ -760,18 +757,37 @@
             }
         }
 
-        // Game configuration with fixed dimensions
+        // Game configuration with scale manager
         const config = {
             type: Phaser.AUTO,
-            width: 390,  // iPhone 13 width
-            height: 844, // iPhone 13 height
-            parent: 'game-container',
+            scale: {
+                mode: Phaser.Scale.FIT,
+                parent: 'game-container',
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+                width: 390,  // Base width (iPhone 13)
+                height: 844, // Base height (iPhone 13)
+                min: {
+                    width: 390,
+                    height: 844
+                },
+                max: {
+                    width: 440,
+                    height: 954
+                }
+            },
             scene: [MainScene],
             backgroundColor: '#333333'
         };
 
         // Initialize the game
         const game = new Phaser.Game(config);
+        
+        // Handle resize events
+        window.addEventListener('resize', function() {
+            if (game.scale) {
+                game.scale.refresh();
+            }
+        });
     </script>
 </body>
 </html>
