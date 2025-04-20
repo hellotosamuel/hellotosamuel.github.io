@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Color Matching Game</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=National+Park:wght@200..800&display=swap" rel="stylesheet">
     <style>
         html, body {
             margin: 0;
@@ -45,6 +47,474 @@
 <body>
     <div id="game-container"></div>
     <script>
+        // Add SplashScene before the IonDatabase definition
+        class SplashScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'SplashScene' });
+            }
+
+            preload() {
+                // Load the logo image
+                this.load.image('logo', '@logo.png');
+                
+                // Load the font using WebFontLoader
+                this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
+            }
+
+            create() {
+                // Load fonts before creating the elements
+                WebFont.load({
+                    google: {
+                        families: ['National Park:400,700']
+                    },
+                    active: () => {
+                        this.createSplashScreen();
+                    }
+                });
+            }
+
+            createSplashScreen() {
+                // Create dark overlay
+                this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.85)
+                    .setOrigin(0);
+
+                // Add logo at the center
+                const logo = this.add.image(
+                    this.scale.width / 2,
+                    this.scale.height / 2 - 50,
+                    'logo'
+                ).setOrigin(0.5);
+
+                // Scale logo to fit nicely
+                const scale = Math.min(
+                    (this.scale.width * 0.8) / logo.width,
+                    (this.scale.height * 0.4) / logo.height
+                );
+                logo.setScale(scale);
+
+                // Create start button
+                const buttonWidth = 200;
+                const buttonHeight = 60;
+                const button = this.add.rectangle(
+                    this.scale.width / 2,
+                    this.scale.height / 2 + 150,
+                    buttonWidth,
+                    buttonHeight,
+                    0x4caf50
+                ).setInteractive();
+
+                const buttonText = this.add.text(
+                    this.scale.width / 2,
+                    this.scale.height / 2 + 150,
+                    'Start',
+                    {
+                        fontFamily: 'National Park',
+                        fontSize: '32px',
+                        fill: '#ffffff',
+                        fontWeight: '700'
+                    }
+                ).setOrigin(0.5);
+
+                // Add hover effect
+                button.on('pointerover', () => {
+                    button.setFillStyle(0x66bb6a);
+                });
+                button.on('pointerout', () => {
+                    button.setFillStyle(0x4caf50);
+                });
+
+                // Add click handler
+                button.on('pointerdown', () => {
+                    // Fade out effect
+                    this.tweens.add({
+                        targets: [logo, button, buttonText],
+                        alpha: 0,
+                        duration: 500,
+                        ease: 'Power2',
+                        onComplete: () => {
+                            // Start the main game scene
+                            this.scene.start('MainScene');
+                        }
+                    });
+                });
+            }
+        }
+
+        // Ion database and helper functions
+        const IonDatabase = {
+            cations: [
+                { symbol: 'Na⁺', charge: 1 },
+                { symbol: 'K⁺', charge: 1 },
+                { symbol: 'Li⁺', charge: 1 },
+                { symbol: 'Mg²⁺', charge: 2 },
+                { symbol: 'Ca²⁺', charge: 2 },
+                { symbol: 'Al³⁺', charge: 3 },
+                { symbol: 'Fe²⁺', charge: 2 },
+                { symbol: 'Fe³⁺', charge: 3 },
+                { symbol: 'Ba²⁺', charge: 2 },
+                { symbol: 'Ag⁺', charge: 1 },
+                { symbol: 'NH₄⁺', charge: 1 }
+            ],
+            anions: [
+                { symbol: 'OH⁻', charge: -1 },
+                { symbol: 'Cl⁻', charge: -1 },
+                { symbol: 'Br⁻', charge: -1 },
+                { symbol: 'I⁻', charge: -1 },
+                { symbol: 'F⁻', charge: -1 },
+                { symbol: 'NO₃⁻', charge: -1 },
+                { symbol: 'SO₄²⁻', charge: -2 },
+                { symbol: 'CO₃²⁻', charge: -2 },
+                { symbol: 'PO₄³⁻', charge: -3 },
+                { symbol: 'HCO₃⁻', charge: -1 },
+                { symbol: 'O²⁻', charge: -2 },
+                { symbol: 'S²⁻', charge: -2 },
+                { symbol: 'CH₃COO⁻', charge: -1 }
+            ],
+            compounds: {
+                'Na⁺_OH⁻': 'Sodium hydroxide',
+                'Na⁺_Cl⁻': 'Sodium chloride',
+                'Na⁺_Br⁻': 'Sodium bromide',
+                'Na⁺_I⁻': 'Sodium iodide',
+                'Na⁺_F⁻': 'Sodium fluoride',
+                'Na⁺_NO₃⁻': 'Sodium nitrate',
+                'Na⁺_SO₄²⁻': 'Sodium sulfate',
+                'Na⁺_CO₃²⁻': 'Sodium carbonate',
+                'Na⁺_PO₄³⁻': 'Sodium phosphate',
+                'Na⁺_HCO₃⁻': 'Sodium bicarbonate',
+                'Na⁺_O²⁻': 'Sodium oxide',
+                'Na⁺_S²⁻': 'Sodium sulfide',
+                'Na⁺_CH₃COO⁻': 'Sodium acetate',
+                'K⁺_OH⁻': 'Potassium hydroxide',
+                'K⁺_Cl⁻': 'Potassium chloride',
+                'K⁺_Br⁻': 'Potassium bromide',
+                'K⁺_I⁻': 'Potassium iodide',
+                'K⁺_F⁻': 'Potassium fluoride',
+                'K⁺_NO₃⁻': 'Potassium nitrate',
+                'K⁺_SO₄²⁻': 'Potassium sulfate',
+                'K⁺_CO₃²⁻': 'Potassium carbonate',
+                'K⁺_PO₄³⁻': 'Potassium phosphate',
+                'K⁺_HCO₃⁻': 'Potassium bicarbonate',
+                'K⁺_O²⁻': 'Potassium oxide',
+                'K⁺_S²⁻': 'Potassium sulfide',
+                'K⁺_CH₃COO⁻': 'Potassium acetate',
+                'Li⁺_OH⁻': 'Lithium hydroxide',
+                'Li⁺_Cl⁻': 'Lithium chloride',
+                'Li⁺_Br⁻': 'Lithium bromide',
+                'Li⁺_I⁻': 'Lithium iodide',
+                'Li⁺_F⁻': 'Lithium fluoride',
+                'Li⁺_NO₃⁻': 'Lithium nitrate',
+                'Li⁺_SO₄²⁻': 'Lithium sulfate',
+                'Li⁺_CO₃²⁻': 'Lithium carbonate',
+                'Li⁺_PO₄³⁻': 'Lithium phosphate',
+                'Li⁺_HCO₃⁻': 'Lithium bicarbonate',
+                'Li⁺_O²⁻': 'Lithium oxide',
+                'Li⁺_S²⁻': 'Lithium sulfide',
+                'Li⁺_CH₃COO⁻': 'Lithium acetate',
+                'Mg²⁺_OH⁻': 'Magnesium hydroxide',
+                'Mg²⁺_Cl⁻': 'Magnesium chloride',
+                'Mg²⁺_Br⁻': 'Magnesium bromide',
+                'Mg²⁺_I⁻': 'Magnesium iodide',
+                'Mg²⁺_F⁻': 'Magnesium fluoride',
+                'Mg²⁺_NO₃⁻': 'Magnesium nitrate',
+                'Mg²⁺_SO₄²⁻': 'Magnesium sulfate',
+                'Mg²⁺_CO₃²⁻': 'Magnesium carbonate',
+                'Mg²⁺_PO₄³⁻': 'Magnesium phosphate',
+                'Mg²⁺_HCO₃⁻': 'Magnesium bicarbonate',
+                'Mg²⁺_O²⁻': 'Magnesium oxide',
+                'Mg²⁺_S²⁻': 'Magnesium sulfide',
+                'Mg²⁺_CH₃COO⁻': 'Magnesium acetate',
+                'Ca²⁺_OH⁻': 'Calcium hydroxide',
+                'Ca²⁺_Cl⁻': 'Calcium chloride',
+                'Ca²⁺_Br⁻': 'Calcium bromide',
+                'Ca²⁺_I⁻': 'Calcium iodide',
+                'Ca²⁺_F⁻': 'Calcium fluoride',
+                'Ca²⁺_NO₃⁻': 'Calcium nitrate',
+                'Ca²⁺_SO₄²⁻': 'Calcium sulfate',
+                'Ca²⁺_CO₃²⁻': 'Calcium carbonate',
+                'Ca²⁺_PO₄³⁻': 'Calcium phosphate',
+                'Ca²⁺_HCO₃⁻': 'Calcium bicarbonate',
+                'Ca²⁺_O²⁻': 'Calcium oxide',
+                'Ca²⁺_S²⁻': 'Calcium sulfide',
+                'Ca²⁺_CH₃COO⁻': 'Calcium acetate',
+                'Al³⁺_OH⁻': 'Aluminium hydroxide',
+                'Al³⁺_Cl⁻': 'Aluminium chloride',
+                'Al³⁺_Br⁻': 'Aluminium bromide',
+                'Al³⁺_I⁻': 'Aluminium iodide',
+                'Al³⁺_F⁻': 'Aluminium fluoride',
+                'Al³⁺_NO₃⁻': 'Aluminium nitrate',
+                'Al³⁺_SO₄²⁻': 'Aluminium sulfate',
+                'Al³⁺_CO₃²⁻': 'Aluminium carbonate',
+                'Al³⁺_PO₄³⁻': 'Aluminium phosphate',
+                'Al³⁺_HCO₃⁻': 'Aluminium bicarbonate',
+                'Al³⁺_O²⁻': 'Aluminium oxide',
+                'Al³⁺_S²⁻': 'Aluminium sulfide',
+                'Al³⁺_CH₃COO⁻': 'Aluminium acetate',
+                'Fe²⁺_OH⁻': 'Iron (II) hydroxide',
+                'Fe²⁺_Cl⁻': 'Iron (II) chloride',
+                'Fe²⁺_Br⁻': 'Iron (II) bromide',
+                'Fe²⁺_I⁻': 'Iron (II) iodide',
+                'Fe²⁺_F⁻': 'Iron (II) fluoride',
+                'Fe²⁺_NO₃⁻': 'Iron (II) nitrate',
+                'Fe²⁺_SO₄²⁻': 'Iron (II) sulfate',
+                'Fe²⁺_CO₃²⁻': 'Iron (II) carbonate',
+                'Fe²⁺_PO₄³⁻': 'Iron (II) phosphate',
+                'Fe²⁺_HCO₃⁻': 'Iron (II) bicarbonate',
+                'Fe²⁺_O²⁻': 'Iron (II) oxide',
+                'Fe²⁺_S²⁻': 'Iron (II) sulfide',
+                'Fe²⁺_CH₃COO⁻': 'Iron (II) acetate',
+                'Fe³⁺_OH⁻': 'Iron (III) hydroxide',
+                'Fe³⁺_Cl⁻': 'Iron (III) chloride',
+                'Fe³⁺_Br⁻': 'Iron (III) bromide',
+                'Fe³⁺_I⁻': 'Iron (III) iodide',
+                'Fe³⁺_F⁻': 'Iron (III) fluoride',
+                'Fe³⁺_NO₃⁻': 'Iron (III) nitrate',
+                'Fe³⁺_SO₄²⁻': 'Iron (III) sulfate',
+                'Fe³⁺_CO₃²⁻': 'Iron (III) carbonate',
+                'Fe³⁺_PO₄³⁻': 'Iron (III) phosphate',
+                'Fe³⁺_HCO₃⁻': 'Iron (III) bicarbonate',
+                'Fe³⁺_O²⁻': 'Iron (III) oxide',
+                'Fe³⁺_S²⁻': 'Iron (III) sulfide',
+                'Fe³⁺_CH₃COO⁻': 'Iron (III) acetate',
+                'Ba²⁺_OH⁻': 'Barium hydroxide',
+                'Ba²⁺_Cl⁻': 'Barium chloride',
+                'Ba²⁺_Br⁻': 'Barium bromide',
+                'Ba²⁺_I⁻': 'Barium iodide',
+                'Ba²⁺_F⁻': 'Barium fluoride',
+                'Ba²⁺_NO₃⁻': 'Barium nitrate',
+                'Ba²⁺_SO₄²⁻': 'Barium sulfate',
+                'Ba²⁺_CO₃²⁻': 'Barium carbonate',
+                'Ba²⁺_PO₄³⁻': 'Barium phosphate',
+                'Ba²⁺_HCO₃⁻': 'Barium bicarbonate',
+                'Ba²⁺_O²⁻': 'Barium oxide',
+                'Ba²⁺_S²⁻': 'Barium sulfide',
+                'Ba²⁺_CH₃COO⁻': 'Barium acetate',
+                'Ag⁺_OH⁻': 'Silver hydroxide',
+                'Ag⁺_Cl⁻': 'Silver chloride',
+                'Ag⁺_Br⁻': 'Silver bromide',
+                'Ag⁺_I⁻': 'Silver iodide',
+                'Ag⁺_F⁻': 'Silver fluoride',
+                'Ag⁺_NO₃⁻': 'Silver nitrate',
+                'Ag⁺_SO₄²⁻': 'Silver sulfate',
+                'Ag⁺_CO₃²⁻': 'Silver carbonate',
+                'Ag⁺_PO₄³⁻': 'Silver phosphate',
+                'Ag⁺_HCO₃⁻': 'Silver bicarbonate',
+                'Ag⁺_O²⁻': 'Silver oxide',
+                'Ag⁺_S²⁻': 'Silver sulfide',
+                'Ag⁺_CH₃COO⁻': 'Silver acetate',
+                'NH₄⁺_OH⁻': 'Ammonium hydroxide',
+                'NH₄⁺_Cl⁻': 'Ammonium chloride',
+                'NH₄⁺_Br⁻': 'Ammonium bromide',
+                'NH₄⁺_I⁻': 'Ammonium iodide',
+                'NH₄⁺_F⁻': 'Ammonium fluoride',
+                'NH₄⁺_NO₃⁻': 'Ammonium nitrate',
+                'NH₄⁺_SO₄²⁻': 'Ammonium sulfate',
+                'NH₄⁺_CO₃²⁻': 'Ammonium carbonate',
+                'NH₄⁺_PO₄³⁻': 'Ammonium phosphate',
+                'NH₄⁺_HCO₃⁻': 'Ammonium bicarbonate',
+                'NH₄⁺_O²⁻': 'Ammonium oxide',
+                'NH₄⁺_S²⁻': 'Ammonium sulfide',
+                'NH₄⁺_CH₃COO⁻': 'Ammonium acetate'
+            },
+            
+            // Helper function to check if ions can form a neutral compound
+            canFormNeutralCompound: function(ion1, ion2, count1 = 1, count2 = 1) {
+                const totalCharge = (ion1.charge * count1) + (ion2.charge * count2);
+                return totalCharge === 0;
+            },
+            
+            // Helper function to get compound name from ions
+            getCompoundName: function(cation, anion, cationCount = 1, anionCount = 1) {
+                // For simple 1:1 compounds
+                if (cationCount === 1 && anionCount === 1) {
+                    const key = `${cation.symbol}_${anion.symbol}`;
+                    return this.compounds[key] || null;
+                }
+                
+                // For intermediate patterns
+                const pattern = `${cation.symbol}${cationCount > 1 ? cationCount : ''}_${anion.symbol}${anionCount > 1 ? anionCount : ''}`;
+                return this.compounds[pattern] || null;
+            },
+            
+            // Helper function to check intermediate patterns
+            checkIntermediatePattern: function(ions) {
+                if (ions.length !== 3) return false;
+                
+                // Get unique ions and their counts
+                const ionCounts = {};
+                ions.forEach(ion => {
+                    const key = `${ion.symbol}_${ion.charge}`;
+                    ionCounts[key] = (ionCounts[key] || 0) + 1;
+                });
+                
+                // Get unique ions
+                const uniqueIons = ions.filter((ion, index, self) =>
+                    index === self.findIndex(i => i.symbol === ion.symbol && i.charge === ion.charge)
+                );
+                
+                if (uniqueIons.length !== 2) return false;
+                
+                const [ion1, ion2] = uniqueIons;
+                const count1 = ionCounts[`${ion1.symbol}_${ion1.charge}`];
+                const count2 = ionCounts[`${ion2.symbol}_${ion2.charge}`];
+                
+                // Check for valid intermediate patterns (1:2, 2:1, 1:3, 3:1)
+                return this.canFormNeutralCompound(ion1, ion2, count1, count2);
+            },
+            
+            // Helper function to get random ions that can form a compound
+            getRandomCompoundPair: function() {
+                const cation = this.cations[Math.floor(Math.random() * this.cations.length)];
+                // Filter anions that can potentially form a neutral compound
+                const possibleAnions = this.anions.filter(anion => {
+                    const cationMultiple = Math.abs(anion.charge);
+                    const anionMultiple = Math.abs(cation.charge);
+                    return this.canFormNeutralCompound(cation, anion, anionMultiple, cationMultiple);
+                });
+                const anion = possibleAnions[Math.floor(Math.random() * possibleAnions.length)];
+                return { cation, anion };
+            },
+            
+            // Helper function to get required ion counts for neutral compound
+            getRequiredCounts: function(cation, anion) {
+                const cationCharge = Math.abs(cation.charge);
+                const anionCharge = Math.abs(anion.charge);
+                // Find the least common multiple
+                const lcm = (cationCharge * anionCharge) / this.gcd(cationCharge, anionCharge);
+                return {
+                    cationCount: lcm / cationCharge,
+                    anionCount: lcm / anionCharge
+                };
+            },
+            
+            // Helper function to calculate GCD
+            gcd: function(a, b) {
+                while (b !== 0) {
+                    const temp = b;
+                    b = a % b;
+                    a = temp;
+                }
+                return a;
+            },
+            
+            // Helper function to check advanced patterns
+            checkAdvancedPattern: function(ions) {
+                if (ions.length !== 5) return false;
+                
+                // Get unique ions and their counts
+                const ionCounts = {};
+                ions.forEach(ion => {
+                    const key = `${ion.symbol}_${ion.charge}`;
+                    ionCounts[key] = (ionCounts[key] || 0) + 1;
+                });
+                
+                // Get unique ions
+                const uniqueIons = ions.filter((ion, index, self) =>
+                    index === self.findIndex(i => i.symbol === ion.symbol && i.charge === ion.charge)
+                );
+                
+                if (uniqueIons.length !== 2) return false;
+                
+                const [ion1, ion2] = uniqueIons;
+                const count1 = ionCounts[`${ion1.symbol}_${ion1.charge}`];
+                const count2 = ionCounts[`${ion2.symbol}_${ion2.charge}`];
+                
+                // Check for valid advanced patterns (2:3, 3:2)
+                return this.canFormNeutralCompound(ion1, ion2, count1, count2);
+            }
+        };
+
+        // Flow Validator class to handle valid selection sequences
+        class FlowValidator {
+            constructor() {
+                // Define all valid flows
+                this.validFlows = [
+                    // Simple 1:1 patterns (2 tiles)
+                    ['+1', '-1'],
+                    ['-1', '+1'],
+                    ['+2', '-2'],
+                    ['-2', '+2'],
+                    ['+3', '-3'],
+                    ['-3', '+3'],
+                    
+                    // Intermediate 1:2 or 2:1 patterns (3 tiles)
+                    ['+2', '-1', '-1'],
+                    ['-1', '+2', '-1'],
+                    ['-1', '-1', '+2'],
+                    ['+3', '-1', '-1', '-1'],
+                    ['-1', '+3', '-1', '-1'],
+                    ['-1', '-1', '+3', '-1'],
+                    ['-1', '-1', '-1', '+3'],
+                    
+                    // Advanced 2:3 or 3:2 patterns (5 tiles)
+                    ['+3', '+3', '-2', '-2', '-2'],
+                    ['+3', '-2', '+3', '-2', '-2'],
+                    ['+3', '-2', '-2', '+3', '-2'],
+                    ['+3', '-2', '-2', '-2', '+3'],
+                    ['-2', '+3', '+3', '-2', '-2'],
+                    ['-2', '+3', '-2', '+3', '-2'],
+                    ['-2', '+3', '-2', '-2', '+3'],
+                    ['-2', '-2', '+3', '+3', '-2'],
+                    ['-2', '-2', '+3', '-2', '+3'],
+                    ['-2', '-2', '-2', '+3', '+3'],
+                    
+                    // Additional flows
+                    ['+1', '+1', '-2'],
+                    ['-2', '+1', '+1'],
+                    ['+1', '-2', '+1'],
+                    ['+1', '+1', '+1', '-3'],
+                    ['+1', '+1', '-3', '+1'],
+                    ['+1', '-3', '+1', '+1']
+                ];
+                
+                this.currentSequence = [];
+                this.validPrefixes = new Set();
+                this.initializeValidPrefixes();
+            }
+            
+            initializeValidPrefixes() {
+                // Create a set of all valid prefixes from the flows
+                this.validFlows.forEach(flow => {
+                    for (let i = 0; i < flow.length; i++) {
+                        this.validPrefixes.add(flow.slice(0, i + 1).join(','));
+                    }
+                });
+            }
+            
+            addSelection(charge) {
+                const chargeStr = charge > 0 ? `+${charge}` : `${charge}`;
+                this.currentSequence.push(chargeStr);
+                return this.isValidPrefix();
+            }
+            
+            isValidPrefix() {
+                return this.validPrefixes.has(this.currentSequence.join(','));
+            }
+            
+            isCompleteFlow() {
+                return this.validFlows.some(flow => 
+                    flow.join(',') === this.currentSequence.join(',')
+                );
+            }
+            
+            getExpectedNextCharges() {
+                const currentPrefix = this.currentSequence.join(',');
+                const possibleNext = new Set();
+                
+                this.validFlows.forEach(flow => {
+                    const flowPrefix = flow.slice(0, this.currentSequence.length).join(',');
+                    if (flowPrefix === currentPrefix && flow.length > this.currentSequence.length) {
+                        possibleNext.add(flow[this.currentSequence.length]);
+                    }
+                });
+                
+                return Array.from(possibleNext).map(charge => parseInt(charge));
+            }
+            
+            reset() {
+                this.currentSequence = [];
+            }
+        }
+
         class MainScene extends Phaser.Scene {
             constructor() {
                 super({ key: 'MainScene' });
@@ -52,49 +522,62 @@
                 this.tileGraphics = [];
                 this.tiles = [];
                 this.selectedTiles = [];
-                this.isProcessingMatch = false; // Add flag to track match processing
+                this.isProcessingMatch = false;
+                this.compoundType = null;
                 
                 // Base dimensions
                 this.baseWidth = 390;
                 this.baseHeight = 667;
                 
                 // Game timer values
-                this.gameTime = 90; // 90 seconds
+                this.gameTime = 90;
                 this.timeRemaining = this.gameTime;
                 
-                // Define tile colors (9 distinct colors)
-                this.tileColors = [
-                    0x9A6324, // Brown
-                    0xe6194B, // Red
-                    0xf58231, // Orange
-                    0xffe119, // Yellow
-                    0x3cb44b, // Green
-                    0x42d4f4, // Cyan
-                    0x4363d8, // Blue
-                    0xf032e6, // Magenta
-                    0xa9a9a9  // Grey
-                ];
+                // Font settings
+                this.fontFamily = 'National Park';
+                this.fontWeightBold = '700';
+                this.fontWeightNormal = '400';
+                this.baseFontSize = 20; // Base font size for normal symbols
+                this.minFontSize = 14;  // Minimum font size for long symbols
                 
-                // Color names for the matching card
-                this.colorNames = {
-                    0x9A6324: 'Brown',
-                    0xe6194B: 'Red',
-                    0xf58231: 'Orange',
-                    0xffe119: 'Yellow',
-                    0x3cb44b: 'Green',
-                    0x42d4f4: 'Cyan',
-                    0x4363d8: 'Blue',
-                    0xf032e6: 'Magenta',
-                    0xa9a9a9: 'Grey'
+                // Ion settings
+                this.tileColor = 0xffffff;
+                this.currentCompoundPair = null;
+                this.shadowColor = 0x000000;
+                this.highlightColor = 0x00ffff;
+                this.matchColor = 0xaaffc3;
+                this.score = 0;
+                
+                // Game state
+                this.gameState = {
+                    isSelecting: false,
+                    currentSelection: [],
+                    expectedIonCount: 0,
+                    expectedCharges: []
                 };
                 
-                this.shadowColor = 0x000000;
-                this.highlightColor = 0xffffff; // White highlight for selected tiles
-                this.matchColor = 0xaaffc3; // Mint color for correct matches
-                this.score = 0;
+                // Add flow validator
+                this.flowValidator = new FlowValidator();
+            }
+
+            preload() {
+                // Load the font using WebFontLoader
+                this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
             }
 
             create() {
+                // Load fonts before creating the game elements
+                WebFont.load({
+                    google: {
+                        families: ['National Park:400,700']
+                    },
+                    active: () => {
+                        this.initializeGame();
+                    }
+                });
+            }
+            
+            initializeGame() {
                 // Reset game state
                 this.score = 0;
                 this.timeRemaining = this.gameTime;
@@ -129,10 +612,10 @@
                     20,
                     'Score: 0',
                     { 
-                        fontFamily: 'Arial',
+                        fontFamily: this.fontFamily,
                         fontSize: '24px',
                         fill: '#ffffff',
-                        fontWeight: 'bold'
+                        fontWeight: this.fontWeightBold
                     }
                 ).setOrigin(0.5);
                 
@@ -152,10 +635,10 @@
                     timerGroupY,
                     '90s',
                     { 
-                        fontFamily: 'Arial',
+                        fontFamily: this.fontFamily,
                         fontSize: '20px',
                         fill: '#ffffff',
-                        fontWeight: 'bold'
+                        fontWeight: this.fontWeightBold
                     }
                 ).setOrigin(0.5);
                 
@@ -279,10 +762,10 @@
                     this.gameHeight / 2,
                     'GAME OVER',
                     { 
-                        fontFamily: 'Arial',
+                        fontFamily: this.fontFamily,
                         fontSize: '40px',
                         fill: '#ffffff',
-                        fontWeight: 'bold'
+                        fontWeight: this.fontWeightBold
                     }
                 ).setOrigin(0.5);
                 
@@ -292,9 +775,10 @@
                     this.gameHeight / 2 + 50,
                     `Final Score: ${this.score}`,
                     { 
-                        fontFamily: 'Arial',
+                        fontFamily: this.fontFamily,
                         fontSize: '30px',
-                        fill: '#ffffff'
+                        fill: '#ffffff',
+                        fontWeight: this.fontWeightNormal
                     }
                 ).setOrigin(0.5);
                 
@@ -312,9 +796,10 @@
                     this.gameHeight / 2 + 120,
                     'Play Again',
                     { 
-                        fontFamily: 'Arial',
+                        fontFamily: this.fontFamily,
                         fontSize: '24px',
-                        fill: '#ffffff'
+                        fill: '#ffffff',
+                        fontWeight: this.fontWeightBold
                     }
                 ).setOrigin(0.5);
                 
@@ -361,6 +846,39 @@
                 const startX = gridPadding;
                 const startY = (this.gameHeight - totalWidth) / 2;
                 
+                // Get a random compound pair that can be formed
+                this.currentCompoundPair = IonDatabase.getRandomCompoundPair();
+                const { cation, anion } = this.currentCompoundPair;
+                const { cationCount, anionCount } = IonDatabase.getRequiredCounts(cation, anion);
+                
+                // Calculate how many tiles we need for each ion
+                const totalIonTiles = cationCount + anionCount;
+                
+                // Create array of ions to place
+                let ionsToPlace = [];
+                for (let i = 0; i < cationCount; i++) {
+                    ionsToPlace.push({ ...cation, type: 'cation' });
+                }
+                for (let i = 0; i < anionCount; i++) {
+                    ionsToPlace.push({ ...anion, type: 'anion' });
+                }
+                
+                // Fill remaining spaces with random ions that won't form compounds
+                const remainingSpaces = this.gridSize * this.gridSize - totalIonTiles;
+                for (let i = 0; i < remainingSpaces; i++) {
+                    // Randomly choose between cation and anion
+                    if (Math.random() < 0.5) {
+                        const randomCation = IonDatabase.cations[Math.floor(Math.random() * IonDatabase.cations.length)];
+                        ionsToPlace.push({ ...randomCation, type: 'cation' });
+                    } else {
+                        const randomAnion = IonDatabase.anions[Math.floor(Math.random() * IonDatabase.anions.length)];
+                        ionsToPlace.push({ ...randomAnion, type: 'anion' });
+                    }
+                }
+                
+                // Shuffle the ions
+                ionsToPlace = this.shuffleArray(ionsToPlace);
+                
                 // Create new tiles
                 for (let row = 0; row < this.gridSize; row++) {
                     this.tiles[row] = [];
@@ -369,15 +887,25 @@
                         const x = startX + col * (this.tileSize + this.padding) + this.tileSize / 2;
                         const y = startY + row * (this.tileSize + this.padding) + this.tileSize / 2;
                         
-                        // Randomly select a color for this tile
-                        const colorIndex = Math.floor(Math.random() * this.tileColors.length);
-                        const tileColor = this.tileColors[colorIndex];
+                        // Get the next ion from our shuffled array
+                        const ion = ionsToPlace[row * this.gridSize + col];
                         
                         // Create graphics object for tile with rounded corners
                         const graphics = this.add.graphics();
                         
                         // Draw the tile with rounded corners
-                        this.drawTile(graphics, x, y, tileColor, false);
+                        this.drawTile(graphics, x, y, this.tileColor, false);
+                        
+                        // Calculate optimal font size for this ion
+                        const fontSize = this.calculateOptimalFontSize(ion.symbol);
+                        
+                        // Add ion symbol text with calculated font size
+                        const text = this.add.text(x, y, ion.symbol, {
+                            fontFamily: this.fontFamily,
+                            fontSize: `${fontSize}px`,
+                            fill: '#000000',
+                            fontWeight: this.fontWeightBold
+                        }).setOrigin(0.5);
                         
                         // Create interactive zone over the graphics
                         const tile = this.add.zone(
@@ -387,13 +915,13 @@
                             this.tileSize
                         ).setInteractive();
                         
-                        // Store initial state and position data
+                        // Store ion data and text reference
+                        tile.ion = ion;
+                        tile.text = text;
                         tile.isSelected = false;
                         tile.isMatched = false;
                         tile.gridRow = row;
                         tile.gridCol = col;
-                        tile.colorIndex = colorIndex;
-                        tile.color = tileColor;
                         
                         // Add click handler
                         tile.on('pointerdown', () => this.selectTile(tile, graphics));
@@ -404,6 +932,7 @@
                         
                         // Add to group for easy management
                         this.tileGroup.add(tile);
+                        this.tileGroup.add(text);
                     }
                 }
             }
@@ -413,31 +942,21 @@
                 graphics.clear();
                 
                 if (selected) {
-                    // Draw shadow for selected tile
-                    graphics.fillStyle(this.shadowColor, 0.3);
-                    graphics.fillRoundedRect(
-                        x - this.tileSize / 2 + 4, 
-                        y - this.tileSize / 2 + 4, 
-                        this.tileSize, 
-                        this.tileSize, 
-                        8
-                    );
-                    
-                    // Use highlight color for selected tiles, but keep original color visible
+                    // Draw selected tile with highlight border
                     graphics.fillStyle(color);
                     graphics.fillRoundedRect(
-                        x - this.tileSize / 2 - 2, 
-                        y - this.tileSize / 2 - 2, 
+                        x - this.tileSize / 2, 
+                        y - this.tileSize / 2, 
                         this.tileSize, 
                         this.tileSize, 
                         8
                     );
                     
-                    // Add white highlight border
+                    // Add cyan highlight border
                     graphics.lineStyle(4, this.highlightColor);
                     graphics.strokeRoundedRect(
-                        x - this.tileSize / 2 - 2, 
-                        y - this.tileSize / 2 - 2, 
+                        x - this.tileSize / 2, 
+                        y - this.tileSize / 2, 
                         this.tileSize, 
                         this.tileSize, 
                         8
@@ -456,79 +975,314 @@
             }
             
             selectTile(tile, graphics) {
-                // Ignore if tile is already matched or being processed or match is being processed
-                if (tile.isMatched || tile.isProcessing || this.isProcessingMatch || this.timeRemaining <= 0) {
+                if (this.isProcessingMatch || tile.isMatched) return;
+                
+                // If trying to select more than 5 tiles, deselect all
+                if (this.selectedTiles.length >= 5 && !tile.isSelected) {
+                    this.deselectAllTiles();
                     return;
                 }
                 
-                // Toggle selection if already selected
+                // If tile is already selected, deselect it
                 if (tile.isSelected) {
                     tile.isSelected = false;
-                    this.drawTile(graphics, tile.x, tile.y, tile.color, false);
-                    
-                    // Remove from selected tiles array
+                    this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
                     const index = this.selectedTiles.indexOf(tile);
-                    if (index !== -1) {
+                    if (index > -1) {
                         this.selectedTiles.splice(index, 1);
+                        this.gameState.currentSelection.splice(index, 1);
                     }
+                    this.flowValidator.reset();
                     return;
                 }
                 
-                // Select the tile
+                // Validate the new selection against flow patterns
+                const isValid = this.flowValidator.addSelection(tile.ion.charge);
+                
+                if (!isValid) {
+                    // Invalid selection - show error and reset
+                    this.handleInvalidSelection();
+                    return;
+                }
+                
+                // Valid selection - add to selected tiles
                 tile.isSelected = true;
+                this.drawTile(graphics, tile.x, tile.y, this.tileColor, true);
                 this.selectedTiles.push(tile);
+                this.gameState.currentSelection.push(tile.ion);
                 
-                // Add selection effect (raised with shadow) and white highlight
-                this.drawTile(graphics, tile.x, tile.y, tile.color, true);
+                // Update expected charges for next selection
+                this.gameState.expectedCharges = this.flowValidator.getExpectedNextCharges();
                 
-                // Play selection animation
-                this.tweens.add({
-                    targets: tile,
-                    scaleX: 1.1,
-                    scaleY: 1.1,
-                    duration: 100,
-                    yoyo: true
+                // Check if we have a complete valid flow
+                if (this.flowValidator.isCompleteFlow()) {
+                    this.validateCompound();
+                }
+            }
+            
+            determineCompoundType() {
+                // Get unique ions and their counts
+                const ionCounts = {};
+                this.gameState.currentSelection.forEach(ion => {
+                    const key = `${ion.symbol}_${ion.charge}`;
+                    ionCounts[key] = (ionCounts[key] || 0) + 1;
                 });
                 
-                // Check for matches if we have two selected tiles
-                if (this.selectedTiles.length === 2) {
-                    this.checkForMatch();
+                // Get unique ions
+                const uniqueIons = this.gameState.currentSelection.filter((ion, index, self) =>
+                    index === self.findIndex(i => i.symbol === ion.symbol && i.charge === ion.charge)
+                );
+                
+                if (uniqueIons.length !== 2) return;
+                
+                const [ion1, ion2] = uniqueIons;
+                const count1 = ionCounts[`${ion1.symbol}_${ion1.charge}`];
+                const count2 = ionCounts[`${ion2.symbol}_${ion2.charge}`];
+                
+                // Calculate total charges
+                const totalCharge1 = ion1.charge * count1;
+                const totalCharge2 = ion2.charge * count2;
+                
+                // Determine pattern based on total charges
+                if (Math.abs(totalCharge1) === Math.abs(totalCharge2)) {
+                    if (this.gameState.currentSelection.length === 2) {
+                        this.compoundType = 'simple';
+                        this.gameState.expectedIonCount = 2;
+                    } else if (this.gameState.currentSelection.length === 3) {
+                        this.compoundType = 'intermediate';
+                        this.gameState.expectedIonCount = 3;
+                    } else if (this.gameState.currentSelection.length === 5) {
+                        this.compoundType = 'advanced';
+                        this.gameState.expectedIonCount = 5;
+                    }
                 }
             }
             
-            checkForMatch() {
-                const tile1 = this.selectedTiles[0];
-                const tile2 = this.selectedTiles[1];
+            validateCompound() {
+                this.isProcessingMatch = true;
                 
-                // Check if they have the same color
-                if (tile1.colorIndex === tile2.colorIndex) {
-                    // Match found!
-                    this.processMatch(tile1, tile2);
-                } else {
-                    // No match, deselect both tiles after a short delay
-                    this.time.delayedCall(500, () => {
-                        this.deselectTiles();
+                // Calculate net charge
+                const netCharge = this.calculateNetCharge(this.selectedTiles);
+                
+                // If net charge is not zero, the combination is invalid
+                if (netCharge !== 0) {
+                    this.handleInvalidCompound();
+                    return;
+                }
+                
+                // Get unique ions and their counts
+                const ionCounts = {};
+                this.gameState.currentSelection.forEach(ion => {
+                    const key = `${ion.symbol}_${ion.charge}`;
+                    ionCounts[key] = (ionCounts[key] || 0) + 1;
+                });
+                
+                // Get unique ions
+                const uniqueIons = this.gameState.currentSelection.filter((ion, index, self) =>
+                    index === self.findIndex(i => i.symbol === ion.symbol && i.charge === ion.charge)
+                );
+                
+                if (uniqueIons.length !== 2) {
+                    this.handleInvalidCompound();
+                    return;
+                }
+                
+                const [ion1, ion2] = uniqueIons;
+                const count1 = ionCounts[`${ion1.symbol}_${ion1.charge}`];
+                const count2 = ionCounts[`${ion2.symbol}_${ion2.charge}`];
+                
+                // Create compound key based on ion counts
+                let compoundKey;
+                if (ion1.charge > 0) { // ion1 is cation
+                    compoundKey = `${ion1.symbol}_${ion2.symbol}`;
+                } else { // ion1 is anion
+                    compoundKey = `${ion2.symbol}_${ion1.symbol}`;
+                }
+                
+                // Get compound name from database
+                const compoundName = IonDatabase.compounds[compoundKey];
+                
+                if (compoundName) {
+                    // Show MCQ with compound options
+                    this.showMultipleChoice(compoundName);
+                    
+                    // Mark tiles as matched
+                    this.selectedTiles.forEach(tile => {
+                        tile.isMatched = true;
+                        tile.setVisible(false);
+                        if (tile.text) tile.text.setVisible(false);
                     });
+                    
+                    // Reset game state
+                    this.resetGameState();
+                } else {
+                    this.handleInvalidCompound();
                 }
+                
+                this.isProcessingMatch = false;
             }
             
-            processMatch(tile1, tile2) {
-                // Mark tiles as matched and processing
-                tile1.isMatched = true;
-                tile2.isMatched = true;
-                tile1.isProcessing = true;
-                tile2.isProcessing = true;
-                this.isProcessingMatch = true; // Set processing flag
+            handleInvalidCompound() {
+                // Store the tiles that need to be replaced
+                const tilesToReplace = [...this.selectedTiles];
                 
-                // Keep the white highlight on matched tiles
-                const graphics1 = this.tileGraphics[tile1.gridRow][tile1.gridCol];
-                const graphics2 = this.tileGraphics[tile2.gridRow][tile2.gridCol];
+                // Animate tiles turning red
+                this.selectedTiles.forEach(tile => {
+                    const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
+                    this.tweens.add({
+                        targets: graphics,
+                        fillColor: 0xff0000,
+                        duration: 200,
+                        yoyo: true,
+                        onComplete: () => {
+                            // After red flash, destroy the tile and text
+                            tile.setVisible(false);
+                            if (tile.text) tile.text.setVisible(false);
+                            
+                            // Create new ion for this position with fade-in animation
+                            this.createNewIonForTile(tile);
+                        }
+                    });
+                });
                 
-                // Show color matching card
-                this.showColorMatchingCard(tile1.color, tile1, tile2, graphics1, graphics2);
+                // Reset selection state but maintain flow validation
+                this.selectedTiles = [];
+                this.gameState.currentSelection = [];
+                this.isProcessingMatch = false;
             }
             
-            showColorMatchingCard(correctColor, tile1, tile2, graphics1, graphics2) {
+            createNewIonForTile(tile) {
+                // Get a random ion
+                const randomIon = Math.random() < 0.5 
+                    ? IonDatabase.cations[Math.floor(Math.random() * IonDatabase.cations.length)]
+                    : IonDatabase.anions[Math.floor(Math.random() * IonDatabase.anions.length)];
+                
+                // Create new ion with type
+                const newIon = { ...randomIon, type: randomIon.charge > 0 ? 'cation' : 'anion' };
+                
+                // Calculate optimal font size for the new ion
+                const fontSize = this.calculateOptimalFontSize(newIon.symbol);
+                
+                // Create new text for the ion with calculated font size
+                const text = this.add.text(tile.x, tile.y, newIon.symbol, {
+                    fontFamily: this.fontFamily,
+                    fontSize: `${fontSize}px`,
+                    fill: '#000000',
+                    fontWeight: this.fontWeightBold
+                }).setOrigin(0.5).setAlpha(0); // Start with 0 alpha for fade-in
+                
+                // Update tile properties
+                tile.ion = newIon;
+                tile.text = text;
+                tile.isSelected = false;
+                tile.isMatched = false;
+                tile.setVisible(true);
+                
+                // Draw the tile with initial alpha
+                const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
+                graphics.clear();
+                this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
+                graphics.setAlpha(0);
+                
+                // Add to group for management
+                this.tileGroup.add(text);
+                
+                // Animate fade-in over 1000ms
+                this.tweens.add({
+                    targets: [graphics, text],
+                    alpha: 1,
+                    duration: 1000,
+                    ease: 'Power2'
+                });
+            }
+            
+            handleInvalidSelection() {
+                // This method is now only used for invalid flow patterns
+                // Pulse tiles red to indicate invalid selection
+                this.selectedTiles.forEach(tile => {
+                    const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
+                    this.tweens.add({
+                        targets: graphics,
+                        fillColor: 0xff0000,
+                        duration: 200,
+                        yoyo: true,
+                        onComplete: () => {
+                            this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
+                        }
+                    });
+                });
+                
+                // Deselect all tiles after animation
+                this.time.delayedCall(400, () => {
+                    this.deselectAllTiles();
+                });
+            }
+            
+            resetGameState() {
+                this.selectedTiles = [];
+                this.gameState.currentSelection = [];
+                this.gameState.expectedIonCount = 0;
+                this.gameState.expectedCharges = [];
+                this.compoundType = null;
+                this.flowValidator.reset();
+            }
+            
+            deselectAllTiles() {
+                this.selectedTiles.forEach(tile => {
+                    tile.isSelected = false;
+                    this.drawTile(this.tileGraphics[tile.gridRow][tile.gridCol], tile.x, tile.y, this.tileColor, false);
+                });
+                this.resetGameState();
+            }
+            
+            // Helper function to calculate net charge of selected ions
+            calculateNetCharge(selectedIons) {
+                return selectedIons.reduce((total, tile) => total + tile.ion.charge, 0);
+            }
+            
+            showMultipleChoice(correctCompound) {
+                // Get three random incorrect compounds
+                const incorrectCompounds = [];
+                while (incorrectCompounds.length < 3) {
+                    const randomPair = IonDatabase.getRandomCompoundPair();
+                    const compound = IonDatabase.getCompoundName(randomPair.cation, randomPair.anion);
+                    if (compound && compound !== correctCompound && !incorrectCompounds.includes(compound)) {
+                        incorrectCompounds.push(compound);
+                    }
+                }
+                
+                // Ensure we have exactly 4 options (1 correct + 3 incorrect)
+                if (incorrectCompounds.length < 3) {
+                    // If we couldn't get enough unique compounds, add some default ones
+                    const defaultCompounds = [
+                        'Sodium chloride',
+                        'Potassium hydroxide',
+                        'Calcium carbonate',
+                        'Magnesium sulfate',
+                        'Aluminum oxide',
+                        'Iron(III) chloride',
+                        'Barium hydroxide',
+                        'Silver nitrate',
+                        'Ammonium chloride'
+                    ];
+                    
+                    while (incorrectCompounds.length < 3) {
+                        const randomCompound = defaultCompounds[Math.floor(Math.random() * defaultCompounds.length)];
+                        if (randomCompound !== correctCompound && !incorrectCompounds.includes(randomCompound)) {
+                            incorrectCompounds.push(randomCompound);
+                        }
+                    }
+                }
+                
+                // Combine and shuffle options
+                const options = [correctCompound, ...incorrectCompounds];
+                this.shuffleArray(options);
+                
+                // Show MCQ card with options
+                this.showMCQCard(options, correctCompound);
+            }
+            
+            showMCQCard(options, correctCompound) {
                 // Create semi-transparent background
                 const overlay = this.add.rectangle(
                     this.gameWidth / 2,
@@ -541,8 +1295,8 @@
                 
                 // Calculate card dimensions and position
                 const cardWidth = this.gameWidth - 40;
-                const cardHeight = 300; // Increased height
-                const cardY = this.gameHeight + cardHeight/2; // Position relative to center
+                const cardHeight = 500;
+                const cardY = this.gameHeight / 2;
                 
                 // Create card background
                 const card = this.add.rectangle(
@@ -556,56 +1310,33 @@
                 // Create title text
                 const titleText = this.add.text(
                     this.gameWidth / 2,
-                    cardY - 100,
-                    'Select the matching color:',
+                    cardY - cardHeight/2 + 30,
+                    'Select the correct compound:',
                     {
-                        fontFamily: 'Arial',
+                        fontFamily: this.fontFamily,
                         fontSize: '24px',
                         fill: '#000000',
-                        fontWeight: 'bold'
+                        fontWeight: this.fontWeightBold
                     }
                 ).setOrigin(0.5);
                 
-                // Generate color options (including the correct one)
-                const colorOptions = [correctColor];
-                const availableColors = [...this.tileColors];
-                availableColors.splice(availableColors.indexOf(correctColor), 1);
-                
-                // Add 3 random colors
-                for (let i = 0; i < 3; i++) {
-                    const randomIndex = Math.floor(Math.random() * availableColors.length);
-                    colorOptions.push(availableColors[randomIndex]);
-                    availableColors.splice(randomIndex, 1);
-                }
-                
-                // Shuffle the options
-                colorOptions.sort(() => Math.random() - 0.5);
-                
-                // Create color option buttons
+                // Create option buttons
                 const optionButtons = [];
                 const optionTexts = [];
-                const buttonWidth = 130;
-                const buttonHeight = 50;
+                const buttonWidth = cardWidth - 40;
+                const buttonHeight = 60;
                 const spacing = 20;
                 
-                // Calculate total grid width and height
-                const totalGridWidth = (buttonWidth * 2) + spacing;
-                const totalGridHeight = (buttonHeight * 2) + spacing;
-                
-                // Calculate starting position to center the grid
-                const gridStartX = this.gameWidth/2 - totalGridWidth/2 + buttonWidth/2;
-                const gridStartY = cardY - 30; // Positioned relative to card center
+                // Calculate starting position to center the buttons
+                const startX = this.gameWidth/2;
+                const startY = cardY - 50;
                 
                 for (let i = 0; i < 4; i++) {
-                    const row = Math.floor(i / 2);
-                    const col = i % 2;
-                    
-                    const x = gridStartX + col * (buttonWidth + spacing);
-                    const y = gridStartY + row * (buttonHeight + spacing);
+                    const y = startY + i * (buttonHeight + spacing);
                     
                     // Create button with white background
                     const button = this.add.rectangle(
-                        x,
+                        startX,
                         y,
                         buttonWidth,
                         buttonHeight,
@@ -614,14 +1345,17 @@
                     .setStrokeStyle(2, 0x000000)
                     .setInteractive();
                     
+                    // Create text with proper styling and word wrap
                     const text = this.add.text(
-                        x,
+                        startX,
                         y,
-                        this.colorNames[colorOptions[i]],
+                        options[i],
                         {
-                            fontFamily: 'Arial',
+                            fontFamily: this.fontFamily,
                             fontSize: '20px',
-                            fill: '#000000'
+                            fill: '#000000',
+                            fontWeight: this.fontWeightNormal,
+                            wordWrap: { width: buttonWidth - 20 }
                         }
                     ).setOrigin(0.5);
                     
@@ -630,11 +1364,11 @@
                     
                     // Add click handler
                     button.on('pointerdown', () => {
-                        if (colorOptions[i] === correctColor) {
+                        if (options[i] === correctCompound) {
                             // Highlight correct button
                             button.setFillStyle(0x90EE90); // Light green
                             
-                            // Correct color selected
+                            // Correct compound selected
                             this.score += 10;
                             this.scoreText.setText(`Score: ${this.score}`);
                             
@@ -654,26 +1388,19 @@
                                         overlay.destroy();
                                         
                                         // Now turn tiles lime green and animate them
-                                        this.drawTile(graphics1, tile1.x, tile1.y, this.matchColor, true);
-                                        this.drawTile(graphics2, tile2.x, tile2.y, this.matchColor, true);
-                                        
-                                        // Zoom out animation from tile centers
-                                        this.tweens.add({
-                                            targets: [tile1, tile2],
-                                            scaleX: 0.1,
-                                            scaleY: 0.1,
-                                            alpha: 0,
-                                            duration: 500,
-                                            onComplete: () => {
-                                                // Replace with new tiles using fade in
-                                                this.replaceTilesWithFade(tile1, tile2);
-                                            }
+                                        this.selectedTiles.forEach(tile => {
+                                            tile.isMatched = true;
+                                            tile.setVisible(false);
+                                            if (tile.text) tile.text.setVisible(false);
                                         });
+                                        
+                                        // Replace with new tiles using fade in
+                                        this.replaceTilesWithFade();
                                     }
                                 });
                             });
                         } else {
-                            // Wrong color selected - shake animation
+                            // Wrong compound selected - shake animation
                             this.tweens.add({
                                 targets: [button, text],
                                 x: button.x + 10,
@@ -693,76 +1420,83 @@
                         button.setFillStyle(0xffffff);
                     });
                 }
-                
-                // Animate card in
-                const elements = [card, titleText, ...optionButtons, ...optionTexts];
-                this.tweens.add({
-                    targets: elements,
-                    y: '-=300',
-                    duration: 500,
-                    ease: 'Back.easeOut'
-                });
             }
             
-            replaceTilesWithFade(tile1, tile2) {
-                // Generate new random colors for both tiles
-                const newColorIndex1 = Math.floor(Math.random() * this.tileColors.length);
-                const newColorIndex2 = Math.floor(Math.random() * this.tileColors.length);
+            replaceTilesWithFade() {
+                // Get matched tiles
+                const matchedTiles = this.tiles.flat().filter(tile => tile.isMatched);
                 
-                // Get graphics for both tiles
-                const graphics1 = this.tileGraphics[tile1.gridRow][tile1.gridCol];
-                const graphics2 = this.tileGraphics[tile2.gridRow][tile2.gridCol];
-                
-                // Update tile properties
-                tile1.colorIndex = newColorIndex1;
-                tile1.color = this.tileColors[newColorIndex1];
-                tile1.isSelected = false;
-                tile1.isMatched = false;
-                tile1.isProcessing = false;
-                tile1.alpha = 0;
-                tile1.scaleX = 1;
-                tile1.scaleY = 1;
-                
-                tile2.colorIndex = newColorIndex2;
-                tile2.color = this.tileColors[newColorIndex2];
-                tile2.isSelected = false;
-                tile2.isMatched = false;
-                tile2.isProcessing = false;
-                tile2.alpha = 0;
-                tile2.scaleX = 1;
-                tile2.scaleY = 1;
-                
-                // Draw new tiles (initially invisible)
-                this.drawTile(graphics1, tile1.x, tile1.y, tile1.color, false);
-                this.drawTile(graphics2, tile2.x, tile2.y, tile2.color, false);
-                
-                // Fade in animation
-                this.tweens.add({
-                    targets: [tile1, tile2],
-                    alpha: 1,
-                    duration: 200,
-                    ease: 'Linear',
-                    onComplete: () => {
-                        // Reset match processing flag
-                        this.isProcessingMatch = false;
-                        // Clear selected tiles array
-                        this.selectedTiles = [];
-                    }
-                });
-            }
-            
-            deselectTiles() {
-                // Deselect all selected tiles
-                for (let i = 0; i < this.selectedTiles.length; i++) {
-                    const tile = this.selectedTiles[i];
-                    const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
+                // For each matched tile, create a new one
+                matchedTiles.forEach(tile => {
+                    // Get a random ion
+                    const randomIon = Math.random() < 0.5 
+                        ? IonDatabase.cations[Math.floor(Math.random() * IonDatabase.cations.length)]
+                        : IonDatabase.anions[Math.floor(Math.random() * IonDatabase.anions.length)];
                     
+                    // Create new ion with type
+                    const newIon = { ...randomIon, type: randomIon.charge > 0 ? 'cation' : 'anion' };
+                    
+                    // Calculate optimal font size for the new ion
+                    const fontSize = this.calculateOptimalFontSize(newIon.symbol);
+                    
+                    // Create new text for the ion with calculated font size
+                    const text = this.add.text(tile.x, tile.y, newIon.symbol, {
+                        fontFamily: this.fontFamily,
+                        fontSize: `${fontSize}px`,
+                        fill: '#000000',
+                        fontWeight: this.fontWeightBold
+                    }).setOrigin(0.5);
+                    
+                    // Update tile properties
+                    tile.ion = newIon;
+                    tile.text = text;
                     tile.isSelected = false;
-                    this.drawTile(graphics, tile.x, tile.y, tile.color, false);
-                }
+                    tile.isMatched = false;
+                    tile.setVisible(true);
+                    
+                    // Draw the tile
+                    const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
+                    graphics.clear();
+                    this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
+                    
+                    // Add to group for management
+                    this.tileGroup.add(text);
+                });
                 
+                // Reset match processing flag
+                this.isProcessingMatch = false;
                 // Clear selected tiles array
                 this.selectedTiles = [];
+            }
+            
+            // Helper function to shuffle an array
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // Add new method to calculate optimal font size
+            calculateOptimalFontSize(symbol) {
+                // Define length thresholds and corresponding font sizes
+                const lengthThresholds = [
+                    { length: 4, size: this.baseFontSize },    // For symbols like Na⁺, Cl⁻
+                    { length: 6, size: 18 },                   // For symbols like Mg²⁺, SO₄²⁻
+                    { length: 8, size: 16 },                   // For symbols like Al³⁺, PO₄³⁻
+                    { length: 10, size: this.minFontSize }     // For symbols like CH₃COO⁻
+                ];
+                
+                // Find the appropriate font size based on symbol length
+                for (const threshold of lengthThresholds) {
+                    if (symbol.length <= threshold.length) {
+                        return threshold.size;
+                    }
+                }
+                
+                // Default to minimum font size for very long symbols
+                return this.minFontSize;
             }
         }
 
@@ -776,7 +1510,7 @@
                 mode: Phaser.Scale.EXPAND,
                 autoCenter: Phaser.Scale.CENTER_BOTH
             },
-            scene: [MainScene],
+            scene: [SplashScene, MainScene],
             backgroundColor: '#333333'
         };
 
