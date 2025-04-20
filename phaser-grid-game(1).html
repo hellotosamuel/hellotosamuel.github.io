@@ -1201,27 +1201,6 @@
                     }
                 ).setOrigin(0.5);
                 
-                // Create quit button
-                this.quitButton = this.add.rectangle(
-                    this.gameWidth / 2,
-                    this.gameHeight / 2 + 120,
-                    180,
-                    50,
-                    0xff3300
-                ).setInteractive();
-                
-                this.quitText = this.add.text(
-                    this.gameWidth / 2,
-                    this.gameHeight / 2 + 120,
-                    'Quit',
-                    { 
-                        fontFamily: this.fontFamily,
-                        fontSize: '24px',
-                        fill: '#ffffff',
-                        fontWeight: this.fontWeightBold
-                    }
-                ).setOrigin(0.5);
-                
                 // Add hover effect to resume button
                 this.resumeButton.on('pointerover', () => {
                     this.resumeButton.setFillStyle(0x66bb6a);
@@ -1231,23 +1210,9 @@
                     this.resumeButton.setFillStyle(0x4caf50);
                 });
                 
-                // Add hover effect to quit button
-                this.quitButton.on('pointerover', () => {
-                    this.quitButton.setFillStyle(0xff4d4d);
-                });
-                
-                this.quitButton.on('pointerout', () => {
-                    this.quitButton.setFillStyle(0xff3300);
-                });
-                
                 // Add click handler to resume button
                 this.resumeButton.on('pointerdown', () => {
                     this.resumeGame();
-                });
-                
-                // Add click handler to quit button
-                this.quitButton.on('pointerdown', () => {
-                    this.quitToSplashScreen();
                 });
                 
                 // Disable tile interactions
@@ -1256,47 +1221,6 @@
                         tile.disableInteractive();
                     }
                 });
-            }
-            
-            quitToSplashScreen() {
-                // Clean up game elements
-                if (this.tileGroup) {
-                    this.tileGroup.clear(true, true);
-                }
-                if (this.scoreText) {
-                    this.scoreText.destroy();
-                }
-                if (this.timerText) {
-                    this.timerText.destroy();
-                }
-                if (this.timerBarContainer) {
-                    this.timerBarContainer.destroy();
-                }
-                if (this.pauseButton) {
-                    this.pauseButton.destroy();
-                }
-                if (this.pauseLine1) {
-                    this.pauseLine1.destroy();
-                }
-                if (this.pauseLine2) {
-                    this.pauseLine2.destroy();
-                }
-                
-                // Clear any existing timers
-                if (this.gameTimer) {
-                    this.gameTimer.remove();
-                    this.gameTimer = null;
-                }
-                
-                // Reset game state
-                this.score = 0;
-                this.timeRemaining = this.gameTime;
-                this.isProcessingMatch = false;
-                this.selectedTiles = [];
-                this.gameState.isPaused = false;
-                
-                // Go to splash screen
-                this.scene.start('SplashScene');
             }
             
             resumeGame() {
@@ -1316,8 +1240,6 @@
                 if (this.pauseText) this.pauseText.destroy();
                 if (this.resumeButton) this.resumeButton.destroy();
                 if (this.resumeText) this.resumeText.destroy();
-                if (this.quitButton) this.quitButton.destroy();
-                if (this.quitText) this.quitText.destroy();
                 
                 // Re-enable tile interactions
                 this.tileGroup.getChildren().forEach(tile => {
