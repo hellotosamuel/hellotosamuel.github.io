@@ -717,45 +717,102 @@
                 
                 // Calculate progress bar width and position
                 const barWidth = 180;
+                const barHeight = 14;
+                const radius = barHeight / 2;
                 const totalWidth = barWidth + this.timerText.width + 8; // Total width including spacing
                 const startX = (this.gameWidth - totalWidth) / 2 + this.timerText.width + 8; // Center the group
                 
-                // Create progress bar background with rounded corners
-                const barBg = this.add.graphics();
-                barBg.fillStyle(0x444444);
-                barBg.fillRoundedRect(
-                    startX,
-                    timerGroupY - 7, // Center vertically with text
-                    barWidth,
-                    14,
-                    7
-                );
-                
-                // Add white border to progress bar background
-                barBg.lineStyle(1, 0xffffff);
-                barBg.strokeRoundedRect(
-                    startX,
-                    timerGroupY - 7,
-                    barWidth,
-                    14,
-                    7
-                );
-                
-                // Create progress bar fill with rounded corners
-                this.timerBarFill = this.add.graphics();
-                this.timerBarFill.fillStyle(0x00ffff);
-                this.timerBarFill.fillRoundedRect(
-                    startX,
-                    timerGroupY - 7,
-                    barWidth,
-                    14,
-                    7
-                );
-                
-                // Store the bar position and width for updates
+                // Store bar dimensions for updates
                 this.barStartX = startX;
                 this.barWidth = barWidth;
-                this.barY = timerGroupY - 7;
+                this.barHeight = barHeight;
+                this.barY = timerGroupY - radius;
+                this.barRadius = radius;
+                
+                // Create container for progress bar components
+                this.timerBarContainer = this.add.container(0, 0);
+                
+                // Create background components
+                this.bgLeft = this.add.circle(startX + radius, timerGroupY, radius, 0x444444);
+                this.bgRight = this.add.circle(startX + barWidth - radius, timerGroupY, radius, 0x444444);
+                this.bgMiddle = this.add.rectangle(
+                    startX + radius,
+                    timerGroupY,
+                    barWidth - barHeight,
+                    barHeight,
+                    0x444444
+                );
+                
+                // Create fill components
+                this.timerBarLeft = this.add.circle(startX + radius, timerGroupY, radius, 0x00ffff);
+                this.timerBarRight = this.add.circle(startX + barWidth - radius, timerGroupY, radius, 0x00ffff);
+                this.timerBarMiddle = this.add.rectangle(
+                    startX + radius,
+                    timerGroupY,
+                    barWidth - barHeight,
+                    barHeight,
+                    0x00ffff
+                );
+                
+                // Add white border
+                const borderGraphics = this.add.graphics();
+                borderGraphics.lineStyle(1, 0xffffff);
+                borderGraphics.beginPath();
+                borderGraphics.arc(startX + radius, timerGroupY, radius, Math.PI / 2, -Math.PI / 2, true);
+                borderGraphics.lineTo(startX + barWidth - radius, timerGroupY - radius);
+                borderGraphics.arc(startX + barWidth - radius, timerGroupY, radius, -Math.PI / 2, Math.PI / 2, false);
+                borderGraphics.lineTo(startX + radius, timerGroupY + radius);
+                borderGraphics.closePath();
+                borderGraphics.strokePath();
+                
+                // Add all components to container
+                this.timerBarContainer.add([
+                    this.bgLeft, this.bgMiddle, this.bgRight,
+                    this.timerBarLeft, this.timerBarMiddle, this.timerBarRight,
+                    borderGraphics
+                ]);
+                
+                // Initialize progress
+                this.updateTimerBar(1);
+            }
+            
+            updateTimerBar(progress) {
+                if (progress < 0) progress = 0;
+                if (progress > 1) progress = 1;
+                
+                const fillWidth = (this.barWidth - this.barHeight) * progress;
+                const centerX = this.barStartX + this.barRadius;
+                
+                // Update fill color based on remaining time
+                let fillColor = 0x00ffff;
+                if (progress <= 0.33) {
+                    fillColor = 0xff3300; // Red
+                } else if (progress <= 0.11) {
+                    fillColor = 0xff9900; // Orange
+                }
+                
+                // Update middle rectangle
+                this.timerBarMiddle.setSize(fillWidth, this.barHeight);
+                this.timerBarMiddle.setPosition(centerX + fillWidth/2, this.barY + this.barRadius);
+                this.timerBarMiddle.setFillStyle(fillColor);
+                
+                // Update right semicircle visibility and color
+                this.timerBarRight.setFillStyle(fillColor);
+                this.timerBarRight.setVisible(progress > 0);
+                
+                // Update left semicircle color
+                this.timerBarLeft.setFillStyle(fillColor);
+                
+                // Position right semicircle
+                if (progress > 0) {
+                    const rightX = this.barStartX + fillWidth + this.barRadius;
+                    this.timerBarRight.setPosition(rightX, this.barY + this.barRadius);
+                }
+                
+                // Update background components
+                this.bgMiddle.setSize(this.barWidth - this.barHeight, this.barHeight);
+                this.bgMiddle.setPosition(centerX + (this.barWidth - this.barHeight)/2, this.barY + this.barRadius);
+                this.bgRight.setPosition(this.barStartX + this.barWidth - this.barRadius, this.barY + this.barRadius);
             }
             
             startGameTimer() {
@@ -764,56 +821,31 @@
                     this.gameTimer.remove();
                 }
                 
-                // Create timer event
+                const startTime = this.timeRemaining;
+                const startTimestamp = this.time.now;
+                
+                // Create timer event for text updates
                 this.gameTimer = this.time.addEvent({
                     delay: 1000,
                     callback: this.updateTimer,
                     callbackScope: this,
                     loop: true
                 });
+                
+                // Add smooth progress bar update
+                this.events.on('update', () => {
+                    if (this.timeRemaining > 0 && !this.gameState.isPaused) {
+                        const elapsed = (this.time.now - startTimestamp) / 1000;
+                        const remaining = Math.max(0, startTime - elapsed);
+                        this.timeRemaining = Math.ceil(remaining);
+                        this.updateTimerBar(remaining / this.gameTime);
+                    }
+                });
             }
             
             updateTimer() {
-                this.timeRemaining--;
-                
                 // Update timer text
                 this.timerText.setText(`${this.timeRemaining}s`);
-                
-                // Update progress bar (shrink from right to left)
-                const progress = this.timeRemaining / this.gameTime;
-                this.timerBarFill.clear();
-                this.timerBarFill.fillStyle(0x00ffff);
-                this.timerBarFill.fillRoundedRect(
-                    this.barStartX,
-                    this.barY,
-                    this.barWidth * progress,
-                    14,
-                    7
-                );
-                
-                // Change color as time runs out
-                if (this.timeRemaining <= 30) {
-                    this.timerBarFill.clear();
-                    this.timerBarFill.fillStyle(0xff9900); // Orange
-                    this.timerBarFill.fillRoundedRect(
-                        this.barStartX,
-                        this.barY,
-                        this.barWidth * progress,
-                        14,
-                        7
-                    );
-                }
-                if (this.timeRemaining <= 10) {
-                    this.timerBarFill.clear();
-                    this.timerBarFill.fillStyle(0xff3300); // Red
-                    this.timerBarFill.fillRoundedRect(
-                        this.barStartX,
-                        this.barY,
-                        this.barWidth * progress,
-                        14,
-                        7
-                    );
-                }
                 
                 // End game when timer runs out
                 if (this.timeRemaining <= 0) {
@@ -912,8 +944,8 @@
                     if (this.timerText) {
                         this.timerText.destroy();
                     }
-                    if (this.timerBarFill) {
-                        this.timerBarFill.destroy();
+                    if (this.timerBarContainer) {
+                        this.timerBarContainer.destroy();
                     }
                     
                     // Go to splash screen instead of restarting
