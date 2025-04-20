@@ -16,7 +16,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #333333;
+            background-color: #000000;
             overflow: hidden;
         }
         #game-container {
@@ -87,8 +87,8 @@
                 });
 
                 // Try loading both PNG and SVG versions
-                this.load.image('logo', 'images/logo.png');
-                this.load.image('logo-svg', 'images/logo.svg');
+                this.load.image('logo', 'images/logo_stacked.png');
+                this.load.image('logo-svg', 'images/logo_stacked.svg');
                 
                 // Load the font using WebFontLoader
                 this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
@@ -113,7 +113,7 @@
 
             createSplashScreen() {
                 // Create dark overlay
-                this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.85)
+                this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000)
                     .setOrigin(0);
 
                 // Try to add logo with error handling
@@ -659,7 +659,7 @@
                 this.gameHeight = this.scale.height;
                 
                 // Set the game's background
-                this.cameras.main.setBackgroundColor('#333333');
+                this.cameras.main.setBackgroundColor('#000000');
                 
                 // Create graphics group for tiles
                 this.tileGroup = this.add.group();
@@ -1946,7 +1946,7 @@
                 autoCenter: Phaser.Scale.CENTER_BOTH
             },
             scene: [SplashScene, MainScene],
-            backgroundColor: '#333333'
+            backgroundColor: '#000000'
         };
 
         // Initialize the game
