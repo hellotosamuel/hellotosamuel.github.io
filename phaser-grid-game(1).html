@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Color Matching Game</title>
+    <title>CheMcAlRuSH</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=National+Park:wght@200..800&display=swap" rel="stylesheet">
@@ -54,14 +54,52 @@
             }
 
             preload() {
-                // Load the logo image
-                this.load.image('logo', '@logo.png');
+                // Add loading error handler
+                this.load.on('loaderror', (fileObj) => {
+                    console.error('Error loading asset:', fileObj.src);
+                });
+
+                // Add a loading complete handler
+                this.load.on('complete', () => {
+                    console.log('All assets loaded successfully');
+                });
+
+                // Show loading progress
+                const progressBar = this.add.graphics();
+                const progressBox = this.add.graphics();
+                progressBox.fillStyle(0x222222, 0.8);
+                progressBox.fillRect(
+                    this.scale.width / 4,
+                    this.scale.height / 2 - 15,
+                    this.scale.width / 2,
+                    30
+                );
+
+                this.load.on('progress', (value) => {
+                    progressBar.clear();
+                    progressBar.fillStyle(0x00ff00, 1);
+                    progressBar.fillRect(
+                        this.scale.width / 4,
+                        this.scale.height / 2 - 15,
+                        (this.scale.width / 2) * value,
+                        30
+                    );
+                });
+
+                // Try loading both PNG and SVG versions
+                this.load.image('logo', 'images/logo.png');
+                this.load.image('logo-svg', 'images/logo.svg');
                 
                 // Load the font using WebFontLoader
                 this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
             }
 
             create() {
+                // Clean up progress bar
+                this.children.list
+                    .filter(child => child instanceof Phaser.GameObjects.Graphics)
+                    .forEach(child => child.destroy());
+
                 // Load fonts before creating the elements
                 WebFont.load({
                     google: {
@@ -78,19 +116,51 @@
                 this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.85)
                     .setOrigin(0);
 
-                // Add logo at the center
-                const logo = this.add.image(
-                    this.scale.width / 2,
-                    this.scale.height / 2 - 50,
-                    'logo'
-                ).setOrigin(0.5);
+                // Try to add logo with error handling
+                let logo;
+                try {
+                    // Try PNG first
+                    logo = this.add.image(
+                        this.scale.width / 2,
+                        this.scale.height / 2 - 50,
+                        'logo'
+                    );
+                } catch (error) {
+                    console.log('Falling back to SVG version');
+                    try {
+                        // Fall back to SVG if PNG fails
+                        logo = this.add.image(
+                            this.scale.width / 2,
+                            this.scale.height / 2 - 50,
+                            'logo-svg'
+                        );
+                    } catch (error) {
+                        console.error('Failed to load both logo versions');
+                        // Create a text placeholder if both images fail
+                        logo = this.add.text(
+                            this.scale.width / 2,
+                            this.scale.height / 2 - 50,
+                            'Ion Matching Game',
+                            {
+                                fontFamily: 'National Park',
+                                fontSize: '32px',
+                                fill: '#ffffff',
+                                fontWeight: '700'
+                            }
+                        );
+                    }
+                }
 
-                // Scale logo to fit nicely
-                const scale = Math.min(
-                    (this.scale.width * 0.8) / logo.width,
-                    (this.scale.height * 0.4) / logo.height
-                );
-                logo.setScale(scale);
+                logo.setOrigin(0.5);
+
+                // Scale logo to fit nicely if it's an image
+                if (logo instanceof Phaser.GameObjects.Image) {
+                    const scale = Math.min(
+                        (this.scale.width * 0.8) / logo.width,
+                        (this.scale.height * 0.4) / logo.height
+                    );
+                    logo.setScale(scale);
+                }
 
                 // Create start button
                 const buttonWidth = 200;
@@ -553,7 +623,8 @@
                     isSelecting: false,
                     currentSelection: [],
                     expectedIonCount: 0,
-                    expectedCharges: []
+                    expectedCharges: [],
+                    isPaused: false
                 };
                 
                 // Add flow validator
@@ -583,6 +654,7 @@
                 this.timeRemaining = this.gameTime;
                 this.isProcessingMatch = false;
                 this.selectedTiles = [];
+                this.gameState.isPaused = false;
                 
                 // Get current game dimensions
                 this.gameWidth = this.scale.width;
@@ -621,6 +693,9 @@
                 
                 // Create timer display and progress bar
                 this.createTimer();
+                
+                // Create pause button
+                this.createPauseButton();
                 
                 // Start the game timer
                 this.startGameTimer();
@@ -756,11 +831,20 @@
                     this.gameTimer = null;
                 }
                 
+                // Create semi-transparent overlay (50% opacity)
+                const overlay = this.add.rectangle(
+                    0, 0, 
+                    this.gameWidth, 
+                    this.gameHeight, 
+                    0x000000, 
+                    0.5
+                ).setOrigin(0);
+                
                 // Display game over message
                 const gameOverText = this.add.text(
                     this.gameWidth / 2,
                     this.gameHeight / 2,
-                    'GAME OVER',
+                    'Game Over',
                     { 
                         fontFamily: this.fontFamily,
                         fontSize: '40px',
@@ -782,8 +866,8 @@
                     }
                 ).setOrigin(0.5);
                 
-                // Create restart button
-                const restartButton = this.add.rectangle(
+                // Create start over button
+                const startOverButton = this.add.rectangle(
                     this.gameWidth / 2,
                     this.gameHeight / 2 + 120,
                     180,
@@ -791,10 +875,10 @@
                     0x4caf50
                 ).setInteractive();
                 
-                const restartText = this.add.text(
+                const startOverText = this.add.text(
                     this.gameWidth / 2,
                     this.gameHeight / 2 + 120,
-                    'Play Again',
+                    'Start Over',
                     { 
                         fontFamily: this.fontFamily,
                         fontSize: '24px',
@@ -803,13 +887,22 @@
                     }
                 ).setOrigin(0.5);
                 
-                // Add restart functionality
-                restartButton.on('pointerdown', () => {
+                // Add hover effect to start over button
+                startOverButton.on('pointerover', () => {
+                    startOverButton.setFillStyle(0x66bb6a);
+                });
+                startOverButton.on('pointerout', () => {
+                    startOverButton.setFillStyle(0x4caf50);
+                });
+                
+                // Add click handler to go to splash screen
+                startOverButton.on('pointerdown', () => {
                     // Clean up game over elements
+                    overlay.destroy();
                     gameOverText.destroy();
                     finalScoreText.destroy();
-                    restartButton.destroy();
-                    restartText.destroy();
+                    startOverButton.destroy();
+                    startOverText.destroy();
                     
                     // Clean up any existing game elements
                     if (this.tileGroup) {
@@ -825,16 +918,8 @@
                         this.timerBarFill.destroy();
                     }
                     
-                    // Restart the scene
-                    this.scene.restart();
-                });
-                
-                // Add hover effect to restart button
-                restartButton.on('pointerover', () => {
-                    restartButton.setFillStyle(0x66bb6a);
-                });
-                restartButton.on('pointerout', () => {
-                    restartButton.setFillStyle(0x4caf50);
+                    // Go to splash screen instead of restarting
+                    this.scene.start('SplashScene');
                 });
             }
             
@@ -974,7 +1059,170 @@
                 }
             }
             
+            createPauseButton() {
+                // Create pause button in the top-right corner
+                const buttonSize = 40;
+                const padding = 10;
+                
+                // Create a perfect circle for the pause button
+                this.pauseButton = this.add.circle(
+                    this.gameWidth - padding - buttonSize/2,
+                    padding + buttonSize/2,
+                    buttonSize/2,
+                    0x4caf50
+                ).setInteractive();
+                
+                // Create pause icon (two vertical lines)
+                const lineWidth = 4;
+                const lineHeight = 15;
+                const gap = 8; // Increased gap between lines from 4 to 8
+                
+                // Left line
+                this.pauseLine1 = this.add.rectangle(
+                    this.pauseButton.x - gap/2,
+                    this.pauseButton.y,
+                    lineWidth,
+                    lineHeight,
+                    0xffffff
+                );
+                
+                // Right line
+                this.pauseLine2 = this.add.rectangle(
+                    this.pauseButton.x + gap/2,
+                    this.pauseButton.y,
+                    lineWidth,
+                    lineHeight,
+                    0xffffff
+                );
+                
+                // Add hover effect
+                this.pauseButton.on('pointerover', () => {
+                    this.pauseButton.setFillStyle(0x66bb6a);
+                });
+                
+                this.pauseButton.on('pointerout', () => {
+                    if (!this.gameState.isPaused) {
+                        this.pauseButton.setFillStyle(0x4caf50);
+                    }
+                });
+                
+                // Add click handler
+                this.pauseButton.on('pointerdown', () => {
+                    if (this.gameState.isPaused) {
+                        this.resumeGame();
+                    } else {
+                        this.pauseGame();
+                    }
+                });
+            }
+            
+            pauseGame() {
+                // Set game state to paused
+                this.gameState.isPaused = true;
+                
+                // Pause the game timer
+                if (this.gameTimer) {
+                    this.gameTimer.paused = true;
+                }
+                
+                // Change pause button color to indicate paused state
+                this.pauseButton.setFillStyle(0xff9900);
+                
+                // Create pause overlay with 100% opacity black
+                this.pauseOverlay = this.add.rectangle(
+                    0, 0, 
+                    this.gameWidth, 
+                    this.gameHeight, 
+                    0x000000, 
+                    1.0  // Changed from 0.5 to 1.0 for 100% opacity
+                ).setOrigin(0);
+                
+                // Display pause message
+                this.pauseText = this.add.text(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 - 50,
+                    'Game Paused',
+                    { 
+                        fontFamily: this.fontFamily,
+                        fontSize: '40px',
+                        fill: '#ffffff',
+                        fontWeight: this.fontWeightBold
+                    }
+                ).setOrigin(0.5);
+                
+                // Create resume button
+                this.resumeButton = this.add.rectangle(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 50,
+                    180,
+                    50,
+                    0x4caf50
+                ).setInteractive();
+                
+                this.resumeText = this.add.text(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 50,
+                    'Resume',
+                    { 
+                        fontFamily: this.fontFamily,
+                        fontSize: '24px',
+                        fill: '#ffffff',
+                        fontWeight: this.fontWeightBold
+                    }
+                ).setOrigin(0.5);
+                
+                // Add hover effect to resume button
+                this.resumeButton.on('pointerover', () => {
+                    this.resumeButton.setFillStyle(0x66bb6a);
+                });
+                
+                this.resumeButton.on('pointerout', () => {
+                    this.resumeButton.setFillStyle(0x4caf50);
+                });
+                
+                // Add click handler to resume button
+                this.resumeButton.on('pointerdown', () => {
+                    this.resumeGame();
+                });
+                
+                // Disable tile interactions
+                this.tileGroup.getChildren().forEach(tile => {
+                    if (tile.input) {
+                        tile.disableInteractive();
+                    }
+                });
+            }
+            
+            resumeGame() {
+                // Set game state to not paused
+                this.gameState.isPaused = false;
+                
+                // Resume the game timer
+                if (this.gameTimer) {
+                    this.gameTimer.paused = false;
+                }
+                
+                // Change pause button color back to normal
+                this.pauseButton.setFillStyle(0x4caf50);
+                
+                // Remove pause overlay and elements
+                if (this.pauseOverlay) this.pauseOverlay.destroy();
+                if (this.pauseText) this.pauseText.destroy();
+                if (this.resumeButton) this.resumeButton.destroy();
+                if (this.resumeText) this.resumeText.destroy();
+                
+                // Re-enable tile interactions
+                this.tileGroup.getChildren().forEach(tile => {
+                    if (tile.input && !tile.isMatched) {
+                        tile.setInteractive();
+                    }
+                });
+            }
+            
             selectTile(tile, graphics) {
+                // Don't allow selection if game is paused
+                if (this.gameState.isPaused) return;
+                
                 if (this.isProcessingMatch || tile.isMatched) return;
                 
                 // If trying to select more than 5 tiles, deselect all
@@ -1129,12 +1377,12 @@
                 // Animate tiles turning red
                 this.selectedTiles.forEach(tile => {
                     const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
-                    this.tweens.add({
+                this.tweens.add({
                         targets: graphics,
                         fillColor: 0xff0000,
                         duration: 200,
                         yoyo: true,
-                        onComplete: () => {
+                    onComplete: () => {
                             // After red flash, destroy the tile and text
                             tile.setVisible(false);
                             if (tile.text) tile.text.setVisible(false);
@@ -1206,7 +1454,7 @@
                         fillColor: 0xff0000,
                         duration: 200,
                         yoyo: true,
-                        onComplete: () => {
+                    onComplete: () => {
                             this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
                         }
                     });
@@ -1219,7 +1467,7 @@
             }
             
             resetGameState() {
-                this.selectedTiles = [];
+                        this.selectedTiles = [];
                 this.gameState.currentSelection = [];
                 this.gameState.expectedIonCount = 0;
                 this.gameState.expectedCharges = [];
@@ -1320,6 +1568,168 @@
                     }
                 ).setOrigin(0.5);
                 
+                // Get the chemical formula from the CSV data
+                let formula = '';
+                // Find the formula from the selected ions
+                const uniqueIons = this.gameState.currentSelection.filter((ion, index, self) =>
+                    index === self.findIndex(i => i.symbol === ion.symbol && i.charge === ion.charge)
+                );
+                
+                if (uniqueIons.length === 2) {
+                    const [ion1, ion2] = uniqueIons;
+                    
+                    // Create compound key based on ion order (cation first, then anion)
+                    let compoundKey;
+                    if (ion1.charge > 0) { // ion1 is cation
+                        compoundKey = `${ion1.symbol}_${ion2.symbol}`;
+                    } else { // ion1 is anion
+                        compoundKey = `${ion2.symbol}_${ion1.symbol}`;
+                    }
+                    
+                    // Get the formula from the CSV data
+                    // We need to find the row in the CSV that matches our compound
+                    // For now, we'll use a mapping approach
+                    const formulaMap = {
+                        'Na⁺_OH⁻': 'NaOH',
+                        'Na⁺_Cl⁻': 'NaCl',
+                        'Na⁺_Br⁻': 'NaBr',
+                        'Na⁺_I⁻': 'NaI',
+                        'Na⁺_F⁻': 'NaF',
+                        'Na⁺_NO₃⁻': 'NaNO₃',
+                        'Na⁺_SO₄²⁻': 'Na₂SO₄',
+                        'Na⁺_CO₃²⁻': 'Na₂CO₃',
+                        'Na⁺_PO₄³⁻': 'Na₃PO₄',
+                        'Na⁺_HCO₃⁻': 'NaHCO₃',
+                        'Na⁺_O²⁻': 'Na₂O',
+                        'Na⁺_S²⁻': 'Na₂S',
+                        'Na⁺_CH₃COO⁻': 'CH₃COONa',
+                        'K⁺_OH⁻': 'KOH',
+                        'K⁺_Cl⁻': 'KCl',
+                        'K⁺_Br⁻': 'KBr',
+                        'K⁺_I⁻': 'KI',
+                        'K⁺_F⁻': 'KF',
+                        'K⁺_NO₃⁻': 'KNO₃',
+                        'K⁺_SO₄²⁻': 'K₂SO₄',
+                        'K⁺_CO₃²⁻': 'K₂CO₃',
+                        'K⁺_PO₄³⁻': 'K₃PO₄',
+                        'K⁺_O²⁻': 'K₂O',
+                        'K⁺_S²⁻': 'K₂S',
+                        'K⁺_CH₃COO⁻': 'CH₃COOK',
+                        'Li⁺_OH⁻': 'LiOH',
+                        'Li⁺_Cl⁻': 'LiCl',
+                        'Li⁺_Br⁻': 'LiBr',
+                        'Li⁺_I⁻': 'LiI',
+                        'Li⁺_F⁻': 'LiF',
+                        'Li⁺_NO₃⁻': 'LiNO₃',
+                        'Li⁺_SO₄²⁻': 'Li₂SO₄',
+                        'Li⁺_CO₃²⁻': 'Li₂CO₃',
+                        'Li⁺_PO₄³⁻': 'Li₃PO₄',
+                        'Li⁺_O²⁻': 'Li₂O',
+                        'Li⁺_S²⁻': 'Li₂S',
+                        'Li⁺_CH₃COO⁻': 'CH₃COOLi',
+                        'Mg²⁺_OH⁻': 'Mg(OH)₂',
+                        'Mg²⁺_Cl⁻': 'MgCl₂',
+                        'Mg²⁺_Br⁻': 'MgBr₂',
+                        'Mg²⁺_I⁻': 'MgI₂',
+                        'Mg²⁺_F⁻': 'MgF₂',
+                        'Mg²⁺_NO₃⁻': 'Mg(NO₃)₂',
+                        'Mg²⁺_SO₄²⁻': 'MgSO₄',
+                        'Mg²⁺_CO₃²⁻': 'MgCO₃',
+                        'Mg²⁺_PO₄³⁻': 'Mg₃(PO₄)₂',
+                        'Mg²⁺_HCO₃⁻': 'Mg(HCO₃)₂',
+                        'Mg²⁺_O²⁻': 'MgO',
+                        'Mg²⁺_S²⁻': 'MgS',
+                        'Mg²⁺_CH₃COO⁻': 'Mg(CH₃COO)₂',
+                        'Ca²⁺_OH⁻': 'Ca(OH)₂',
+                        'Ca²⁺_Cl⁻': 'CaCl₂',
+                        'Ca²⁺_Br⁻': 'CaBr₂',
+                        'Ca²⁺_I⁻': 'CaI₂',
+                        'Ca²⁺_F⁻': 'CaF₂',
+                        'Ca²⁺_NO₃⁻': 'Ca(NO₃)₂',
+                        'Ca²⁺_SO₄²⁻': 'CaSO₄',
+                        'Ca²⁺_CO₃²⁻': 'CaCO₃',
+                        'Ca²⁺_PO₄³⁻': 'Ca₃(PO₄)₂',
+                        'Ca²⁺_HCO₃⁻': 'Ca(HCO₃)₂',
+                        'Ca²⁺_O²⁻': 'CaO',
+                        'Ca²⁺_S²⁻': 'CaS',
+                        'Ca²⁺_CH₃COO⁻': 'Ca(CH₃COO)₂',
+                        'Al³⁺_OH⁻': 'Al(OH)₃',
+                        'Al³⁺_Cl⁻': 'AlCl₃',
+                        'Al³⁺_Br⁻': 'AlBr₃',
+                        'Al³⁺_I⁻': 'AlI₃',
+                        'Al³⁺_F⁻': 'AlF₃',
+                        'Al³⁺_NO₃⁻': 'Al(NO₃)₃',
+                        'Al³⁺_SO₄²⁻': 'Al₂(SO₄)₃',
+                        'Al³⁺_CO₃²⁻': 'Al₂(CO₃)₃',
+                        'Al³⁺_PO₄³⁻': 'AlPO₄',
+                        'Al³⁺_O²⁻': 'Al₂O₃',
+                        'Al³⁺_S²⁻': 'Al₂S₃',
+                        'Al³⁺_CH₃COO⁻': 'Al(CH₃COO)₃',
+                        'Fe²⁺_OH⁻': 'Fe(OH)₂',
+                        'Fe²⁺_Cl⁻': 'FeCl₂',
+                        'Fe²⁺_Br⁻': 'FeBr₂',
+                        'Fe²⁺_I⁻': 'FeI₂',
+                        'Fe²⁺_F⁻': 'FeF₂',
+                        'Fe²⁺_NO₃⁻': 'Fe(NO₃)₂',
+                        'Fe²⁺_SO₄²⁻': 'FeSO₄',
+                        'Fe²⁺_CO₃²⁻': 'FeCO₃',
+                        'Fe²⁺_PO₄³⁻': 'Fe₃(PO₄)₂',
+                        'Fe²⁺_O²⁻': 'FeO',
+                        'Fe²⁺_S²⁻': 'FeS',
+                        'Fe²⁺_CH₃COO⁻': 'Fe(CH₃COO)₂',
+                        'Fe³⁺_OH⁻': 'Fe(OH)₃',
+                        'Fe³⁺_Cl⁻': 'FeCl₃',
+                        'Fe³⁺_Br⁻': 'FeBr₃',
+                        'Fe³⁺_I⁻': 'FeI₃',
+                        'Fe³⁺_F⁻': 'FeF₃',
+                        'Fe³⁺_NO₃⁻': 'Fe(NO₃)₃',
+                        'Fe³⁺_SO₄²⁻': 'Fe₂(SO₄)₃',
+                        'Fe³⁺_CO₃²⁻': 'Fe₂(CO₃)₃',
+                        'Fe³⁺_PO₄³⁻': 'FePO₄',
+                        'Fe³⁺_O²⁻': 'Fe₂O₃',
+                        'Fe³⁺_S²⁻': 'Fe₂S₃',
+                        'Fe³⁺_CH₃COO⁻': 'Fe(CH₃COO)₃',
+                        'Ba²⁺_OH⁻': 'Ba(OH)₂',
+                        'Ba²⁺_Cl⁻': 'BaCl₂',
+                        'Ba²⁺_NO₃⁻': 'Ba(NO₃)₂',
+                        'Ba²⁺_SO₄²⁻': 'BaSO₄',
+                        'Ba²⁺_CO₃²⁻': 'BaCO₃',
+                        'Ba²⁺_CH₃COO⁻': 'Ba(CH₃COO)₂',
+                        'Ag⁺_OH⁻': 'AgOH',
+                        'Ag⁺_Cl⁻': 'AgCl',
+                        'Ag⁺_Br⁻': 'AgBr',
+                        'Ag⁺_I⁻': 'AgI',
+                        'Ag⁺_F⁻': 'AgF',
+                        'Ag⁺_NO₃⁻': 'AgNO₃',
+                        'Ag⁺_SO₄²⁻': 'Ag₂SO₄',
+                        'Ag⁺_CO₃²⁻': 'Ag₂CO₃',
+                        'Ag⁺_CH₃COO⁻': 'AgCH₃COO',
+                        'NH₄⁺_OH⁻': 'NH₄OH',
+                        'NH₄⁺_Cl⁻': 'NH₄Cl',
+                        'NH₄⁺_NO₃⁻': 'NH₄NO₃',
+                        'NH₄⁺_SO₄²⁻': '(NH₄)₂SO₄',
+                        'NH₄⁺_CO₃²⁻': '(NH₄)₂CO₃',
+                        'NH₄⁺_O²⁻': '(NH₄)₂O',
+                        'NH₄⁺_S²⁻': '(NH₄)₂S',
+                        'NH₄⁺_CH₃COO⁻': 'NH₄CH₃COO'
+                    };
+                    
+                    formula = formulaMap[compoundKey] || '';
+                }
+                
+                // Display the formula
+                const formulaText = this.add.text(
+                    this.gameWidth / 2,
+                    cardY - cardHeight/2 + 70,
+                    `Chemical Formula: ${formula}`,
+                    {
+                        fontFamily: this.fontFamily,
+                        fontSize: '20px',
+                        fill: '#787878',
+                        fontWeight: this.fontWeightNormal
+                    }
+                ).setOrigin(0.5);
+                
                 // Create option buttons
                 const optionButtons = [];
                 const optionTexts = [];
@@ -1364,30 +1774,35 @@
                     
                     // Add click handler
                     button.on('pointerdown', () => {
+                        // Disable all buttons to prevent multiple clicks
+                        optionButtons.forEach(btn => btn.disableInteractive());
+                        
                         if (options[i] === correctCompound) {
-                            // Highlight correct button
+                            // Highlight correct button with green background
                             button.setFillStyle(0x90EE90); // Light green
                             
-                            // Correct compound selected
+                            // Update score
                             this.score += 10;
                             this.scoreText.setText(`Score: ${this.score}`);
                             
-                            // Animate card away after a short delay
+                            // Add a delay before starting the fade out
                             this.time.delayedCall(300, () => {
+                                // Fade out animation
                                 this.tweens.add({
-                                    targets: [card, titleText, ...optionButtons, ...optionTexts, overlay],
-                                    y: '+=300',
+                                    targets: [card, titleText, formulaText, ...optionButtons, ...optionTexts, overlay],
+                                    alpha: 0,
                                     duration: 500,
-                                    ease: 'Back.easeIn',
+                                    ease: 'Power2',
                                     onComplete: () => {
                                         // Clean up
                                         card.destroy();
                                         titleText.destroy();
+                                        formulaText.destroy();
                                         optionButtons.forEach(btn => btn.destroy());
                                         optionTexts.forEach(txt => txt.destroy());
                                         overlay.destroy();
                                         
-                                        // Now turn tiles lime green and animate them
+                                        // Replace matched tiles with new ones
                                         this.selectedTiles.forEach(tile => {
                                             tile.isMatched = true;
                                             tile.setVisible(false);
@@ -1400,24 +1815,36 @@
                                 });
                             });
                         } else {
-                            // Wrong compound selected - shake animation
+                            // Wrong answer handling
+                            button.setFillStyle(0xff6b6b); // Light red for wrong answer
+                            
+                            // Shake animation
                             this.tweens.add({
                                 targets: [button, text],
                                 x: button.x + 10,
                                 duration: 50,
                                 yoyo: true,
-                                repeat: 3
+                                repeat: 3,
+                                onComplete: () => {
+                                    // Reset button color and re-enable all buttons
+                                    button.setFillStyle(0xffffff);
+                                    optionButtons.forEach(btn => btn.setInteractive());
+                                }
                             });
                         }
                     });
                     
-                    // Add hover effect
+                    // Add hover effect (for desktop)
                     button.on('pointerover', () => {
-                        button.setFillStyle(0xf0f0f0);
+                        if (button.input.enabled) {  // Only show hover effect if button is interactive
+                            button.setFillStyle(0xf0f0f0);
+                        }
                     });
                     
                     button.on('pointerout', () => {
-                        button.setFillStyle(0xffffff);
+                        if (button.input.enabled) {  // Only reset color if button is interactive
+                            button.setFillStyle(0xffffff);
+                        }
                     });
                 }
             }
