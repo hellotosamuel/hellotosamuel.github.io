@@ -654,6 +654,12 @@
                 this.selectedTiles = [];
                 this.gameState.isPaused = false;
                 
+                // Clear any existing timers
+                if (this.gameTimer) {
+                    this.gameTimer.remove();
+                    this.gameTimer = null;
+                }
+                
                 // Get current game dimensions
                 this.gameWidth = this.scale.width;
                 this.gameHeight = this.scale.height;
@@ -665,9 +671,9 @@
                 this.tileGroup = this.add.group();
                 
                 // Calculate grid size to fill width with appropriate padding
-                const gridPadding = Math.floor(this.gameWidth * 0.05); // 5% of width
+                const gridPadding = Math.floor(this.gameWidth * 0.05);
                 const availableWidth = this.gameWidth - (gridPadding * 2);
-                const cellPadding = Math.floor(availableWidth * 0.025); // 2.5% of available width
+                const cellPadding = Math.floor(availableWidth * 0.025);
                 
                 // Calculate tile size to fit 5 tiles with padding between them
                 this.tileSize = (availableWidth - (cellPadding * (this.gridSize - 1))) / this.gridSize;
@@ -754,22 +760,10 @@
                     0x00ffff
                 );
                 
-                // Add white border
-                const borderGraphics = this.add.graphics();
-                borderGraphics.lineStyle(1, 0xffffff);
-                borderGraphics.beginPath();
-                borderGraphics.arc(startX + radius, timerGroupY, radius, Math.PI / 2, -Math.PI / 2, true);
-                borderGraphics.lineTo(startX + barWidth - radius, timerGroupY - radius);
-                borderGraphics.arc(startX + barWidth - radius, timerGroupY, radius, -Math.PI / 2, Math.PI / 2, false);
-                borderGraphics.lineTo(startX + radius, timerGroupY + radius);
-                borderGraphics.closePath();
-                borderGraphics.strokePath();
-                
                 // Add all components to container
                 this.timerBarContainer.add([
                     this.bgLeft, this.bgMiddle, this.bgRight,
-                    this.timerBarLeft, this.timerBarMiddle, this.timerBarRight,
-                    borderGraphics
+                    this.timerBarLeft, this.timerBarMiddle, this.timerBarRight
                 ]);
                 
                 // Initialize progress
@@ -816,15 +810,15 @@
             }
             
             startGameTimer() {
-                // Clear any existing timer
+                // Clear any existing timers
                 if (this.gameTimer) {
                     this.gameTimer.remove();
                 }
                 
-                const startTime = this.timeRemaining;
-                const startTimestamp = this.time.now;
+                // Reset time remaining
+                this.timeRemaining = this.gameTime;
                 
-                // Create timer event for text updates
+                // Create a clock for the game timer
                 this.gameTimer = this.time.addEvent({
                     delay: 1000,
                     callback: this.updateTimer,
@@ -832,26 +826,42 @@
                     loop: true
                 });
                 
-                // Add smooth progress bar update
-                this.events.on('update', () => {
-                    if (this.timeRemaining > 0 && !this.gameState.isPaused) {
-                        const elapsed = (this.time.now - startTimestamp) / 1000;
-                        const remaining = Math.max(0, startTime - elapsed);
-                        this.timeRemaining = Math.ceil(remaining);
-                        this.updateTimerBar(remaining / this.gameTime);
-                    }
+                // Create a clock for smooth progress bar updates
+                this.progressTimer = this.time.addEvent({
+                    delay: 16, // Update at ~60fps
+                    callback: this.updateProgressBar,
+                    callbackScope: this,
+                    loop: true
                 });
+                
+                // Store the start time
+                this.timerStartTime = this.time.now;
             }
             
             updateTimer() {
+                if (this.gameState.isPaused) return;
+                
                 // Update timer text
                 this.timerText.setText(`${this.timeRemaining}s`);
                 
                 // End game when timer runs out
                 if (this.timeRemaining <= 0) {
                     this.gameTimer.remove();
+                    this.progressTimer.remove();
                     this.gameOver();
                 }
+            }
+            
+            updateProgressBar() {
+                if (this.gameState.isPaused) return;
+                
+                // Calculate remaining time as a percentage
+                const elapsed = (this.time.now - this.timerStartTime) / 1000;
+                const remaining = Math.max(0, this.gameTime - elapsed);
+                this.timeRemaining = Math.ceil(remaining);
+                
+                // Update progress bar
+                this.updateTimerBar(remaining / this.gameTime);
             }
             
             gameOver() {
@@ -859,6 +869,10 @@
                 if (this.gameTimer) {
                     this.gameTimer.remove();
                     this.gameTimer = null;
+                }
+                if (this.progressTimer) {
+                    this.progressTimer.remove();
+                    this.progressTimer = null;
                 }
                 
                 // Create semi-transparent overlay (50% opacity)
@@ -1150,9 +1164,12 @@
                 // Set game state to paused
                 this.gameState.isPaused = true;
                 
-                // Pause the game timer
+                // Pause the timers
                 if (this.gameTimer) {
                     this.gameTimer.paused = true;
+                }
+                if (this.progressTimer) {
+                    this.progressTimer.paused = true;
                 }
                 
                 // Change pause button color to indicate paused state
@@ -1164,7 +1181,7 @@
                     this.gameWidth, 
                     this.gameHeight, 
                     0x000000, 
-                    1.0  // Changed from 0.5 to 1.0 for 100% opacity
+                    1.0
                 ).setOrigin(0);
                 
                 // Display pause message
@@ -1227,9 +1244,12 @@
                 // Set game state to not paused
                 this.gameState.isPaused = false;
                 
-                // Resume the game timer
+                // Resume the timers
                 if (this.gameTimer) {
                     this.gameTimer.paused = false;
+                }
+                if (this.progressTimer) {
+                    this.progressTimer.paused = false;
                 }
                 
                 // Change pause button color back to normal
