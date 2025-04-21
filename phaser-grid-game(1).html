@@ -495,7 +495,7 @@
                     ['+3', '-3'],
                     ['-3', '+3'],
                     
-                    // Intermediate 1:2 or 2:1 patterns (3-4 tiles)
+                    // Intermediate 1:2 or 2:1 or 1:3 or 3:1 patterns (3-4 tiles)
                     ['+2', '-1', '-1'],
                     ['-1', '+2', '-1'],
                     ['-1', '-1', '+2'],
@@ -591,7 +591,14 @@
                 this.tiles = [];
                 this.selectedTiles = [];
                 this.isProcessingMatch = false;
-                this.compoundType = null;
+                
+                // Initialize game data object
+                this.data = {
+                    score: 0,
+                    compoundType: null,
+                    isProcessingMatch: false,
+                    isGameOver: false
+                };
                 
                 // Base dimensions
                 this.baseWidth = 390;
@@ -600,13 +607,15 @@
                 // Game timer values
                 this.gameTime = 90;
                 this.timeRemaining = this.gameTime;
+                this.pauseStartTime = 0;
+                this.totalPausedTime = 0;
                 
                 // Font settings
                 this.fontFamily = 'National Park';
                 this.fontWeightBold = '700';
                 this.fontWeightNormal = '400';
-                this.baseFontSize = 20; // Base font size for normal symbols
-                this.minFontSize = 14;  // Minimum font size for long symbols
+                this.baseFontSize = 20;
+                this.minFontSize = 14;
                 
                 // Ion settings
                 this.tileColor = 0xffffff;
@@ -614,7 +623,18 @@
                 this.shadowColor = 0x000000;
                 this.highlightColor = 0x00ffff;
                 this.matchColor = 0xaaffc3;
-                this.score = 0;
+                
+                // Scoring constants
+                this.SCORES = {
+                    SIMPLE: 100,
+                    INTERMEDIATE: 150,
+                    ADVANCED: 250,
+                    PENALTIES: {
+                        INVALID_FLOW: 25,
+                        INVALID_MATCH: 25,
+                        WRONG_MCQ: 75
+                    }
+                };
                 
                 // Game state
                 this.gameState = {
@@ -648,9 +668,9 @@
             
             initializeGame() {
                 // Reset game state
-                this.score = 0;
+                this.data.score = 0;
                 this.timeRemaining = this.gameTime;
-                this.isProcessingMatch = false;
+                this.data.isProcessingMatch = false;
                 this.selectedTiles = [];
                 this.gameState.isPaused = false;
                 
@@ -683,6 +703,9 @@
                 this.createGrid(gridPadding);
                 
                 // Add score display centered at top
+                if (this.scoreText) {
+                    this.scoreText.destroy();
+                }
                 this.scoreText = this.add.text(
                     this.gameWidth / 2,
                     20,
@@ -855,8 +878,8 @@
             updateProgressBar() {
                 if (this.gameState.isPaused) return;
                 
-                // Calculate remaining time as a percentage
-                const elapsed = (this.time.now - this.timerStartTime) / 1000;
+                // Calculate remaining time as a percentage, accounting for paused time
+                const elapsed = (this.time.now - this.timerStartTime - this.totalPausedTime) / 1000;
                 const remaining = Math.max(0, this.gameTime - elapsed);
                 this.timeRemaining = Math.ceil(remaining);
                 
@@ -865,6 +888,9 @@
             }
             
             gameOver() {
+                // Set game over state
+                this.data.isGameOver = true;
+                
                 // Clear any existing timers
                 if (this.gameTimer) {
                     this.gameTimer.remove();
@@ -874,6 +900,15 @@
                     this.progressTimer.remove();
                     this.progressTimer = null;
                 }
+                
+                // Disable all tile interactions
+                this.tiles.forEach(row => {
+                    row.forEach(tile => {
+                        if (tile.input) {
+                            tile.disableInteractive();
+                        }
+                    });
+                });
                 
                 // Create semi-transparent overlay (50% opacity)
                 const overlay = this.add.rectangle(
@@ -901,7 +936,7 @@
                 const finalScoreText = this.add.text(
                     this.gameWidth / 2,
                     this.gameHeight / 2 + 50,
-                    `Final Score: ${this.score}`,
+                    `Final Score: ${this.data.score}`,
                     { 
                         fontFamily: this.fontFamily,
                         fontSize: '30px',
@@ -961,6 +996,9 @@
                     if (this.timerBarContainer) {
                         this.timerBarContainer.destroy();
                     }
+                    
+                    // Reset game over state
+                    this.data.isGameOver = false;
                     
                     // Go to splash screen instead of restarting
                     this.scene.start('SplashScene');
@@ -1164,6 +1202,9 @@
                 // Set game state to paused
                 this.gameState.isPaused = true;
                 
+                // Store the pause start time
+                this.pauseStartTime = this.time.now;
+                
                 // Pause the timers
                 if (this.gameTimer) {
                     this.gameTimer.paused = true;
@@ -1232,6 +1273,68 @@
                     this.resumeGame();
                 });
                 
+                // Create end game button
+                this.endGameButton = this.add.rectangle(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 120,
+                    180,
+                    50,
+                    0x4caf50
+                ).setInteractive();
+                
+                this.endGameText = this.add.text(
+                    this.gameWidth / 2,
+                    this.gameHeight / 2 + 120,
+                    'End Game',
+                    { 
+                        fontFamily: this.fontFamily,
+                        fontSize: '24px',
+                        fill: '#ffffff',
+                        fontWeight: this.fontWeightBold
+                    }
+                ).setOrigin(0.5);
+                
+                // Add hover effect to end game button
+                this.endGameButton.on('pointerover', () => {
+                    this.endGameButton.setFillStyle(0x66bb6a);
+                });
+                
+                this.endGameButton.on('pointerout', () => {
+                    this.endGameButton.setFillStyle(0x4caf50);
+                });
+                
+                // Add click handler to end game button
+                this.endGameButton.on('pointerdown', () => {
+                    // Clean up pause elements
+                    if (this.pauseOverlay) this.pauseOverlay.destroy();
+                    if (this.pauseText) this.pauseText.destroy();
+                    if (this.resumeButton) this.resumeButton.destroy();
+                    if (this.resumeText) this.resumeText.destroy();
+                    if (this.endGameButton) this.endGameButton.destroy();
+                    if (this.endGameText) this.endGameText.destroy();
+                    
+                    // Clean up game elements
+                    if (this.tileGroup) {
+                        this.tileGroup.clear(true, true);
+                    }
+                    if (this.scoreText) {
+                        this.scoreText.destroy();
+                    }
+                    if (this.timerText) {
+                        this.timerText.destroy();
+                    }
+                    if (this.timerBarContainer) {
+                        this.timerBarContainer.destroy();
+                    }
+                    
+                    // Reset game states
+                    this.gameState.isPaused = false;
+                    this.data.isGameOver = false;
+                    
+                    // Go to splash screen
+                    this.scene.start('SplashScene');
+                });
+                
                 // Disable tile interactions
                 this.tileGroup.getChildren().forEach(tile => {
                     if (tile.input) {
@@ -1243,6 +1346,9 @@
             resumeGame() {
                 // Set game state to not paused
                 this.gameState.isPaused = false;
+                
+                // Calculate and add the pause duration to total paused time
+                this.totalPausedTime += this.time.now - this.pauseStartTime;
                 
                 // Resume the timers
                 if (this.gameTimer) {
@@ -1260,6 +1366,8 @@
                 if (this.pauseText) this.pauseText.destroy();
                 if (this.resumeButton) this.resumeButton.destroy();
                 if (this.resumeText) this.resumeText.destroy();
+                if (this.endGameButton) this.endGameButton.destroy();
+                if (this.endGameText) this.endGameText.destroy();
                 
                 // Re-enable tile interactions
                 this.tileGroup.getChildren().forEach(tile => {
@@ -1270,8 +1378,8 @@
             }
             
             selectTile(tile, graphics) {
-                // Don't allow selection if game is paused
-                if (this.gameState.isPaused) return;
+                // Don't allow selection if game is over or paused
+                if (this.data.isGameOver || this.gameState.isPaused) return;
                 
                 if (this.isProcessingMatch || tile.isMatched) return;
                 
@@ -1294,13 +1402,18 @@
                     return;
                 }
                 
-                // Validate the new selection against flow patterns
-                const isValid = this.flowValidator.addSelection(tile.ion.charge);
-                
-                if (!isValid) {
-                    // Invalid selection - show error and reset
-                    this.handleInvalidSelection();
-                    return;
+                // Only validate flow patterns if there are already selected tiles
+                if (this.selectedTiles.length > 0) {
+                    const isValid = this.flowValidator.addSelection(tile.ion.charge);
+                    
+                    if (!isValid) {
+                        // Invalid selection - show error and reset
+                        this.handleInvalidSelection();
+                        return;
+                    }
+                } else {
+                    // First tile selection - just add it to the validator
+                    this.flowValidator.addSelection(tile.ion.charge);
                 }
                 
                 // Valid selection - add to selected tiles
@@ -1357,7 +1470,7 @@
             }
             
             validateCompound() {
-                this.isProcessingMatch = true;
+                this.data.isProcessingMatch = true;
                 
                 // Calculate net charge
                 const netCharge = this.calculateNetCharge(this.selectedTiles);
@@ -1389,11 +1502,25 @@
                 const count1 = ionCounts[`${ion1.symbol}_${ion1.charge}`];
                 const count2 = ionCounts[`${ion2.symbol}_${ion2.charge}`];
                 
+                // Determine compound type based on selection length and pattern
+                let compoundType = null;
+                if (this.gameState.currentSelection.length === 2) {
+                    compoundType = 'simple';
+                } else if (this.gameState.currentSelection.length === 3 || this.gameState.currentSelection.length === 4) {
+                    compoundType = 'intermediate';
+                } else if (this.gameState.currentSelection.length === 5) {
+                    compoundType = 'advanced';
+                }
+                
+                // Set the compound type in the scene's data
+                this.data.compoundType = compoundType;
+                console.log('Compound type set to:', compoundType);
+                
                 // Create compound key based on ion counts
                 let compoundKey;
-                if (ion1.charge > 0) { // ion1 is cation
+                if (ion1.charge > 0) {
                     compoundKey = `${ion1.symbol}_${ion2.symbol}`;
-                } else { // ion1 is anion
+                } else {
                     compoundKey = `${ion2.symbol}_${ion1.symbol}`;
                 }
                 
@@ -1417,28 +1544,40 @@
                     this.handleInvalidCompound();
                 }
                 
-                this.isProcessingMatch = false;
+                this.data.isProcessingMatch = false;
             }
             
             handleInvalidCompound() {
                 // Store the tiles that need to be replaced
                 const tilesToReplace = [...this.selectedTiles];
                 
+                // Apply penalty for invalid compound match
+                this.applyPenalty(this.SCORES.PENALTIES.INVALID_MATCH);
+                
                 // Animate tiles turning red
                 this.selectedTiles.forEach(tile => {
                     const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
-                this.tweens.add({
+                    
+                    // Clear and draw red tile
+                    graphics.clear();
+                    this.drawTile(graphics, tile.x, tile.y, 0xff0000, false);
+                    
+                    // Animate back to white
+                    this.tweens.add({
                         targets: graphics,
-                        fillColor: 0xff0000,
-                        duration: 200,
+                        alpha: 0.5,
+                        duration: 100,
                         yoyo: true,
-                    onComplete: () => {
+                        onComplete: () => {
                             // After red flash, destroy the tile and text
                             tile.setVisible(false);
                             if (tile.text) tile.text.setVisible(false);
                             
-                            // Create new ion for this position with fade-in animation
-                            this.createNewIonForTile(tile);
+                            // Add delay before creating new tile
+                            this.time.delayedCall(400, () => {
+                                // Create new ion for this position with fade-in animation
+                                this.createNewIonForTile(tile);
+                            });
                         }
                     });
                 });
@@ -1504,11 +1643,14 @@
                         fillColor: 0xff0000,
                         duration: 200,
                         yoyo: true,
-                    onComplete: () => {
+                        onComplete: () => {
                             this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
                         }
                     });
                 });
+                
+                // Apply penalty for invalid flow
+                this.applyPenalty(this.SCORES.PENALTIES.INVALID_FLOW);
                 
                 // Deselect all tiles after animation
                 this.time.delayedCall(400, () => {
@@ -1637,7 +1779,7 @@
                     }
                     
                     // Get the formula from the CSV data
-                    // We need to find the row in the CSV that matches our compound
+                    // We need to find the formula from the selected ions
                     // For now, we'll use a mapping approach
                     const formulaMap = {
                         'Na⁺_OH⁻': 'NaOH',
@@ -1841,9 +1983,8 @@
                             // Highlight correct button with green background
                             button.setFillStyle(0x90EE90); // Light green
                             
-                            // Update score
-                            this.score += 10;
-                            this.scoreText.setText(`Score: ${this.score}`);
+                            // Award points based on compound type
+                            this.awardPoints();
                             
                             // Add a delay before starting the fade out
                             this.time.delayedCall(300, () => {
@@ -1877,6 +2018,9 @@
                         } else {
                             // Wrong answer handling
                             button.setFillStyle(0xff6b6b); // Light red for wrong answer
+                            
+                            // Apply penalty for wrong MCQ answer
+                            this.applyPenalty(this.SCORES.PENALTIES.WRONG_MCQ);
                             
                             // Shake animation
                             this.tweens.add({
@@ -1932,7 +2076,7 @@
                         fontSize: `${fontSize}px`,
                         fill: '#000000',
                         fontWeight: this.fontWeightBold
-                    }).setOrigin(0.5);
+                    }).setOrigin(0.5).setAlpha(0); // Start with 0 alpha for fade-in
                     
                     // Update tile properties
                     tile.ion = newIon;
@@ -1941,13 +2085,39 @@
                     tile.isMatched = false;
                     tile.setVisible(true);
                     
-                    // Draw the tile
+                    // Draw the tile with initial alpha
                     const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
                     graphics.clear();
                     this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
+                    graphics.setAlpha(0);
                     
                     // Add to group for management
                     this.tileGroup.add(text);
+                    
+                    // First show green flash animation
+                    graphics.clear();
+                    this.drawTile(graphics, tile.x, tile.y, 0x90EE90, false); // Draw green tile
+                    graphics.setAlpha(1);
+                    
+                    this.tweens.add({
+                        targets: graphics,
+                        alpha: 0.5,
+                        duration: 200,
+                        yoyo: true,
+                        onComplete: () => {
+                            // Clear and draw white tile
+                            graphics.clear();
+                            this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
+                            
+                            // Then fade in the new tile
+                            this.tweens.add({
+                                targets: [graphics, text],
+                                alpha: 1,
+                                duration: 1000,
+                                ease: 'Power2'
+                            });
+                        }
+                    });
                 });
                 
                 // Reset match processing flag
@@ -1984,6 +2154,44 @@
                 
                 // Default to minimum font size for very long symbols
                 return this.minFontSize;
+            }
+
+            // New helper method to apply penalties
+            applyPenalty(penalty) {
+                if (this.scoreText) {
+                    const currentScore = this.data.score;
+                    const newScore = Math.max(0, currentScore - penalty);
+                    this.data.score = newScore;
+                    this.scoreText.setText(`Score: ${newScore}`);
+                    console.log('Penalty applied:', penalty, 'New score:', newScore);
+                }
+            }
+
+            // New helper method to award points based on compound type
+            awardPoints() {
+                if (!this.scoreText) return;
+                
+                const compoundType = this.data.compoundType;
+                console.log('Current compound type:', compoundType);
+                
+                let points = 0;
+                switch (compoundType) {
+                    case 'simple':
+                        points = this.SCORES.SIMPLE;
+                        break;
+                    case 'intermediate':
+                        points = this.SCORES.INTERMEDIATE;
+                        break;
+                    case 'advanced':
+                        points = this.SCORES.ADVANCED;
+                        break;
+                }
+                
+                const currentScore = this.data.score;
+                const newScore = currentScore + points;
+                this.data.score = newScore;
+                this.scoreText.setText(`Score: ${newScore}`);
+                console.log('Points awarded:', points, 'New score:', newScore);
             }
         }
 
