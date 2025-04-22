@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Color Matching Game</title>
+    <title>ChemcalRush</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=National+Park:wght@200..800&display=swap" rel="stylesheet">
@@ -92,6 +92,12 @@
                 
                 // Load the font using WebFontLoader
                 this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
+
+                // Load audio files
+                this.load.audio('bgm', [
+                    'audio/puzzlebgm.ogg',
+                    'audio/puzzlebgm.m4a'
+                ]);
             }
 
             create() {
@@ -99,6 +105,19 @@
                 this.children.list
                     .filter(child => child instanceof Phaser.GameObjects.Graphics)
                     .forEach(child => child.destroy());
+
+                // Function to detect iOS devices
+                const isIOS = () => {
+                    return [
+                        'iPad Simulator',
+                        'iPhone Simulator',
+                        'iPod Simulator',
+                        'iPad',
+                        'iPhone',
+                        'iPod'
+                    ].includes(navigator.platform)
+                    || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+                };
 
                 // Load fonts before creating the elements
                 WebFont.load({
@@ -196,15 +215,11 @@
                 // Add click handler
                 button.on('pointerdown', () => {
                     // Fade out effect
-                    this.tweens.add({
-                        targets: [logo, button, buttonText],
-                        alpha: 0,
-                        duration: 500,
-                        ease: 'Power2',
-                        onComplete: () => {
-                            // Start the main game scene
-                            this.scene.start('MainScene');
-                        }
+                    this.cameras.main.fade(1000, 0, 0, 0);
+                    
+                    // Start the main game scene after fade
+                    this.time.delayedCall(1000, () => {
+                        this.scene.start('MainScene');
                     });
                 });
             }
@@ -597,7 +612,8 @@
                     score: 0,
                     compoundType: null,
                     isProcessingMatch: false,
-                    isGameOver: false
+                    isGameOver: false,
+                    isPenaltyCooldown: false  // Add penalty cooldown state
                 };
                 
                 // Base dimensions
@@ -655,6 +671,33 @@
             }
 
             create() {
+                // Initialize audio with error handling
+                try {
+                    this.bgm = this.sound.add('bgm', {
+                        loop: false,
+                        volume: 0.5
+                    });
+                    console.log('Audio initialized successfully');
+                } catch (error) {
+                    console.error('Error initializing audio:', error);
+                }
+                
+                // Create a one-time click handler for the entire scene to initialize audio
+                this.input.once('pointerdown', () => {
+                    try {
+                        // This will initialize the audio context
+                        this.sound.setMute(false);
+                        console.log('Audio context initialized on user interaction');
+                    } catch (error) {
+                        console.error('Error initializing audio context:', error);
+                    }
+                });
+                
+                // Clean up progress bar
+                this.children.list
+                    .filter(child => child instanceof Phaser.GameObjects.Graphics)
+                    .forEach(child => child.destroy());
+
                 // Load fonts before creating the game elements
                 WebFont.load({
                     google: {
@@ -679,6 +722,9 @@
                     this.gameTimer.remove();
                     this.gameTimer = null;
                 }
+
+                // Remove any existing event listeners
+                this.cleanupEventListeners();
                 
                 // Get current game dimensions
                 this.gameWidth = this.scale.width;
@@ -726,6 +772,56 @@
                 
                 // Start the game timer
                 this.startGameTimer();
+
+                // Store handler references for cleanup
+                this.visibilityHandler = () => {
+                    if (document.hidden && !this.gameState.isPaused && !this.data.isGameOver) {
+                        this.pauseGame();
+                    }
+                };
+                this.blurHandler = () => {
+                    if (!this.gameState.isPaused && !this.data.isGameOver) {
+                        this.pauseGame();
+                    }
+                };
+
+                // Add visibility change handler
+                document.addEventListener('visibilitychange', this.visibilityHandler);
+
+                // Add window blur handler
+                window.addEventListener('blur', this.blurHandler);
+            }
+
+            cleanupEventListeners() {
+                // Remove event listeners if they exist
+                if (this.visibilityHandler) {
+                    document.removeEventListener('visibilitychange', this.visibilityHandler);
+                    this.visibilityHandler = null;
+                }
+                if (this.blurHandler) {
+                    window.removeEventListener('blur', this.blurHandler);
+                    this.blurHandler = null;
+                }
+            }
+
+            shutdown() {
+                // Clean up event listeners when scene shuts down
+                this.cleanupEventListeners();
+                
+                // Clean up any other resources
+                if (this.gameTimer) {
+                    this.gameTimer.remove();
+                    this.gameTimer = null;
+                }
+                if (this.progressTimer) {
+                    this.progressTimer.remove();
+                    this.progressTimer = null;
+                }
+                if (this.bgm) {
+                    this.bgm.stop();
+                    this.bgm.destroy();
+                    this.bgm = null;
+                }
             }
             
             createTimer() {
@@ -841,6 +937,9 @@
                 // Reset time remaining
                 this.timeRemaining = this.gameTime;
                 
+                // Store the start time BEFORE creating timers
+                this.timerStartTime = this.time.now;
+                
                 // Create a clock for the game timer
                 this.gameTimer = this.time.addEvent({
                     delay: 1000,
@@ -857,8 +956,12 @@
                     loop: true
                 });
                 
-                // Store the start time
-                this.timerStartTime = this.time.now;
+                // Start playing background music with 600ms delay
+                this.time.delayedCall(600, () => {
+                    if (this.bgm && !this.bgm.isPlaying) {
+                        this.bgm.play();
+                    }
+                });
             }
             
             updateTimer() {
@@ -888,6 +991,9 @@
             }
             
             gameOver() {
+                // Clean up event listeners
+                this.cleanupEventListeners();
+
                 // Set game over state
                 this.data.isGameOver = true;
                 
@@ -1213,6 +1319,11 @@
                     this.progressTimer.paused = true;
                 }
                 
+                // Pause the background music if it's playing
+                if (this.bgm && this.bgm.isPlaying) {
+                    this.bgm.pause();
+                }
+                
                 // Change pause button color to indicate paused state
                 this.pauseButton.setFillStyle(0xff9900);
                 
@@ -1313,6 +1424,14 @@
                     if (this.endGameButton) this.endGameButton.destroy();
                     if (this.endGameText) this.endGameText.destroy();
                     
+                    // Stop the background music
+                    if (this.bgm) {
+                        this.bgm.stop();
+                        // Remove the audio instance to prevent overlapping
+                        this.bgm.destroy();
+                        this.bgm = null;
+                    }
+                    
                     // Clean up game elements
                     if (this.tileGroup) {
                         this.tileGroup.clear(true, true);
@@ -1356,6 +1475,11 @@
                 }
                 if (this.progressTimer) {
                     this.progressTimer.paused = false;
+                }
+                
+                // Resume the background music if it was paused
+                if (this.bgm && this.bgm.isPaused) {
+                    this.bgm.resume();
                 }
                 
                 // Change pause button color back to normal
@@ -1563,12 +1687,12 @@
                     this.drawTile(graphics, tile.x, tile.y, 0xff0000, false);
                     
                     // Animate back to white
-                    this.tweens.add({
+                this.tweens.add({
                         targets: graphics,
                         alpha: 0.5,
                         duration: 100,
                         yoyo: true,
-                        onComplete: () => {
+                    onComplete: () => {
                             // After red flash, destroy the tile and text
                             tile.setVisible(false);
                             if (tile.text) tile.text.setVisible(false);
@@ -1634,7 +1758,19 @@
             }
             
             handleInvalidSelection() {
-                // This method is now only used for invalid flow patterns
+                // Don't process if already in penalty cooldown
+                if (this.data.isPenaltyCooldown) return;
+                
+                // Set penalty cooldown
+                this.data.isPenaltyCooldown = true;
+                
+                // Disable all tile interactions during penalty
+                this.tileGroup.getChildren().forEach(tile => {
+                    if (tile.input) {
+                        tile.disableInteractive();
+                    }
+                });
+                
                 // Pulse tiles red to indicate invalid selection
                 this.selectedTiles.forEach(tile => {
                     const graphics = this.tileGraphics[tile.gridRow][tile.gridCol];
@@ -1643,7 +1779,7 @@
                         fillColor: 0xff0000,
                         duration: 200,
                         yoyo: true,
-                        onComplete: () => {
+                    onComplete: () => {
                             this.drawTile(graphics, tile.x, tile.y, this.tileColor, false);
                         }
                     });
@@ -1652,9 +1788,21 @@
                 // Apply penalty for invalid flow
                 this.applyPenalty(this.SCORES.PENALTIES.INVALID_FLOW);
                 
-                // Deselect all tiles after animation
+                // Deselect all tiles and re-enable interactions after animation
                 this.time.delayedCall(400, () => {
                     this.deselectAllTiles();
+                    
+                    // Re-enable tile interactions for unmatched tiles
+                    this.tileGroup.getChildren().forEach(tile => {
+                        if (tile.input && !tile.isMatched) {
+                            tile.setInteractive();
+                        }
+                    });
+                    
+                    // Clear penalty cooldown after a short delay
+                    this.time.delayedCall(200, () => {
+                        this.data.isPenaltyCooldown = false;
+                    });
                 });
             }
             
@@ -2206,7 +2354,11 @@
                 autoCenter: Phaser.Scale.CENTER_BOTH
             },
             scene: [SplashScene, MainScene],
-            backgroundColor: '#000000'
+            backgroundColor: '#000000',
+            audio: {
+                disableWebAudio: false,
+                context: null
+            }
         };
 
         // Initialize the game
