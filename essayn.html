@@ -17,6 +17,7 @@
             --light-gray: #f8f9fa;
             --border-color: #dee2e6;
             --text-color: #212529;
+            --highlight-color: #216E00;
             --white: #fff;
             --danger-color: #dc3545;
             --success-color: #28a745;
@@ -118,7 +119,7 @@
         /* Word on Click Styling */
         .markdown-content .word {
             text-decoration: underline;
-            color: var(--primary-color);
+            color: var(--highlight-color);
             cursor: pointer;
             text-decoration-style: dotted;
             font-weight: 500; /* Make them slightly bolder */
@@ -286,11 +287,121 @@
              Descriptive: `...`, PersonalReflective: `...`, Argumentative: `...`, Discursive: `...`
         };
         // (Populate with full text - omitted for brevity)
-         baseGuidingQuestions.Descriptive = `...`; // Same content
-         baseGuidingQuestions.PersonalReflective = `...`; // Same content
-         baseGuidingQuestions.Argumentative = `...`; // Same content
-         baseGuidingQuestions.Discursive = `...`; // Same content
+         baseGuidingQuestions.Descriptive = `
+Introduction
+- How can I create an engaging opening sentence to capture the reader's attention?
+- What is the overall scene or subject I will be describing?
+- What is the main impression or feeling I want to convey to the reader?
 
+Paragraph 1 (setting the scene)
+- What are the sights that dominate the scene? What colors, shapes, and sizes do I notice?
+- What sounds can be heard? Are they loud or soft, distinct or muffled?
+- What smells are present in the air? Are they pleasant or unpleasant, strong or faint?
+- What textures can be felt? Are they rough or smooth, hard or soft?
+
+Paragraph 2 (Focusing on a Specific Element)
+- Is there a particular object or person that stands out in the scene?
+- What are the specific details about this element that make it interesting or significant?
+- How can I use figurative language (similes, metaphors, personification) to describe this element vividly?
+
+Paragraph 3 (Incorporating Action or Emotion)
+- Is there any action taking place in the scene? How can I describe the movements and interactions?
+- What emotions do I feel when observing this scene? How can I convey these feelings through my writing?
+- How does this scene connect to a broader theme or idea?
+
+Conclusion
+- How can I summarise the main impressions I have described?
+- What is the lasting feeling or thought I want to leave with the reader?
+- How can I create a sense of closure to the essay?
+            `.trim();
+        baseGuidingQuestions.PersonalReflective = `
+Introduction:
+- Identify a personal experience that was significant due to a lesson learned, a change in perspective, or strong emotions. Choose one specific experience to focus on.
+- Consider how to begin your essay with an engaging hook to immediately capture the reader's attention. Think about using a vivid image, a moment of tension, or a relevant question.
+- Determine the essential background information needed for the reader to understand the context of your experience. Ensure this information is concise.
+- Clarify the main feeling or central idea you aim to explore through your reflection on this experience.
+
+Body Paragraphs
+
+- Describing the Experience:
+  - Pinpoint the crucial events or key moments that occurred during the experience. Focus on the most important aspects.
+  - Recall what you observed through your senses: sight, hearing, smell, taste, and touch. Use sensory details to create a vivid and immersive narrative for the reader.
+  - Identify if there was a specific moment that stands out prominently in your memory of the experience.
+  - Consider how to employ descriptive language to effectively illustrate what happened, rather than simply stating the events.
+
+- Reflecting on Thoughts and Feelings:
+  - Reflect on your initial thoughts and emotions as the experience unfolded.
+  - Consider if your emotions changed during the experience. If so, explore how and why these changes occurred.
+  - Identify some of the key thoughts that you had at different points throughout the experience.
+  - Explain the reasons behind your emotional and mental responses to the events as they happened.
+  - Reflect on any internal conflicts or moments of realization that you experienced during this time.
+
+- Lessons Learned and Significance (Optional):
+  - Determine the most significant lesson or key takeaway that you gained from this experience.
+  - Consider how this experience has influenced your perspective on yourself, on others, or on the world around you.
+  - Reflect on whether this experience has led to any changes in your beliefs, attitudes, or behavior.
+  - Explore the broader significance or deeper meaning of this experience in the context of your own life.
+  - Consider if you can connect this personal experience to any universal themes or broader ideas.
+
+Conclusion
+- Think about how to briefly summarize the main insights or key lessons that you have reflected upon in your essay.
+- Determine a final thought, feeling, or message that you want to leave with the reader at the end of your essay.
+- Consider how you can bring your essay to a satisfying and thoughtful conclusion, providing a sense of closure.
+- Reflect on the lasting impact that this experience has had on you and how you might articulate this in your conclusion.
+            `.trim();
+        baseGuidingQuestions.Argumentative = `
+Introduction:
+- Hook: How can I grab the reader's attention immediately (e.g., surprising fact, thought-provoking question, common misconception)?
+- Background: What essential context does the reader need about this topic? Why is this issue important or debated?
+- Thesis Statement: What is my clear stance on the issue? What are the main reasons (briefly mentioned) supporting my stance? (Optional: Hint at a counter-argument I'll address).
+
+Body Paragraph 1 (Supporting Point 1)
+- Topic Sentence: What is the first main reason supporting my thesis?
+- Explanation: Why is this reason valid? How does it work or what are its implications?
+- Evidence/Example: What specific real-world example, fact, or statistic proves this point? (Avoid purely personal stories unless appropriate for the prompt).
+- Link: How does this specific point reinforce my overall thesis statement?
+
+Body Paragraph 2 (Supporting Point 2)
+- Topic Sentence: What is the second distinct reason supporting my thesis?
+- Explanation: How can I elaborate on this second reason? What makes it significant?
+- Evidence/Example: What different evidence or example supports this second point?
+- Link: How does this second point further strengthen my main argument (thesis)?
+
+Body Paragraph 3: Counter-Argument & Rebuttal (Recommended):
+- Acknowledge Counter-Argument: What is a common opposing view to my stance? How can I state it fairly?
+- Rebuttal: Why is my argument stronger than this opposing view? What are the weaknesses or limitations of the counter-argument? How can I respectfully disprove it and reinforce my original point?
+
+Conclusion:
+- Restate Thesis (Rephrased): How can I express my main argument again using different words?
+- Summarize Main Points: What were the key reasons I used to support my thesis? (Briefly remind the reader).
+- Concluding Statement: What final thought, reflection, or call to action can I leave the reader with? How can I provide a sense of closure?
+            `.trim();
+        baseGuidingQuestions.Discursive = `
+Introduction:
+- Hook: How can I engage the reader with the topic (e.g., relevant observation, question about its complexity)?
+- Background: What is the topic, and why is it complex or debatable? What are the different sides or facets involved?
+- Focus Statement: What specific perspectives or aspects of the topic will this essay explore? (Outline the scope without taking a side).
+
+Body Paragraph 1: Perspective/Aspect 1:
+- Topic Sentence: What is the first main viewpoint or aspect of the topic I will discuss?
+- Explanation: What are the key ideas, arguments, or characteristics associated with this perspective?
+- Examples/Illustrations: What specific examples or situations demonstrate this viewpoint in action?
+
+Body Paragraph 2: Perspective/Aspect 2:
+- Topic Sentence: What is a different (often contrasting) viewpoint or aspect of the topic?
+- Explanation: What are the main arguments or details related to this second perspective?
+- Examples/Illustrations: What different examples illustrate this second viewpoint?
+
+Body Paragraph 3: Synthesis/Analysis (Optional but Recommended):
+- Relationship: How do the perspectives discussed connect, conflict, or interact with each other?
+- Analysis: What are the strengths and weaknesses of each perspective?
+- Nuances: Are there any complexities, grey areas, or specific conditions that affect the issue? How does context matter?
+
+Conclusion:
+- Summarize Perspectives: What were the main viewpoints or aspects explored in the essay? (Briefly recap).
+- Balanced Concluding Thought: What final statement reflects the complexity of the issue without strongly favouring one side? (Acknowledge the multiple facets).
+- Final Reflection/Insight: What broader thought or insight about the topic can I leave the reader with? How can I emphasize the multifaceted nature of the issue?
+            `.trim();
 
         // --- PROMPT ENGINEERING STRATEGIES ---
         const promptStrategies = {
