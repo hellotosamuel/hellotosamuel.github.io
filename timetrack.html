@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelancer Time Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card.primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .stat-card.negative {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        input[type="number"], 
+        input[type="date"], 
+        input[type="text"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+
+        input[type="number"]:focus, 
+        input[type="date"]:focus, 
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .entries-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .entries-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .entries-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .entries-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .entry-item {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .entry-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .entry-content {
+            flex: 1;
+        }
+
+        .entry-date {
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 0.25rem;
+        }
+
+        .entry-hours {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .entry-description {
+            color: #6b7280;
+            font-style: italic;
+            font-size: 0.875rem;
+        }
+
+        .no-entries {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        .no-entries-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 1.5rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="main-card">
+            <div class="header">
+                <h1>⏱️ Time Tracker</h1>
+                <p>Manage your freelance project hours efficiently</p>
+            </div>
+
+            <div class="content">
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalHoursDisplay">0</div>
+                        <div class="stat-label">Total Hours</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="spentHoursDisplay">0</div>
+                        <div class="stat-label">Hours Spent</div>
+                    </div>
+                    <div class="stat-card primary" id="remainingCard">
+                        <div class="stat-value" id="remainingHoursDisplay">0</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                </div>
+
+                <!-- Project Setup -->
+                <div class="section">
+                    <h2 class="section-title">Project Setup</h2>
+                    <div class="form-group">
+                        <label for="totalProjectHours">Total Project Hours</label>
+                        <input type="number" id="totalProjectHours" min="0" placeholder="Enter total hours for this project">
+                    </div>
+                    <button id="setTotalHoursBtn" class="btn">
+                        💼 Set Project Hours
+                    </button>
+                </div>
+
+                <!-- Quick Time Entry -->
+                <div class="section">
+                    <h2 class="section-title">Log Time</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="entryDate">Date</label>
+                            <input type="date" id="entryDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="entryHours">Hours Worked</label>
+                            <input type="number" id="entryHours" min="1" step="1" placeholder="Hours">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryDescription">Description (Optional)</label>
+                        <input type="text" id="entryDescription" placeholder="What did you work on?">
+                    </div>
+                    <button id="addEntryBtn" class="btn">
+                        ➕ Add Time Entry
+                    </button>
+                </div>
+
+                <!-- Time Entries Log -->
+                <div class="section">
+                    <h2 class="section-title">Time Log</h2>
+                    <div class="entries-container">
+                        <div id="entriesList">
+                            <!-- Entries will be listed here -->
+                        </div>
+                        <div id="noEntriesMessage" class="no-entries" style="display: none;">
+                            <div class="no-entries-icon">📝</div>
+                            <p>No time entries yet. Start tracking your work!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Management -->
+                <div class="section">
+                    <h2 class="section-title">Data Management</h2>
+                    <div class="button-group">
+                        <button id="saveDataBtn" class="btn">
+                            💾 Save & Download Backup
+                        </button>
+                        <div class="file-input-wrapper">
+                            <button class="btn btn-secondary" id="importBtn">
+                                📁 Import Backup
+                            </button>
+                            <input type="file" id="importFile" accept=".json">
+                        </div>
+                        <button id="clearDataBtn" class="btn btn-danger">
+                            🗑️ Clear All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LS_TOTAL_HOURS_KEY = 'freelancerTimeTracker_totalHours';
+        const LS_ENTRIES_KEY = 'freelancerTimeTracker_entries';
+
+        let totalProjectHours = 0;
+        let timeEntries = []; // Array of {id: Date.now(), date: 'YYYY-MM-DD', hours: N, description: ''}
+
+        // DOM Elements
+        const totalProjectHoursInput = document.getElementById('totalProjectHours');
+        const setTotalHoursBtn = document.getElementById('setTotalHoursBtn');
+        const remainingHoursDisplay = document.getElementById('remainingHoursDisplay');
+        const totalHoursDisplay = document.getElementById('totalHoursDisplay');
+        const spentHoursDisplay = document.getElementById('spentHoursDisplay');
+        const remainingCard = document.getElementById('remainingCard');
+        
+        const entryDateInput = document.getElementById('entryDate');
+        const entryHoursInput = document.getElementById('entryHours');
+        const entryDescriptionInput = document.getElementById('entryDescription');
+        const addEntryBtn = document.getElementById('addEntryBtn');
+        
+        const entriesList = document.getElementById('entriesList');
+        const noEntriesMessage = document.getElementById('noEntriesMessage');
+        
+        const saveDataBtn = document.getElementById('saveDataBtn');
+        const importFileBtn = document.getElementById('importFile');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataFromLocalStorage();
+            renderAll();
+            // Set default date for new entry
+            entryDateInput.valueAsDate = new Date();
+        });
+
+        // --- Core Logic ---
+        function setTotalHours() {
+            const hours = parseInt(totalProjectHoursInput.value);
+            if (isNaN(hours) || hours < 0) {
+                alert("Please enter a valid non-negative number for total project hours.");
+                return;
+            }
+            totalProjectHours = hours;
+            saveDataToLocalStorage(); // Auto-save this change
+            renderAll();
+            showNotification("Total project hours updated!");
+        }
+
+        function addEntry() {
+            const date = entryDateInput.value;
+            const hours = parseInt(entryHoursInput.value);
+            const description = entryDescriptionInput.value.trim();
+
+            if (!date) {
+                alert("Please select a date.");
+                return;
+            }
+            if (isNaN(hours) || hours <= 0) {
+                alert("Please enter a valid number of hours (must be 1 or more).");
+                return;
+            }
+
+            const newEntry = {
+                id: Date.now(), // Unique ID for deletion
+                date: date,
+                hours: hours,
+                description: description
+            };
+            timeEntries.push(newEntry);
+            timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
+
+            saveDataToLocalStorage(); // Auto-save this change
+            renderAll();
+            
+            // Clear input fields
+            entryHoursInput.value = '';
+            entryDescriptionInput.value = '';
+            // entryDateInput.valueAsDate = new Date(); // Optionally reset date or keep it
+            showNotification("Time entry added successfully!");
+        }
+
+        function deleteEntry(entryId) {
+            if (confirm("Are you sure you want to delete this entry?")) {
+                timeEntries = timeEntries.filter(entry => entry.id !== entryId);
+                saveDataToLocalStorage();
+                renderAll();
+                showNotification("Entry deleted.");
+            }
+        }
+
+        function showNotification(message) {
+            // Simple notification - you could enhance this with a proper toast system
+            const originalText = setTotalHoursBtn.textContent;
+            if (message.includes("Total project")) {
+                setTotalHoursBtn.textContent = "✅ Updated!";
+                setTimeout(() => {
+                    setTotalHoursBtn.textContent = originalText;
+                }, 2000);
+            }
+        }
+
+        // --- Rendering ---
+        function renderAll() {
+            renderTimeEntries();
+            renderStats();
+            // Update total project hours input field if it was loaded
+            if (totalProjectHours > 0 || timeEntries.length > 0) { // Only if there's some data
+                 totalProjectHoursInput.value = totalProjectHours;
+            }
+        }
+
+        function renderStats() {
+            const spentHours = timeEntries.reduce((sum, entry) => sum + entry.hours, 0);
+            const remaining = totalProjectHours - spentHours;
+            
+            totalHoursDisplay.textContent = totalProjectHours;
+            spentHoursDisplay.textContent = spentHours;
+            remainingHoursDisplay.textContent = remaining;
+
+            // Update remaining card style
+            remainingCard.className = 'stat-card';
+            if (remaining < 0) {
+                remainingCard.classList.add('negative');
+            } else {
+                remainingCard.classList.add('primary');
+            }
+        }
+
+        function renderTimeEntries() {
+            entriesList.innerHTML = ''; // Clear existing list
+            if (timeEntries.length === 0) {
+                noEntriesMessage.style.display = 'block';
+                return;
+            }
+            noEntriesMessage.style.display = 'none';
+
+            timeEntries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry-item fade-in';
+                entryDiv.innerHTML = `
+                    <div class="entry-content">
+                        <div class="entry-date">${formatDate(entry.date)}</div>
+                        <div class="entry-hours">${entry.hours} hour${entry.hours > 1 ? 's' : ''}</div>
+                        ${entry.description ? `<div class="entry-description">${entry.description}</div>` : ''}
+                    </div>
+                    <button class="btn btn-danger btn-small" onclick="deleteEntry(${entry.id})">
+                        🗑️ Delete
+                    </button>
+                `;
+                entriesList.appendChild(entryDiv);
+            });
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // --- Data Persistence ---
+        function saveDataToLocalStorage() {
+            localStorage.setItem(LS_TOTAL_HOURS_KEY, JSON.stringify(totalProjectHours));
+            localStorage.setItem(LS_ENTRIES_KEY, JSON.stringify(timeEntries));
+            console.log("Data saved to Local Storage.");
+        }
+
+        function loadDataFromLocalStorage() {
+            const storedTotalHours = localStorage.getItem(LS_TOTAL_HOURS_KEY);
+            const storedEntries = localStorage.getItem(LS_ENTRIES_KEY);
+
+            if (storedTotalHours) {
+                totalProjectHours = JSON.parse(storedTotalHours);
+            }
+            if (storedEntries) {
+                timeEntries = JSON.parse(storedEntries);
+                timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Ensure sort order
+            }
+            console.log("Data loaded from Local Storage.");
+        }
+
+        function downloadBackup() {
+            const dataToBackup = {
+                totalProjectHours: totalProjectHours,
+                timeEntries: timeEntries
+            };
+            const jsonString = JSON.stringify(dataToBackup, null, 2); // Pretty print JSON
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,'-');
+            a.download = `time_tracker_backup_${timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert("Backup JSON file downloaded.");
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            if (!file.name.endsWith('.json')) {
+                alert("Please select a valid JSON backup file.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (importedData && typeof importedData.totalProjectHours === 'number' && Array.isArray(importedData.timeEntries)) {
+                        if (confirm("This will overwrite current data. Are you sure you want to import?")) {
+                            totalProjectHours = importedData.totalProjectHours;
+                            timeEntries = importedData.timeEntries;
+                            timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Ensure sort order
+                            
+                            saveDataToLocalStorage(); // Save imported data to LS
+                            renderAll();
+                            alert("Data imported successfully!");
+                        }
+                    } else {
+                        alert("Invalid JSON file format. Expected 'totalProjectHours' and 'timeEntries' array.");
+                    }
+                } catch (error) {
+                    alert("Error parsing JSON file: " + error.message);
+                    console.error("Import error:", error);
+                } finally {
+                    // Reset file input to allow re-selection of the same file
+                    event.target.value = null;
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm("ARE YOU SURE you want to clear ALL data? This cannot be undone! Make sure you have a backup if needed.")) {
+                if (confirm("FINAL CONFIRMATION: Delete all project hours and time entries?")) {
+                    totalProjectHours = 0;
+                    timeEntries = [];
+                    localStorage.removeItem(LS_TOTAL_HOURS_KEY);
+                    localStorage.removeItem(LS_ENTRIES_KEY);
+                    renderAll();
+                    totalProjectHoursInput.value = ''; // Clear the input field as well
+                    alert("All data cleared.");
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        setTotalHoursBtn.addEventListener('click', setTotalHours);
+        addEntryBtn.addEventListener('click', addEntry);
+        
+        saveDataBtn.addEventListener('click', () => {
+            saveDataToLocalStorage(); // This is already called on add/set, but good for explicit save
+            downloadBackup();
+        });
+        
+        // Fix import button to trigger file input
+        document.getElementById('importBtn').addEventListener('click', () => {
+            importFileBtn.click();
+        });
+        
+        importFileBtn.addEventListener('change', handleImportFile);
+        clearDataBtn.addEventListener('click', clearAllData);
+
+        // Add Enter key support for forms
+        totalProjectHoursInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') setTotalHours();
+        });
+
+        entryHoursInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addEntry();
+        });
+
+        entryDescriptionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addEntry();
+        });
+    </script>
+</body>
+</html>
