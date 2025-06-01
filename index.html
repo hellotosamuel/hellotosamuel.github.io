@@ -3,200 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Choose Your Level</title>
+    <title>Analog Clock Digits Display</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        :root {
+            --clock-face-size: 8.5vmin;
+            --grid-column-count: 12;
+            --grid-row-count: 5;
+            
+            --raw-grid-width: calc(var(--clock-face-size) * var(--grid-column-count));
+            --raw-grid-height: calc(var(--clock-face-size) * var(--grid-row-count));
+
+            --hand-thickness: 7px; 
+            --hand-color: #222222;
+            --gap-size: calc(var(--clock-face-size) * 0.12);
+
+            /* Hand styling for "punched out" effect */
+            --hand-visible-length-factor: 0.4; /* Visible part pointing outwards */
+            --hand-tail-length-factor: 0.04;    /* Part extending behind pivot */
+            --hand-total-length-factor: calc(var(--hand-visible-length-factor) + var(--hand-tail-length-factor));
+            
+            --hand-width-abs: calc(var(--clock-face-size) * var(--hand-total-length-factor));
+            --hand-left-offset-abs: calc(var(--clock-face-size) * var(--hand-tail-length-factor));
+            --hand-transform-origin-x: calc(var(--hand-tail-length-factor) / var(--hand-total-length-factor) * 100%);
         }
 
         body {
-            background-color: #f9f9f9;
-            min-height: 100vh;
+            margin: 0;
+            background-color: #fcfcfc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        h1 {
-            font-size: 3rem;
-            color: #4a4a4a;
-            margin-bottom: 1rem;
-            background: linear-gradient(90deg, #ff7e5f, #feb47b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: #666;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .button-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-            width: 100%;
-        }
-
-        .level-button {
-            position: relative;
-            height: 200px;
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            text-decoration: none;
-            color: white;
-            font-size: 2rem;
-            font-weight: 700;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
         }
 
-        .level-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        /* Style for the <a> tag wrapping the grid */
+        .fullscreen-link {
+            display: block; /* Crucial for proper layout of child wrapper */
+            text-decoration: none; /* Optional: removes underline from link */
         }
 
-        .level-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
-            z-index: 1;
+        .clock-grid-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        .level-button span {
+        .clock-grid-container {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-column-count), var(--clock-face-size));
+            grid-template-rows: repeat(var(--grid-row-count), var(--clock-face-size));
+            gap: var(--gap-size);
+            transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+            transform-origin: top left;
+        }
+
+        .clock {
+            width: var(--clock-face-size);
+            height: var(--clock-face-size);
             position: relative;
-            z-index: 2;
-            padding: 0.5rem 1.5rem;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 50px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            box-shadow: inset 0px 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 50%; 
         }
 
-        .level-button::after {
-            content: '';
+        .hand {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
+            background-color: var(--hand-color);
+            width: var(--hand-width-abs);
+            height: var(--hand-thickness);
+            top: calc(50% - (var(--hand-thickness) / 2));
+            left: calc(50% - var(--hand-left-offset-abs));
+            transform-origin: var(--hand-transform-origin-x) 50%;
+            transition: transform 4s cubic-bezier(0.65, 0, 0.35, 1);
+            border-radius: 0;
+            visibility: hidden;
         }
-
-        .n-level {
-            background: url('https://hellotosamuel.github.io/gallery/images/pexels-elina-sazonova-1907050.jpg') center/cover no-repeat;
-        }
-
-        .n-level::after {
-            background-color: #ff7e5f;
-        }
-
-        .o-level {
-            background: url('https://hellotosamuel.github.io/gallery/images/pexels-pixabay-434576.jpg') center/cover no-repeat;
-        }
-
-        .o-level::after {
-            background-color: #feb47b;
-        }
-
-        .a-level {
-            background: url('https://hellotosamuel.github.io/gallery/images/pixelbard-ZL-NcA965js-unsplash.jpg') center/cover no-repeat;
-        }
-
-        .a-level::after {
-            background-color: #7ee8fa;
-        }
-
-        .coming-soon {
-            background: url('/api/placeholder/600/400') center/cover no-repeat;
-            filter: grayscale(30%);
-        }
-
-        .coming-soon::after {
-            background-color: #c0c0c0;
-        }
-
-        footer {
-            margin-top: 3rem;
-            text-align: center;
-            color: #888;
-            font-size: 0.9rem;
-        }
-
-        @media (min-width: 768px) {
-            .button-grid {
-                grid-template-columns: repeat(2, 1fr);
+        
+        @media (max-width: 768px) {
+            :root {
+                --clock-face-size: 13vw; 
+                --gap-size: calc(var(--clock-face-size) * 0.12);
+                
+                --raw-grid-width: calc(var(--clock-face-size) * var(--grid-column-count));
+                --raw-grid-height: calc(var(--clock-face-size) * var(--grid-row-count));
+                
+                --hand-width-abs: calc(var(--clock-face-size) * var(--hand-total-length-factor));
+                --hand-left-offset-abs: calc(var(--clock-face-size) * var(--hand-tail-length-factor));
             }
-
-            .level-button {
-                height: 250px;
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+                align-items: flex-start;
+                padding-top: calc(var(--gap-size) * 2 + 20px);
+                padding-bottom: calc(var(--gap-size) * 2 + 20px);
             }
-        }
-
-        @media (min-width: 1024px) {
-            .button-grid {
-                grid-template-columns: repeat(4, 1fr);
+            .clock-grid-wrapper {
+                /* These variables correctly use the mobile-redefined --raw dimensions and --gap-size */
+                --effective-grid-width: calc(var(--raw-grid-width) + (var(--grid-column-count) - 1) * var(--gap-size));
+                --effective-grid-height: calc(var(--raw-grid-height) + (var(--grid-row-count) - 1) * var(--gap-size));
+                
+                /* Wrapper dimensions are swapped to fit the rotated grid */
+                width: var(--effective-grid-height); /* Wrapper width = original grid height (becomes new width of rotated grid) */
+                height: var(--effective-grid-width); /* Wrapper height = original grid width (becomes new height of rotated grid) */
+                margin: 0 auto; /* Center the wrapper */
             }
-
-            .level-button {
-                height: 300px;
-            }
-
-            h1 {
-                font-size: 4rem;
+            .clock-grid-container {
+                /*
+                Rotate 90deg clockwise.
+                TranslateX by its original width (var(--effective-grid-width)).
+                After rotation, the new X-axis points along the original Y-axis ("down").
+                The original width of the grid is now oriented vertically upwards from the pivot (top-left).
+                Translating by this original width shifts the content correctly into view.
+                */
+                transform-origin: center;
+                transform: rotate(90deg) translateX(var(--effective-grid-width)); /* CHANGED HERE */
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Choose Your Level</h1>
-            <p class="subtitle">Select your level for essay practice</p>
-        </header>
-
-        <div class="button-grid">
-            <a href="/essayn.html" class="level-button n-level">
-                <span>'N' Level</span>
-            </a>
-            <a href="/essayo.html" class="level-button o-level">
-                <span>'O' Level</span>
-            </a>
-            <a href="/essaya.html" class="level-button a-level">
-                <span>'A' Level</span>
-            </a>
-            <a href="#" class="level-button coming-soon">
-                <span>Coming Soon</span>
-            </a>
+    <a class="fullscreen-link" onclick="openFullscreen();"> <!-- Added class for styling -->
+    <div class="clock-grid-wrapper">
+        <div class="clock-grid-container" id="clockGrid">
+            <!-- Clocks will be generated by JavaScript -->
         </div>
+    </div></a>
 
-        <footer>
-            <p>&copy; 2025 <a href="https://webisig.com">Webisig</a>. All rights reserved.</p>
-        </footer>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const CLOCK_STATES = {
+                1: { hour: 0, minute: 90 },    // └
+                2: { hour: 90, minute: 180 },   // ┐
+                3: { hour: 0, minute: 270 },   // Γ
+                4: { hour: 180, minute: 270 },  // ך
+                5: { hour: 270, minute: 90 },  // │
+                6: { hour: 180, minute: 0 },   // ─
+                7: { hour: 45, minute: 45 },    // \ (Inactive)
+                8: { hour: 270, minute: 270 }, // Strong Vertical (N)
+                9: { hour: 0, minute: 0 },     // Strong Horizontal (E)
+                10: { hour: 90, minute: 90 },   // Strong Vertical (S)
+                11: { hour: 180, minute: 180 }  // Strong Horizontal (W)
+            };
+
+            const DIGIT_PATTERNS = { // Your digit patterns
+                '0': [[1,6,2], [5,7,5], [5,7,5], [5,7,5], [3,6,4]],
+                '1': [[7,2,7], [7,5,7], [7,5,7], [7,5,7], [7,8,7]],
+                '2': [[1,6,2], [7,7,5], [1,6,4], [5,7,7], [3,6,11]],
+                '3': [[1,6,2], [7,7,5], [9,6,5], [7,7,5], [3,6,4]],
+                '4': [[10,7,10], [5,7,5], [3,6,2], [7,7,5], [7,7,8]],
+                '5': [[1,6,11], [5,7,7], [3,6,2], [7,7,5], [3,6,4]],
+                '6': [[1,6,2], [5,7,7], [5,6,2], [5,7,5], [3,6,4]],
+                '7': [[1,6,2], [8,7,5], [7,7,5], [7,7,5], [7,7,8]],
+                '8': [[1,6,2], [5,7,5], [9,6,11], [5,7,5], [3,6,4]],
+                '9': [[1,6,2], [5,7,5], [3,6,5], [7,7,5], [3,6,4]]
+            };
+
+            const gridContainer = document.getElementById('clockGrid');
+            const totalClocks = 5 * 12;
+            const clocks = [];
+
+            for (let i = 0; i < totalClocks; i++) {
+                const clockDiv = document.createElement('div');
+                clockDiv.classList.add('clock');
+                const hourHand = document.createElement('div');
+                hourHand.classList.add('hand', 'hour-hand');
+                const minuteHand = document.createElement('div');
+                minuteHand.classList.add('hand', 'minute-hand');
+                clockDiv.appendChild(hourHand);
+                clockDiv.appendChild(minuteHand);
+                gridContainer.appendChild(clockDiv);
+                const initialState = CLOCK_STATES[7];
+                hourHand.style.transform = `rotate(${initialState.hour}deg)`;
+                minuteHand.style.transform = `rotate(${initialState.minute}deg)`;
+                clocks.push({ element: clockDiv, hourHand, minuteHand });
+            }
+            
+            setTimeout(() => {
+                clocks.forEach(c => {
+                    c.hourHand.style.visibility = 'visible';
+                    c.minuteHand.style.visibility = 'visible';
+                });
+            }, 0);
+
+            function updateClocksDisplay() {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const timeString = hours + minutes; 
+                for (let digitIndex = 0; digitIndex < 4; digitIndex++) { 
+                    const char = timeString[digitIndex];
+                    const pattern = DIGIT_PATTERNS[char];
+                    if (!pattern) continue; 
+                    for (let r = 0; r < 5; r++) { 
+                        for (let c = 0; c < 3; c++) { 
+                            const clockGridCol = digitIndex * 3 + c;
+                            const clockGridRow = r;
+                            const clockIndex = clockGridRow * 12 + clockGridCol;
+                            if (clocks[clockIndex]) {
+                                const stateId = pattern[r][c];
+                                const angles = CLOCK_STATES[stateId];
+                                if (angles) {
+                                    clocks[clockIndex].hourHand.style.transform = `rotate(${angles.hour}deg)`;
+                                    clocks[clockIndex].minuteHand.style.transform = `rotate(${angles.minute}deg)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            setTimeout(() => {
+                updateClocksDisplay();
+                scheduleNextMinuteUpdate();
+            }, 500); 
+
+            function scheduleNextMinuteUpdate() {
+                const now = new Date();
+                const seconds = now.getSeconds();
+                const milliseconds = now.getMilliseconds();
+                const delayToNextMinute = (60 - seconds) * 1000 - milliseconds;
+                setTimeout(() => {
+                    updateClocksDisplay(); 
+                    setInterval(updateClocksDisplay, 60000);
+                }, delayToNextMinute);
+            }
+        });
+    </script>
+    <script>
+/* Get the documentElement (<html>) to display the page in fullscreen */
+var elem = document.documentElement;
+
+/* View in fullscreen */
+function openFullscreen() {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+
+/* Close fullscreen */
+function closeFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.webkitExitFullscreen) { /* Safari */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { /* IE11 */
+    document.msExitFullscreen();
+  }
+}
+</script>
 </body>
 </html>
