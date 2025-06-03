@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Freelancer Time Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,7 +15,10 @@
         }
 
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: "Roboto Flex", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
@@ -27,15 +33,73 @@
             justify-content: center;
         }
 
-        .main-card {
+        .main-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 24px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 100%;
-            max-width: 800px;
             overflow: hidden;
+            min-height: 80vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 0 1rem;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: left;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
@@ -58,6 +122,16 @@
 
         .content {
             padding: 2rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .stats-grid {
@@ -65,6 +139,12 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
+        }
+
+        .stats-grid.hourly {
+            grid-template-columns: 1fr;
+            max-width: 300px;
+            margin: 0 auto 2rem auto;
         }
 
         .stat-card {
@@ -314,6 +394,26 @@
                 padding: 1rem;
             }
 
+            .main-wrapper {
+                flex-direction: column;
+                max-width: 100%;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+
+            .nav-tabs {
+                flex-direction: row;
+                gap: 0.5rem;
+            }
+
+            .nav-tab {
+                flex: 1;
+                text-align: center;
+            }
+
             .header h1 {
                 font-size: 2rem;
             }
@@ -356,93 +456,181 @@
 </head>
 <body>
     <div class="app-container">
-        <div class="main-card">
-            <div class="header">
-                <h1>⏱️ Time Tracker</h1>
-                <p>Manage your freelance project hours efficiently</p>
+        <div class="main-wrapper">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <div class="sidebar-title">⏱️ Tracker</div>
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-tab="drawdown">📊 Drawdown</button>
+                    <button class="nav-tab" data-tab="hourly">⏰ Hourly</button>
+                </div>
             </div>
 
-            <div class="content">
-                <!-- Stats Overview -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalHoursDisplay">0</div>
-                        <div class="stat-label">Total Hours</div>
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Drawdown Tab Content -->
+                <div id="drawdown-content" class="tab-content active">
+                    <div class="header">
+                        <h1>⏱️ Time Tracker</h1>
+                        <p>Manage your freelance project hours efficiently</p>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="spentHoursDisplay">0</div>
-                        <div class="stat-label">Hours Spent</div>
-                    </div>
-                    <div class="stat-card primary" id="remainingCard">
-                        <div class="stat-value" id="remainingHoursDisplay">0</div>
-                        <div class="stat-label">Remaining</div>
-                    </div>
-                </div>
 
-                <!-- Project Setup -->
-                <div class="section">
-                    <h2 class="section-title">Project Setup</h2>
-                    <div class="form-group">
-                        <label for="totalProjectHours">Total Project Hours</label>
-                        <input type="number" id="totalProjectHours" min="0" placeholder="Enter total hours for this project">
-                    </div>
-                    <button id="setTotalHoursBtn" class="btn">
-                        💼 Set Project Hours
-                    </button>
-                </div>
+                    <div class="content">
+                        <!-- Stats Overview -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalHoursDisplay">0</div>
+                                <div class="stat-label">Total Hours</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="spentHoursDisplay">0</div>
+                                <div class="stat-label">Hours Spent</div>
+                            </div>
+                            <div class="stat-card primary" id="remainingCard">
+                                <div class="stat-value" id="remainingHoursDisplay">0</div>
+                                <div class="stat-label">Remaining</div>
+                            </div>
+                        </div>
 
-                <!-- Quick Time Entry -->
-                <div class="section">
-                    <h2 class="section-title">Log Time</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="entryDate">Date</label>
-                            <input type="date" id="entryDate">
-                        </div>
-                        <div class="form-group">
-                            <label for="entryHours">Hours Worked</label>
-                            <input type="number" id="entryHours" min="1" step="1" placeholder="Hours">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="entryDescription">Description (Optional)</label>
-                        <input type="text" id="entryDescription" placeholder="What did you work on?">
-                    </div>
-                    <button id="addEntryBtn" class="btn">
-                        ➕ Add Time Entry
-                    </button>
-                </div>
-
-                <!-- Time Entries Log -->
-                <div class="section">
-                    <h2 class="section-title">Time Log</h2>
-                    <div class="entries-container">
-                        <div id="entriesList">
-                            <!-- Entries will be listed here -->
-                        </div>
-                        <div id="noEntriesMessage" class="no-entries" style="display: none;">
-                            <div class="no-entries-icon">📝</div>
-                            <p>No time entries yet. Start tracking your work!</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Data Management -->
-                <div class="section">
-                    <h2 class="section-title">Data Management</h2>
-                    <div class="button-group">
-                        <button id="saveDataBtn" class="btn">
-                            💾 Save & Download Backup
-                        </button>
-                        <div class="file-input-wrapper">
-                            <button class="btn btn-secondary" id="importBtn">
-                                📁 Import Backup
+                        <!-- Project Setup -->
+                        <div class="section">
+                            <h2 class="section-title">Project Setup</h2>
+                            <div class="form-group">
+                                <label for="totalProjectHours">Total Project Hours</label>
+                                <input type="number" id="totalProjectHours" min="0" placeholder="Enter total hours for this project">
+                            </div>
+                            <button id="setTotalHoursBtn" class="btn">
+                                💼 Set Project Hours
                             </button>
-                            <input type="file" id="importFile" accept=".json">
                         </div>
-                        <button id="clearDataBtn" class="btn btn-danger">
-                            🗑️ Clear All Data
-                        </button>
+
+                        <!-- Quick Time Entry -->
+                        <div class="section">
+                            <h2 class="section-title">Log Time</h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="entryDate">Date</label>
+                                    <input type="date" id="entryDate">
+                                </div>
+                                <div class="form-group">
+                                    <label for="entryHours">Hours Worked</label>
+                                    <input type="number" id="entryHours" min="1" step="1" placeholder="Hours">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="entryDescription">Description (Optional)</label>
+                                <input type="text" id="entryDescription" placeholder="What did you work on?">
+                            </div>
+                            <button id="addEntryBtn" class="btn">
+                                ➕ Add Time Entry
+                            </button>
+                        </div>
+
+                        <!-- Time Entries Log -->
+                        <div class="section">
+                            <h2 class="section-title">Time Log</h2>
+                            <div class="entries-container">
+                                <div id="entriesList">
+                                    <!-- Entries will be listed here -->
+                                </div>
+                                <div id="noEntriesMessage" class="no-entries" style="display: none;">
+                                    <div class="no-entries-icon">📝</div>
+                                    <p>No time entries yet. Start tracking your work!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Management -->
+                        <div class="section">
+                            <h2 class="section-title">Data Management</h2>
+                            <div class="button-group">
+                                <button id="saveDataBtn" class="btn">
+                                    💾 Save & Download Backup
+                                </button>
+                                <div class="file-input-wrapper">
+                                    <button class="btn btn-secondary" id="importBtn">
+                                        📁 Import Backup
+                                    </button>
+                                    <input type="file" id="importFile" accept=".json">
+                                </div>
+                                <button id="clearDataBtn" class="btn btn-danger">
+                                    🗑️ Clear All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hourly Tab Content -->
+                <div id="hourly-content" class="tab-content">
+                    <div class="header">
+                        <h1>⏰ Hourly Tracker</h1>
+                        <p>Simple time tracking without project limits</p>
+                    </div>
+
+                    <div class="content">
+                        <!-- Stats Overview - Only Hours Spent -->
+                        <div class="stats-grid hourly">
+                            <div class="stat-card primary">
+                                <div class="stat-value" id="hourlySpentHoursDisplay">0</div>
+                                <div class="stat-label">Hours Spent</div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Time Entry -->
+                        <div class="section">
+                            <h2 class="section-title">Log Time</h2>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="hourlyEntryDate">Date</label>
+                                    <input type="date" id="hourlyEntryDate">
+                                </div>
+                                <div class="form-group">
+                                    <label for="hourlyEntryHours">Hours Worked</label>
+                                    <input type="number" id="hourlyEntryHours" min="1" step="1" placeholder="Hours">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="hourlyEntryDescription">Description (Optional)</label>
+                                <input type="text" id="hourlyEntryDescription" placeholder="What did you work on?">
+                            </div>
+                            <button id="hourlyAddEntryBtn" class="btn">
+                                ➕ Add Time Entry
+                            </button>
+                        </div>
+
+                        <!-- Time Entries Log -->
+                        <div class="section">
+                            <h2 class="section-title">Time Log</h2>
+                            <div class="entries-container">
+                                <div id="hourlyEntriesList">
+                                    <!-- Entries will be listed here -->
+                                </div>
+                                <div id="hourlyNoEntriesMessage" class="no-entries" style="display: none;">
+                                    <div class="no-entries-icon">📝</div>
+                                    <p>No time entries yet. Start tracking your work!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Management -->
+                        <div class="section">
+                            <h2 class="section-title">Data Management</h2>
+                            <div class="button-group">
+                                <button id="hourlySaveDataBtn" class="btn">
+                                    💾 Save & Download Backup
+                                </button>
+                                <div class="file-input-wrapper">
+                                    <button class="btn btn-secondary" id="hourlyImportBtn">
+                                        📁 Import Backup
+                                    </button>
+                                    <input type="file" id="hourlyImportFile" accept=".json">
+                                </div>
+                                <button id="hourlyClearDataBtn" class="btn btn-danger">
+                                    🗑️ Clear All Data
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -450,13 +638,24 @@
     </div>
 
     <script>
+        // Storage keys for Drawdown mode
         const LS_TOTAL_HOURS_KEY = 'freelancerTimeTracker_totalHours';
         const LS_ENTRIES_KEY = 'freelancerTimeTracker_entries';
 
-        let totalProjectHours = 0;
-        let timeEntries = []; // Array of {id: Date.now(), date: 'YYYY-MM-DD', hours: N, description: ''}
+        // Storage keys for Hourly mode
+        const LS_HOURLY_ENTRIES_KEY = 'freelancerTimeTracker_hourlyEntries';
 
-        // DOM Elements
+        // Drawdown mode data
+        let totalProjectHours = 0;
+        let timeEntries = [];
+
+        // Hourly mode data
+        let hourlyTimeEntries = [];
+
+        // Current active tab
+        let currentTab = 'drawdown';
+
+        // DOM Elements - Drawdown
         const totalProjectHoursInput = document.getElementById('totalProjectHours');
         const setTotalHoursBtn = document.getElementById('setTotalHoursBtn');
         const remainingHoursDisplay = document.getElementById('remainingHoursDisplay');
@@ -476,15 +675,59 @@
         const importFileBtn = document.getElementById('importFile');
         const clearDataBtn = document.getElementById('clearDataBtn');
 
+        // DOM Elements - Hourly
+        const hourlySpentHoursDisplay = document.getElementById('hourlySpentHoursDisplay');
+        const hourlyEntryDateInput = document.getElementById('hourlyEntryDate');
+        const hourlyEntryHoursInput = document.getElementById('hourlyEntryHours');
+        const hourlyEntryDescriptionInput = document.getElementById('hourlyEntryDescription');
+        const hourlyAddEntryBtn = document.getElementById('hourlyAddEntryBtn');
+        const hourlyEntriesList = document.getElementById('hourlyEntriesList');
+        const hourlyNoEntriesMessage = document.getElementById('hourlyNoEntriesMessage');
+        const hourlySaveDataBtn = document.getElementById('hourlySaveDataBtn');
+        const hourlyImportFileBtn = document.getElementById('hourlyImportFile');
+        const hourlyClearDataBtn = document.getElementById('hourlyClearDataBtn');
+
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             loadDataFromLocalStorage();
             renderAll();
-            // Set default date for new entry
+            // Set default dates for new entries
             entryDateInput.valueAsDate = new Date();
+            hourlyEntryDateInput.valueAsDate = new Date();
+            
+            // Setup tab navigation
+            setupTabNavigation();
         });
 
-        // --- Core Logic ---
+        // --- Tab Navigation ---
+        function setupTabNavigation() {
+            const tabButtons = document.querySelectorAll('.nav-tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+                    
+                    // Update active states
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    button.classList.add('active');
+                    document.getElementById(targetTab + '-content').classList.add('active');
+                    
+                    currentTab = targetTab;
+                    
+                    // Render data for the active tab
+                    if (currentTab === 'drawdown') {
+                        renderAll();
+                    } else {
+                        renderHourlyAll();
+                    }
+                });
+            });
+        }
+
+        // --- DRAWDOWN MODE FUNCTIONS (Original) ---
         function setTotalHours() {
             const hours = parseInt(totalProjectHoursInput.value);
             if (isNaN(hours) || hours < 0) {
@@ -492,7 +735,7 @@
                 return;
             }
             totalProjectHours = hours;
-            saveDataToLocalStorage(); // Auto-save this change
+            saveDataToLocalStorage();
             renderAll();
             showNotification("Total project hours updated!");
         }
@@ -512,21 +755,19 @@
             }
 
             const newEntry = {
-                id: Date.now(), // Unique ID for deletion
+                id: Date.now(),
                 date: date,
                 hours: hours,
                 description: description
             };
             timeEntries.push(newEntry);
-            timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
+            timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            saveDataToLocalStorage(); // Auto-save this change
+            saveDataToLocalStorage();
             renderAll();
             
-            // Clear input fields
             entryHoursInput.value = '';
             entryDescriptionInput.value = '';
-            // entryDateInput.valueAsDate = new Date(); // Optionally reset date or keep it
             showNotification("Time entry added successfully!");
         }
 
@@ -539,23 +780,10 @@
             }
         }
 
-        function showNotification(message) {
-            // Simple notification - you could enhance this with a proper toast system
-            const originalText = setTotalHoursBtn.textContent;
-            if (message.includes("Total project")) {
-                setTotalHoursBtn.textContent = "✅ Updated!";
-                setTimeout(() => {
-                    setTotalHoursBtn.textContent = originalText;
-                }, 2000);
-            }
-        }
-
-        // --- Rendering ---
         function renderAll() {
             renderTimeEntries();
             renderStats();
-            // Update total project hours input field if it was loaded
-            if (totalProjectHours > 0 || timeEntries.length > 0) { // Only if there's some data
+            if (totalProjectHours > 0 || timeEntries.length > 0) {
                  totalProjectHoursInput.value = totalProjectHours;
             }
         }
@@ -568,7 +796,6 @@
             spentHoursDisplay.textContent = spentHours;
             remainingHoursDisplay.textContent = remaining;
 
-            // Update remaining card style
             remainingCard.className = 'stat-card';
             if (remaining < 0) {
                 remainingCard.classList.add('negative');
@@ -578,7 +805,7 @@
         }
 
         function renderTimeEntries() {
-            entriesList.innerHTML = ''; // Clear existing list
+            entriesList.innerHTML = '';
             if (timeEntries.length === 0) {
                 noEntriesMessage.style.display = 'block';
                 return;
@@ -602,137 +829,284 @@
             });
         }
 
-        function formatDate(dateString) {
-            const date = new Date(dateString + 'T00:00:00');
+        // --- HOURLY MODE FUNCTIONS (New) ---
+        function addHourlyEntry() {
+            const date = hourlyEntryDateInput.value;
+            const hours = parseInt(hourlyEntryHoursInput.value);
+            const description = hourlyEntryDescriptionInput.value.trim();
+
+            if (!date) {
+                alert("Please select a date.");
+                return;
+            }
+            if (isNaN(hours) || hours <= 0) {
+                alert("Please enter a valid number of hours (must be 1 or more).");
+                return;
+            }
+
+            const newEntry = {
+                id: Date.now(),
+                date: date,
+                hours: hours,
+                description: description
+            };
+            hourlyTimeEntries.push(newEntry);
+            hourlyTimeEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            saveHourlyDataToLocalStorage();
+            renderHourlyAll();
+            
+            hourlyEntryHoursInput.value = '';
+            hourlyEntryDescriptionInput.value = '';
+            showNotification("Time entry added successfully!");
+        }
+
+        function deleteHourlyEntry(entryId) {
+            if (confirm("Are you sure you want to delete this entry?")) {
+                hourlyTimeEntries = hourlyTimeEntries.filter(entry => entry.id !== entryId);
+                saveHourlyDataToLocalStorage();
+                renderHourlyAll();
+                showNotification("Entry deleted.");
+            }
+        }
+
+        function renderHourlyAll() {
+            renderHourlyTimeEntries();
+            renderHourlyStats();
+        }
+
+        function renderHourlyStats() {
+            const spentHours = hourlyTimeEntries.reduce((sum, entry) => sum + entry.hours, 0);
+            hourlySpentHoursDisplay.textContent = spentHours;
+        }
+
+        function renderHourlyTimeEntries() {
+            hourlyEntriesList.innerHTML = '';
+            if (hourlyTimeEntries.length === 0) {
+                hourlyNoEntriesMessage.style.display = 'block';
+                return;
+            }
+            hourlyNoEntriesMessage.style.display = 'none';
+
+            hourlyTimeEntries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'entry-item fade-in';
+                entryDiv.innerHTML = `
+                    <div class="entry-content">
+                        <div class="entry-date">${formatDate(entry.date)}</div>
+                        <div class="entry-hours">${entry.hours} hour${entry.hours > 1 ? 's' : ''}</div>
+                        ${entry.description ? `<div class="entry-description">${entry.description}</div>` : ''}
+                    </div>
+                    <button class="btn btn-danger btn-small" onclick="deleteHourlyEntry(${entry.id})">
+                        🗑️ Delete
+                    </button>
+                `;
+                hourlyEntriesList.appendChild(entryDiv);
+            });
+        }
+
+        // --- Utility Functions ---
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
             return date.toLocaleDateString('en-US', { 
-                weekday: 'short', 
+                weekday: 'long', 
                 year: 'numeric', 
-                month: 'short', 
+                month: 'long', 
                 day: 'numeric' 
             });
         }
 
+        function showNotification(message) {
+            // Simple alert for now - could be enhanced with better UI
+            console.log(message);
+        }
+
         // --- Data Persistence ---
         function saveDataToLocalStorage() {
-            localStorage.setItem(LS_TOTAL_HOURS_KEY, JSON.stringify(totalProjectHours));
+            localStorage.setItem(LS_TOTAL_HOURS_KEY, totalProjectHours.toString());
             localStorage.setItem(LS_ENTRIES_KEY, JSON.stringify(timeEntries));
-            console.log("Data saved to Local Storage.");
+        }
+
+        function saveHourlyDataToLocalStorage() {
+            localStorage.setItem(LS_HOURLY_ENTRIES_KEY, JSON.stringify(hourlyTimeEntries));
         }
 
         function loadDataFromLocalStorage() {
-            const storedTotalHours = localStorage.getItem(LS_TOTAL_HOURS_KEY);
-            const storedEntries = localStorage.getItem(LS_ENTRIES_KEY);
+            // Load drawdown data
+            const savedTotalHours = localStorage.getItem(LS_TOTAL_HOURS_KEY);
+            if (savedTotalHours) {
+                totalProjectHours = parseInt(savedTotalHours);
+            }
 
-            if (storedTotalHours) {
-                totalProjectHours = JSON.parse(storedTotalHours);
+            const savedEntries = localStorage.getItem(LS_ENTRIES_KEY);
+            if (savedEntries) {
+                try {
+                    timeEntries = JSON.parse(savedEntries);
+                } catch (e) {
+                    timeEntries = [];
+                }
             }
-            if (storedEntries) {
-                timeEntries = JSON.parse(storedEntries);
-                timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Ensure sort order
+
+            // Load hourly data
+            const savedHourlyEntries = localStorage.getItem(LS_HOURLY_ENTRIES_KEY);
+            if (savedHourlyEntries) {
+                try {
+                    hourlyTimeEntries = JSON.parse(savedHourlyEntries);
+                } catch (e) {
+                    hourlyTimeEntries = [];
+                }
             }
-            console.log("Data loaded from Local Storage.");
         }
 
-        function downloadBackup() {
-            const dataToBackup = {
-                totalProjectHours: totalProjectHours,
-                timeEntries: timeEntries
+        function exportData() {
+            const data = {
+                totalProjectHours,
+                timeEntries,
+                exportDate: new Date().toISOString()
             };
-            const jsonString = JSON.stringify(dataToBackup, null, 2); // Pretty print JSON
-            const blob = new Blob([jsonString], { type: 'application/json' });
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             
             const a = document.createElement('a');
             a.href = url;
-            const timestamp = new Date().toISOString().slice(0,19).replace(/:/g,'-');
-            a.download = `time_tracker_backup_${timestamp}.json`;
+            a.download = `time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert("Backup JSON file downloaded.");
+            
+            showNotification("Data exported successfully!");
         }
 
-        function handleImportFile(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
-            if (!file.name.endsWith('.json')) {
-                alert("Please select a valid JSON backup file.");
-                return;
-            }
+        function exportHourlyData() {
+            const data = {
+                hourlyTimeEntries,
+                exportDate: new Date().toISOString()
+            };
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hourly-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification("Data exported successfully!");
+        }
 
+        function importData(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (importedData && typeof importedData.totalProjectHours === 'number' && Array.isArray(importedData.timeEntries)) {
-                        if (confirm("This will overwrite current data. Are you sure you want to import?")) {
-                            totalProjectHours = importedData.totalProjectHours;
-                            timeEntries = importedData.timeEntries;
-                            timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)); // Ensure sort order
-                            
-                            saveDataToLocalStorage(); // Save imported data to LS
-                            renderAll();
-                            alert("Data imported successfully!");
-                        }
-                    } else {
-                        alert("Invalid JSON file format. Expected 'totalProjectHours' and 'timeEntries' array.");
+                    const data = JSON.parse(e.target.result);
+                    if (data.totalProjectHours !== undefined) {
+                        totalProjectHours = data.totalProjectHours;
                     }
+                    if (data.timeEntries && Array.isArray(data.timeEntries)) {
+                        timeEntries = data.timeEntries;
+                    }
+                    saveDataToLocalStorage();
+                    renderAll();
+                    showNotification("Data imported successfully!");
                 } catch (error) {
-                    alert("Error parsing JSON file: " + error.message);
-                    console.error("Import error:", error);
-                } finally {
-                    // Reset file input to allow re-selection of the same file
-                    event.target.value = null;
+                    alert("Error importing data. Please check the file format.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function importHourlyData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.hourlyTimeEntries && Array.isArray(data.hourlyTimeEntries)) {
+                        hourlyTimeEntries = data.hourlyTimeEntries;
+                    }
+                    saveHourlyDataToLocalStorage();
+                    renderHourlyAll();
+                    showNotification("Data imported successfully!");
+                } catch (error) {
+                    alert("Error importing data. Please check the file format.");
                 }
             };
             reader.readAsText(file);
         }
 
         function clearAllData() {
-            if (confirm("ARE YOU SURE you want to clear ALL data? This cannot be undone! Make sure you have a backup if needed.")) {
-                if (confirm("FINAL CONFIRMATION: Delete all project hours and time entries?")) {
-                    totalProjectHours = 0;
-                    timeEntries = [];
-                    localStorage.removeItem(LS_TOTAL_HOURS_KEY);
-                    localStorage.removeItem(LS_ENTRIES_KEY);
-                    renderAll();
-                    totalProjectHoursInput.value = ''; // Clear the input field as well
-                    alert("All data cleared.");
-                }
+            if (confirm("Are you sure you want to clear all data? This cannot be undone.")) {
+                totalProjectHours = 0;
+                timeEntries = [];
+                localStorage.removeItem(LS_TOTAL_HOURS_KEY);
+                localStorage.removeItem(LS_ENTRIES_KEY);
+                renderAll();
+                showNotification("All data cleared.");
+            }
+        }
+
+        function clearAllHourlyData() {
+            if (confirm("Are you sure you want to clear all data? This cannot be undone.")) {
+                hourlyTimeEntries = [];
+                localStorage.removeItem(LS_HOURLY_ENTRIES_KEY);
+                renderHourlyAll();
+                showNotification("All data cleared.");
             }
         }
 
         // --- Event Listeners ---
+        // Drawdown mode
         setTotalHoursBtn.addEventListener('click', setTotalHours);
         addEntryBtn.addEventListener('click', addEntry);
-        
-        saveDataBtn.addEventListener('click', () => {
-            saveDataToLocalStorage(); // This is already called on add/set, but good for explicit save
-            downloadBackup();
+        saveDataBtn.addEventListener('click', exportData);
+        importFileBtn.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importData(e.target.files[0]);
+                e.target.value = '';
+            }
         });
-        
-        // Fix import button to trigger file input
+        clearDataBtn.addEventListener('click', clearAllData);
+
+        // Hourly mode
+        hourlyAddEntryBtn.addEventListener('click', addHourlyEntry);
+        hourlySaveDataBtn.addEventListener('click', exportHourlyData);
+        hourlyImportFileBtn.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                importHourlyData(e.target.files[0]);
+                e.target.value = '';
+            }
+        });
+        hourlyClearDataBtn.addEventListener('click', clearAllHourlyData);
+
+        // Import button handlers
         document.getElementById('importBtn').addEventListener('click', () => {
             importFileBtn.click();
         });
-        
-        importFileBtn.addEventListener('change', handleImportFile);
-        clearDataBtn.addEventListener('click', clearAllData);
+        document.getElementById('hourlyImportBtn').addEventListener('click', () => {
+            hourlyImportFileBtn.click();
+        });
 
-        // Add Enter key support for forms
+        // Enter key handlers
         totalProjectHoursInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') setTotalHours();
+            if (e.key === 'Enter') {
+                setTotalHours();
+            }
         });
 
         entryHoursInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addEntry();
+            if (e.key === 'Enter') {
+                addEntry();
+            }
         });
 
-        entryDescriptionInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addEntry();
+        hourlyEntryHoursInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addHourlyEntry();
+            }
         });
     </script>
 </body>
