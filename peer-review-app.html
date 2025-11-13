@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peer Review App</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Lucide icons as simple SVG components
+        const AlertCircle = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const Copy = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+        );
+
+        function PeerReviewApp() {
+            const [names, setNames] = useState([]);
+            const [reviewer, setReviewer] = useState('');
+            const [reviews, setReviews] = useState({});
+            const [submitted, setSubmitted] = useState(false);
+            const [base64Output, setBase64Output] = useState('');
+            const [copied, setCopied] = useState(false);
+            const [validationErrors, setValidationErrors] = useState({});
+
+            const qualities = [
+                { key: 'leadership_and_initiative', label: 'Leadership and Initiative' },
+                { key: 'team_collaboration', label: 'Team Collaboration' },
+                { key: 'reliability_and_responsibility', label: 'Reliability and Responsibility' },
+                { key: 'communication_and_influence', label: 'Communication and Influence' },
+                { key: 'positivity_and_empathy', label: 'Positivity and Empathy' }
+            ];
+
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const namesParam = params.get('names');
+                if (namesParam) {
+                    const nameList = namesParam.split(',').map(name => name.trim()).filter(name => name);
+                    setNames(nameList);
+                    
+                    // Initialize reviews structure
+                    const initialReviews = {};
+                    nameList.forEach(name => {
+                        initialReviews[name] = {
+                            ratings: {
+                                leadership_and_initiative: '',
+                                team_collaboration: '',
+                                reliability_and_responsibility: '',
+                                communication_and_influence: '',
+                                positivity_and_empathy: ''
+                            },
+                            comments: ''
+                        };
+                    });
+                    setReviews(initialReviews);
+                }
+            }, []);
+
+            const handleReviewerChange = (e) => {
+                setReviewer(e.target.value);
+                setValidationErrors({});
+            };
+
+            const handleRatingChange = (reviewee, quality, value) => {
+                setReviews(prev => ({
+                    ...prev,
+                    [reviewee]: {
+                        ...prev[reviewee],
+                        ratings: {
+                            ...prev[reviewee].ratings,
+                            [quality]: parseInt(value)
+                        }
+                    }
+                }));
+                setValidationErrors({});
+            };
+
+            const handleCommentsChange = (reviewee, value) => {
+                setReviews(prev => ({
+                    ...prev,
+                    [reviewee]: {
+                        ...prev[reviewee],
+                        comments: value
+                    }
+                }));
+                setValidationErrors({});
+            };
+
+            const validateForm = () => {
+                const errors = {};
+                
+                if (!reviewer) {
+                    errors.reviewer = 'Please select who you are';
+                    return errors;
+                }
+
+                const reviewees = names.filter(name => name !== reviewer);
+                
+                reviewees.forEach(reviewee => {
+                    const review = reviews[reviewee];
+                    
+                    // Check all ratings are filled
+                    qualities.forEach(quality => {
+                        if (!review.ratings[quality.key]) {
+                            if (!errors[reviewee]) errors[reviewee] = [];
+                            errors[reviewee].push(`${quality.label} rating is required`);
+                        }
+                    });
+                    
+                    // Check comments
+                    if (!review.comments || review.comments.trim().length === 0) {
+                        if (!errors[reviewee]) errors[reviewee] = [];
+                        errors[reviewee].push('Comments are required (minimum 1 character)');
+                    }
+                });
+
+                return errors;
+            };
+
+            const handleSubmit = () => {
+                const errors = validateForm();
+                
+                if (Object.keys(errors).length > 0) {
+                    setValidationErrors(errors);
+                    return;
+                }
+
+                // Build the output structure
+                const reviewees = names.filter(name => name !== reviewer);
+                const output = {
+                    reviewer: reviewer,
+                    reviews: reviewees.map(reviewee => ({
+                        reviewee: reviewee,
+                        ratings: reviews[reviewee].ratings,
+                        comments: reviews[reviewee].comments
+                    }))
+                };
+
+                // Convert to base64
+                const jsonString = JSON.stringify(output, null, 2);
+                const base64 = btoa(jsonString);
+                setBase64Output(base64);
+                setSubmitted(true);
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(base64Output);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            const reviewees = reviewer ? names.filter(name => name !== reviewer) : [];
+
+            if (names.length === 0) {
+                return (
+                    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+                        <div className="card bg-base-100 shadow-xl max-w-md w-full">
+                            <div className="card-body items-center text-center">
+                                <AlertCircle className="w-12 h-12 text-error mb-4" />
+                                <h2 className="card-title text-2xl">No Names Found</h2>
+                                <p>Please add names to the URL using the format:</p>
+                                <div className="mockup-code mt-2 w-full">
+                                    <pre><code>?names=Alice,Bob,Charlie</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (submitted) {
+                return (
+                    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+                        <div className="card bg-base-100 shadow-xl max-w-2xl w-full">
+                            <div className="card-body items-center text-center">
+                                <CheckCircle className="w-16 h-16 text-success mb-4" />
+                                <h2 className="card-title text-3xl mb-4">Review Submitted!</h2>
+                                <p className="mb-6">Copy the encoded string below and submit it externally:</p>
+                                <div className="mockup-code w-full text-left relative">
+                                    <pre className="text-xs break-all whitespace-pre-wrap mb-12"><code>{base64Output}</code></pre>
+                                    <button
+                                        onClick={copyToClipboard}
+                                        className="btn btn-primary btn-sm absolute top-2 right-2"
+                                    >
+                                        {copied ? (
+                                            <>
+                                                <CheckCircle className="w-4 h-4" />
+                                                Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Copy className="w-4 h-4" />
+                                                Copy
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-base-200 py-8 px-4">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="card bg-base-100 shadow-xl">
+                            <div className="card-body">
+                                <h1 className="card-title text-3xl mb-6">Peer Review Form</h1>
+                                
+                                {/* Reviewer Selection */}
+                                <div className="form-control mb-8">
+                                    <label className="label">
+                                        <span className="label-text text-lg font-semibold">Who are you?</span>
+                                    </label>
+                                    <select
+                                        value={reviewer}
+                                        onChange={handleReviewerChange}
+                                        className="select select-bordered w-full"
+                                    >
+                                        <option value="">Select your name</option>
+                                        {names.map(name => (
+                                            <option key={name} value={name}>{name}</option>
+                                        ))}
+                                    </select>
+                                    {validationErrors.reviewer && (
+                                        <label className="label">
+                                            <span className="label-text-alt text-error">{validationErrors.reviewer}</span>
+                                        </label>
+                                    )}
+                                </div>
+
+                                {/* Review Sections */}
+                                {reviewer && reviewees.length > 0 && (
+                                    <div className="space-y-8">
+                                        <h2 className="text-2xl font-bold">Review Your Peers</h2>
+                                        
+                                        {reviewees.map((reviewee, index) => (
+                                            <div key={reviewee} className="card bg-base-200">
+                                                <div className="card-body">
+                                                    <h3 className="card-title text-xl mb-4">
+                                                        Review #{index + 1}: {reviewee}
+                                                    </h3>
+                                                    
+                                                    {/* Ratings */}
+                                                    <div className="space-y-6">
+                                                        {qualities.map(quality => (
+                                                            <div key={quality.key} className="form-control">
+                                                                <label className="label pb-3">
+                                                                    <span className="label-text font-semibold">{quality.label}</span>
+                                                                </label>
+                                                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2">
+                                                                    <span className="text-xs sm:text-sm opacity-70 whitespace-nowrap">1 (Lowest)</span>
+                                                                    <div className="flex gap-2 sm:gap-3 justify-center">
+                                                                        {[1, 2, 3, 4, 5, 6].map(rating => (
+                                                                            <label key={rating} className="cursor-pointer flex flex-col items-center gap-1">
+                                                                                <input
+                                                                                    type="radio"
+                                                                                    name={`${reviewee}-${quality.key}`}
+                                                                                    value={rating}
+                                                                                    checked={reviews[reviewee]?.ratings[quality.key] === rating}
+                                                                                    onChange={(e) => handleRatingChange(reviewee, quality.key, e.target.value)}
+                                                                                    className="radio radio-primary radio-sm sm:radio-md"
+                                                                                />
+                                                                                <span className="text-xs font-semibold">{rating}</span>
+                                                                            </label>
+                                                                        ))}
+                                                                    </div>
+                                                                    <span className="text-xs sm:text-sm opacity-70 whitespace-nowrap">6 (Best)</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    
+                                                    {/* Comments */}
+                                                    <div className="form-control mt-8">
+                                                        <label className="label pb-3">
+                                                            <span className="label-text font-semibold">Additional Comments</span>
+                                                        </label>
+                                                        <textarea
+                                                            value={reviews[reviewee]?.comments || ''}
+                                                            onChange={(e) => handleCommentsChange(reviewee, e.target.value)}
+                                                            placeholder="Enter your comments here (minimum 1 character)"
+                                                            rows="4"
+                                                            className="textarea textarea-bordered w-full"
+                                                        />
+                                                    </div>
+                                                    
+                                                    {/* Validation Errors for this reviewee */}
+                                                    {validationErrors[reviewee] && (
+                                                        <div className="alert alert-error mt-4">
+                                                            <div>
+                                                                <p className="font-semibold">Please complete:</p>
+                                                                <ul className="list-disc list-inside text-sm">
+                                                                    {validationErrors[reviewee].map((error, idx) => (
+                                                                        <li key={idx}>{error}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                
+                                {/* Submit Button */}
+                                {reviewer && reviewees.length > 0 && (
+                                    <div className="card-actions justify-end mt-8">
+                                        <button
+                                            onClick={handleSubmit}
+                                            className="btn btn-primary btn-lg w-full"
+                                        >
+                                            Submit All Reviews
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<PeerReviewApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
