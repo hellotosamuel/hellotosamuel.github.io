@@ -50,7 +50,6 @@
         padding: 2rem 1.25rem 3rem;
       }
 
-      .hero-card,
       .panel-card,
       .preview-card {
         background: var(--panel);
@@ -61,23 +60,11 @@
         backdrop-filter: blur(8px);
       }
 
-      .hero-card {
-        padding: 1.4rem 1.5rem;
-        border-radius: 24px;
-        margin-bottom: 1rem;
-      }
-
-      .hero-card .title {
+      .page-title {
         font-size: clamp(1.6rem, 3vw, 2.4rem);
-        margin-bottom: 0.35rem;
+        margin-bottom: 1rem;
         letter-spacing: 0.01em;
         color: var(--ink);
-      }
-
-      .hero-card .subtitle {
-        color: var(--muted-ink);
-        line-height: 1.5;
-        max-width: 60rem;
       }
 
       .title,
@@ -369,7 +356,6 @@
         }
 
         .panel-card,
-        .hero-card,
         .preview-shell {
           padding: 1rem;
           border-radius: 20px;
@@ -395,15 +381,7 @@
   <body>
     <section class="section page-shell">
       <div class="container is-max-desktop">
-        <div class="hero-card">
-          <p class="card-label">Polymer Section Builder</p>
-          <h1 class="title">Generate clean polymer chain segments as PNG</h1>
-          <p class="subtitle">
-            Edit the top and bottom groups for repeating positions A and B. The
-            preview normalizes digits to chemical subscripts and keeps the chain
-            open on both ends to suggest continuation.
-          </p>
-        </div>
+        <h1 class="title page-title">Generate clean polymer chain segments as PNG</h1>
 
         <div class="columns is-variable is-5">
           <div class="column is-4-desktop">
@@ -561,18 +539,8 @@
     </div>
 
     <script>
-      const SUBSCRIPT_DIGITS = {
-        "0": "₀",
-        "1": "₁",
-        "2": "₂",
-        "3": "₃",
-        "4": "₄",
-        "5": "₅",
-        "6": "₆",
-        "7": "₇",
-        "8": "₈",
-        "9": "₉"
-      };
+      const FORMULA_SUBSCRIPT_SCALE = 0.68;
+      const FORMULA_SUBSCRIPT_DROP = 0.24;
 
       const inputs = {
         topA: document.getElementById("topA"),
@@ -626,10 +594,6 @@
 
       let lastPngDataUrl = "";
 
-      function toSubscript(text) {
-        return String(text).replace(/\d/g, (digit) => SUBSCRIPT_DIGITS[digit] || digit);
-      }
-
       function escapeXml(value) {
         return String(value)
           .replace(/&/g, "&amp;")
@@ -637,6 +601,10 @@
           .replace(/>/g, "&gt;")
           .replace(/\"/g, "&quot;")
           .replace(/'/g, "&apos;");
+      }
+
+      function isFormulaDigit(character) {
+        return /\d/.test(character);
       }
 
       function getChainState() {
@@ -715,29 +683,6 @@
         return `<text x="${placement.x}" y="${placement.y}" font-size="${fontSize}" font-weight="${fontWeight}">${escapeXml(text)}</text>`;
       }
 
-      function buildAnchoredText(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
-        const placement = getAnchoredTextPlacement(
-          text,
-          targetX,
-          targetY,
-          fontSize,
-          fontWeight,
-          anchorIndex
-        );
-
-        return placement ? renderTextPlacement(text, placement, fontSize, fontWeight) : "";
-      }
-
-      function getGroupTextPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
-        if (!text) {
-          return null;
-        }
-
-        return text.length === 1
-          ? getCenteredTextPlacement(text, targetX, targetY, fontSize, fontWeight)
-          : getAnchoredTextPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex);
-      }
-
       function getAnchoredTextPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
         const safeText = text || "";
         const boundedAnchor = Math.max(1, Math.min(anchorIndex || 1, safeText.length || 1));
@@ -761,13 +706,156 @@
         };
       }
 
+      function getFormulaLayout(text, fontSize, fontWeight) {
+        const safeText = String(text || "");
+        const glyphs = [];
+        let advance = 0;
+        let left = 0;
+        let right = 0;
+        let top = 0;
+        let bottom = 0;
+
+        Array.from(safeText).forEach((character, index) => {
+          const isSubscript = isFormulaDigit(character);
+          const glyphFontSize = isSubscript
+            ? Math.round(fontSize * FORMULA_SUBSCRIPT_SCALE * 100) / 100
+            : fontSize;
+          const baselineShift = isSubscript
+            ? Math.round(fontSize * FORMULA_SUBSCRIPT_DROP * 100) / 100
+            : 0;
+          const metrics = getTextMetrics(character, glyphFontSize, fontWeight);
+          const glyphLeft = advance - metrics.left;
+          const glyphRight = advance + metrics.right;
+          const glyphTop = baselineShift - metrics.ascent;
+          const glyphBottom = baselineShift + metrics.descent;
+
+          if (!glyphs.length) {
+            left = glyphLeft;
+            right = glyphRight;
+            top = glyphTop;
+            bottom = glyphBottom;
+          } else {
+            left = Math.min(left, glyphLeft);
+            right = Math.max(right, glyphRight);
+            top = Math.min(top, glyphTop);
+            bottom = Math.max(bottom, glyphBottom);
+          }
+
+          glyphs.push({
+            character,
+            advanceStart: advance,
+            baselineShift,
+            fontSize: glyphFontSize,
+            center: (glyphLeft + glyphRight) / 2
+          });
+
+          advance += metrics.width;
+          if (index === Array.from(safeText).length - 1 && glyphRight > right) {
+            right = glyphRight;
+          }
+        });
+
+        return {
+          glyphs,
+          left,
+          right,
+          top,
+          bottom,
+          width: advance
+        };
+      }
+
+      function getCenteredFormulaPlacement(text, targetX, targetY, fontSize, fontWeight) {
+        const layout = getFormulaLayout(text, fontSize, fontWeight);
+        const x = targetX - (layout.left + layout.right) / 2;
+        const y = targetY - (layout.top + layout.bottom) / 2;
+
+        return {
+          x,
+          y,
+          layout,
+          bounds: {
+            left: x + layout.left,
+            right: x + layout.right,
+            top: y + layout.top,
+            bottom: y + layout.bottom
+          }
+        };
+      }
+
+      function getAnchoredFormulaPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
+        const safeText = String(text || "");
+
+        if (!safeText) {
+          return null;
+        }
+
+        const layout = getFormulaLayout(safeText, fontSize, fontWeight);
+        const boundedAnchor = Math.max(1, Math.min(anchorIndex || 1, layout.glyphs.length || 1));
+        const anchorGlyph = layout.glyphs[boundedAnchor - 1];
+        const x = targetX - anchorGlyph.center;
+        const y = targetY - (layout.top + layout.bottom) / 2;
+
+        return {
+          x,
+          y,
+          layout,
+          bounds: {
+            left: x + layout.left,
+            right: x + layout.right,
+            top: y + layout.top,
+            bottom: y + layout.bottom
+          }
+        };
+      }
+
+      function getGroupFormulaPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
+        if (!text) {
+          return null;
+        }
+
+        return text.length === 1
+          ? getCenteredFormulaPlacement(text, targetX, targetY, fontSize, fontWeight)
+          : getAnchoredFormulaPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex);
+      }
+
+      function renderFormulaPlacement(text, placement, fontWeight) {
+        return `<text font-weight="${fontWeight}">${placement.layout.glyphs
+          .map((glyph) => {
+            const fontSizeAttribute =
+              glyph.fontSize ? ` font-size="${glyph.fontSize}"` : "";
+            return `<tspan x="${placement.x + glyph.advanceStart}" y="${placement.y + glyph.baselineShift}"${fontSizeAttribute}>${escapeXml(
+              glyph.character
+            )}</tspan>`;
+          })
+          .join("")}</text>`;
+      }
+
       function getBoundsFromPlacement(placement) {
+        if (placement.bounds) {
+          return placement.bounds;
+        }
+
         return {
           left: placement.x - placement.metrics.left,
           right: placement.x + placement.metrics.right,
           top: placement.y - placement.metrics.ascent,
           bottom: placement.y + placement.metrics.descent
         };
+      }
+
+      function formatFormulaHtml(text, highlightIndex) {
+        return Array.from(String(text || ""))
+          .map((character, index) => {
+            const formatted = isFormulaDigit(character)
+              ? `<sub>${escapeXml(character)}</sub>`
+              : escapeXml(character);
+
+            return highlightIndex === index + 1
+              ? `<span class="selected-anchor">${formatted}</span>`
+              : formatted;
+          })
+          .join("");
       }
 
       function updateAnchorControl(fieldKey) {
@@ -785,8 +873,8 @@
         const display = anchorDisplays[fieldKey];
         const selectedChar = textValue.charAt(anchor - 1) || " ";
 
-        display.value.textContent = textValue
-          ? `Character ${anchor}: ${toSubscript(selectedChar)}`
+        display.value.innerHTML = textValue
+          ? `Character ${anchor}: ${formatFormulaHtml(selectedChar)}`
           : "No text";
 
         if (!textValue) {
@@ -794,14 +882,7 @@
           return;
         }
 
-        const normalized = toSubscript(textValue);
-        display.preview.innerHTML = Array.from(normalized)
-          .map((character, index) =>
-            index === anchor - 1
-              ? `<span class="selected-anchor">${escapeXml(character)}</span>`
-              : escapeXml(character)
-          )
-          .join("");
+        display.preview.innerHTML = formatFormulaHtml(textValue, anchor);
       }
 
       function refreshAnchorControls() {
@@ -852,15 +933,15 @@
 
         sequence.forEach((group, index) => {
           const x = firstX + index * pitch;
-          const topText = toSubscript(group.top.text);
-          const bottomText = toSubscript(group.bottom.text);
+          const topText = group.top.text;
+          const bottomText = group.bottom.text;
           const carbonPlacement = carbonPlacementCache[index];
           const carbonBounds = carbonBoundsCache[index];
 
           texts.push(renderTextPlacement("C", carbonPlacement, carbonFontSize, 700));
 
           if (topText) {
-            const topPlacement = getGroupTextPlacement(
+            const topPlacement = getGroupFormulaPlacement(
               topText,
               x,
               topLabelY,
@@ -877,11 +958,11 @@
             lines.push(
               `<line x1="${x}" y1="${carbonBounds.top - bondTextGap}" x2="${x}" y2="${topBounds.bottom + bondTextGap}" />`
             );
-            texts.push(renderTextPlacement(topText, topPlacement, groupFontSize, 700));
+            texts.push(renderFormulaPlacement(topText, topPlacement, 700));
           }
 
           if (bottomText) {
-            const bottomPlacement = getGroupTextPlacement(
+            const bottomPlacement = getGroupFormulaPlacement(
               bottomText,
               x,
               bottomLabelY,
@@ -898,7 +979,7 @@
             lines.push(
               `<line x1="${x}" y1="${carbonBounds.bottom + bondTextGap}" x2="${x}" y2="${bottomBounds.top - bondTextGap}" />`
             );
-            texts.push(renderTextPlacement(bottomText, bottomPlacement, groupFontSize, 700));
+            texts.push(renderFormulaPlacement(bottomText, bottomPlacement, 700));
           }
         });
 
