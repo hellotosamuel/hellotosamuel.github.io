@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Polymer Chain PNG Generator</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f6f0e5;
+        --paper-shadow: rgba(81, 65, 41, 0.14);
+        --ink: #1f1d1a;
+        --muted-ink: #62584a;
+        --panel: rgba(255, 252, 245, 0.88);
+        --accent: #8b5e34;
+        --accent-soft: rgba(139, 94, 52, 0.14);
+        --line: #2b2926;
+        --grid: rgba(77, 61, 40, 0.08);
+      }
+
+      html,
+      body,
+      input,
+      button,
+      .title,
+      .subtitle,
+      .label,
+      .button,
+      .input {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      html {
+        background: #efe4d1;
+      }
+
+      body {
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.65), transparent 28%),
+          linear-gradient(180deg, #efe4d1 0%, var(--paper) 100%);
+      }
+
+      .page-shell {
+        padding: 2rem 1.25rem 3rem;
+      }
+
+      .hero-card,
+      .panel-card,
+      .preview-card {
+        background: var(--panel);
+        border: 1px solid rgba(84, 66, 44, 0.12);
+        box-shadow:
+          0 24px 60px -30px var(--paper-shadow),
+          inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        backdrop-filter: blur(8px);
+      }
+
+      .hero-card {
+        padding: 1.4rem 1.5rem;
+        border-radius: 24px;
+        margin-bottom: 1rem;
+      }
+
+      .hero-card .title {
+        font-size: clamp(1.6rem, 3vw, 2.4rem);
+        margin-bottom: 0.35rem;
+        letter-spacing: 0.01em;
+        color: var(--ink);
+      }
+
+      .hero-card .subtitle {
+        color: var(--muted-ink);
+        line-height: 1.5;
+        max-width: 60rem;
+      }
+
+      .title,
+      .subtitle,
+      .label,
+      .modal-card-title,
+      .delete,
+      .content,
+      p,
+      span {
+        color: inherit;
+      }
+
+      .panel-card {
+        border-radius: 24px;
+        padding: 1.25rem;
+        height: 100%;
+      }
+
+      .card-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.85rem;
+        color: var(--muted-ink);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+
+      .card-label::before {
+        content: "";
+        width: 1.25rem;
+        height: 1px;
+        background: var(--accent);
+      }
+
+      .input,
+      .button {
+        border-radius: 16px;
+      }
+
+      .input {
+        background: #fffdf8;
+        color: var(--ink);
+        border-color: rgba(81, 65, 41, 0.18);
+        box-shadow: none;
+      }
+
+      .input::placeholder {
+        color: rgba(98, 88, 74, 0.7);
+      }
+
+      .input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.125rem rgba(139, 94, 52, 0.12);
+      }
+
+      .label {
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .field-inline {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+      }
+
+      .field-inline .label {
+        margin-bottom: 0;
+        width: 6.1rem;
+        flex: 0 0 6.1rem;
+      }
+
+      .field-inline .control {
+        flex: 1 1 auto;
+      }
+
+      .formula-hint,
+      .status-text {
+        color: var(--muted-ink);
+        font-size: 0.92rem;
+      }
+
+      .anchor-row {
+        margin-top: 0.55rem;
+        padding: 0.65rem 0.8rem;
+        border-radius: 14px;
+        background: rgba(139, 94, 52, 0.06);
+      }
+
+      .anchor-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .anchor-label {
+        color: var(--muted-ink);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .anchor-value {
+        color: var(--ink);
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .anchor-row input[type="range"] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+
+      .anchor-preview {
+        margin-top: 0.4rem;
+        color: var(--muted-ink);
+        font-size: 0.87rem;
+        line-height: 1.35;
+        word-break: break-word;
+      }
+
+      .anchor-preview .selected-anchor {
+        color: var(--ink);
+        font-weight: 700;
+        text-decoration: underline;
+        text-decoration-thickness: 0.12em;
+        text-underline-offset: 0.14em;
+      }
+
+      .repeat-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        color: var(--ink);
+        font-size: 0.98rem;
+        line-height: 1.4;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .repeat-toggle input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.2rem;
+        height: 1.2rem;
+        margin: 0;
+        border: 1px solid #b5b5b5;
+        border-radius: 0.22rem;
+        background: #fffdf8;
+        display: inline-grid;
+        place-content: center;
+        transition:
+          background-color 0.15s ease,
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .repeat-toggle input[type="checkbox"]::before {
+        content: "";
+        width: 0.6rem;
+        height: 0.35rem;
+        border-left: 0.16rem solid #ffffff;
+        border-bottom: 0.16rem solid #ffffff;
+        transform: rotate(-45deg) scale(0);
+        transform-origin: center;
+        transition: transform 0.12s ease;
+      }
+
+      .repeat-toggle input[type="checkbox"]:checked {
+        background: #485fc7;
+        border-color: #485fc7;
+      }
+
+      .repeat-toggle input[type="checkbox"]:checked::before {
+        transform: rotate(-45deg) scale(1);
+      }
+
+      .repeat-toggle input[type="checkbox"]:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 0.125rem rgba(72, 95, 199, 0.25);
+      }
+
+      .generate-button,
+      .download-button {
+        background: var(--ink);
+        color: #fffaf1;
+        border: 0;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .generate-button:hover,
+      .download-button:hover {
+        background: #090807;
+        color: #fffaf1;
+      }
+
+      .preview-shell {
+        border-radius: 28px;
+        padding: 1.35rem;
+        background:
+          linear-gradient(180deg, rgba(255, 251, 244, 0.96), rgba(247, 240, 229, 0.96)),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+          linear-gradient(180deg, var(--grid) 1px, transparent 1px);
+        background-size: auto, 26px 26px, 26px 26px;
+        overflow-x: auto;
+      }
+
+      .live-chain {
+        min-height: 23rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .live-chain svg {
+        display: block;
+        max-width: none;
+        height: auto;
+      }
+
+      .render-note {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+        color: var(--muted-ink);
+        font-size: 0.92rem;
+      }
+
+      .mini-stat {
+        background: var(--accent-soft);
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+      }
+
+      .modal-card {
+        width: min(92vw, 1080px);
+        border-radius: 28px;
+        overflow: hidden;
+      }
+
+      .modal-card-head,
+      .modal-card-foot {
+        background: #f7f0e4;
+        border-color: rgba(84, 66, 44, 0.1);
+      }
+
+      .modal-card-body {
+        background: #fbf8f1;
+      }
+
+      .modal-card-title,
+      .modal-card-foot .status-text {
+        color: var(--ink);
+      }
+
+      .preview-card {
+        border-radius: 24px;
+        padding: 1rem;
+      }
+
+      .preview-image-frame {
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(246, 240, 229, 0.9));
+        border: 1px solid rgba(84, 66, 44, 0.12);
+        border-radius: 18px;
+        overflow: auto;
+        padding: 1rem;
+      }
+
+      #pngPreviewImage {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      @media screen and (max-width: 768px) {
+        .page-shell {
+          padding-inline: 0.85rem;
+        }
+
+        .panel-card,
+        .hero-card,
+        .preview-shell {
+          padding: 1rem;
+          border-radius: 20px;
+        }
+
+        .live-chain {
+          min-height: 18rem;
+        }
+
+        .field-inline {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 0.45rem;
+        }
+
+        .field-inline .label {
+          width: auto;
+          flex-basis: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="section page-shell">
+      <div class="container is-max-desktop">
+        <div class="hero-card">
+          <p class="card-label">Polymer Section Builder</p>
+          <h1 class="title">Generate clean polymer chain segments as PNG</h1>
+          <p class="subtitle">
+            Edit the top and bottom groups for repeating positions A and B. The
+            preview normalizes digits to chemical subscripts and keeps the chain
+            open on both ends to suggest continuation.
+          </p>
+        </div>
+
+        <div class="columns is-variable is-5">
+          <div class="column is-4-desktop">
+            <div class="panel-card">
+              <p class="card-label">Controls</p>
+              <div class="field">
+                <div class="field-inline">
+                  <label class="label" for="topA">Top A</label>
+                  <div class="control">
+                    <input class="input" id="topA" type="text" value="H" />
+                  </div>
+                </div>
+                <div class="anchor-row">
+                  <div class="anchor-topline">
+                    <span class="anchor-label">Bond Anchor</span>
+                    <span class="anchor-value" id="topAAnchorValue"></span>
+                  </div>
+                  <input id="topAAnchor" type="range" min="1" max="1" step="1" value="1" />
+                  <div class="anchor-preview" id="topAAnchorPreview"></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field-inline">
+                  <label class="label" for="bottomA">Bottom A</label>
+                  <div class="control">
+                    <input class="input" id="bottomA" type="text" value="H" />
+                  </div>
+                </div>
+                <div class="anchor-row">
+                  <div class="anchor-topline">
+                    <span class="anchor-label">Bond Anchor</span>
+                    <span class="anchor-value" id="bottomAAnchorValue"></span>
+                  </div>
+                  <input id="bottomAAnchor" type="range" min="1" max="1" step="1" value="1" />
+                  <div class="anchor-preview" id="bottomAAnchorPreview"></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field-inline">
+                  <label class="label" for="topB">Top B</label>
+                  <div class="control">
+                    <input class="input" id="topB" type="text" value="OCOCH3" />
+                  </div>
+                </div>
+                <div class="anchor-row">
+                  <div class="anchor-topline">
+                    <span class="anchor-label">Bond Anchor</span>
+                    <span class="anchor-value" id="topBAnchorValue"></span>
+                  </div>
+                  <input id="topBAnchor" type="range" min="1" max="6" step="1" value="1" />
+                  <div class="anchor-preview" id="topBAnchorPreview"></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field-inline">
+                  <label class="label" for="bottomB">Bottom B</label>
+                  <div class="control">
+                    <input class="input" id="bottomB" type="text" value="H" />
+                  </div>
+                </div>
+                <div class="anchor-row">
+                  <div class="anchor-topline">
+                    <span class="anchor-label">Bond Anchor</span>
+                    <span class="anchor-value" id="bottomBAnchorValue"></span>
+                  </div>
+                  <input id="bottomBAnchor" type="range" min="1" max="1" step="1" value="1" />
+                  <div class="anchor-preview" id="bottomBAnchorPreview"></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="field-inline">
+                  <label class="label" for="positions">Positions</label>
+                  <div class="control">
+                    <input
+                      class="input"
+                      id="positions"
+                      type="number"
+                      min="1"
+                      step="1"
+                      value="2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <p class="formula-hint">
+                Digits are rendered as subscripts in the live chain and in the
+                exported image. Use Bond Anchor to choose which character sits
+                over the bond line.
+              </p>
+
+              <div class="field mt-5">
+                <div class="control">
+                  <button class="button is-fullwidth generate-button" id="generateButton" type="button">
+                    Generate PNG Preview
+                  </button>
+                </div>
+              </div>
+
+              <p class="status-text mt-3" id="statusText">
+                Preview updates live as you type.
+              </p>
+            </div>
+          </div>
+
+          <div class="column is-8-desktop">
+            <div class="panel-card">
+              <p class="card-label">Live Chain</p>
+              <div class="preview-shell">
+                <div class="live-chain" id="chainPreview" aria-live="polite"></div>
+              </div>
+              <label class="checkbox repeat-toggle mt-4" for="repeatBracket">
+                <input id="repeatBracket" type="checkbox" />
+                <span>Show repeat bracket with italic n</span>
+              </label>
+              <div class="render-note">
+                <span class="mini-stat" id="positionCountBadge">2 positions visible</span>
+                <span class="mini-stat">Open-ended chain styling</span>
+                <span class="mini-stat">SVG preview with PNG export</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="modal" id="previewModal" aria-hidden="true">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">PNG Preview</p>
+          <button class="delete" id="closeModalButton" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body">
+          <div class="preview-card">
+            <div class="preview-image-frame">
+              <img id="pngPreviewImage" alt="Generated polymer chain preview" />
+            </div>
+          </div>
+        </section>
+        <footer class="modal-card-foot is-justify-content-space-between">
+          <p class="status-text mb-0">High-resolution preview generated from the current chain.</p>
+          <div class="buttons">
+            <button class="button" id="cancelModalButton" type="button">Close</button>
+            <button class="button download-button" id="downloadButton" type="button">
+              Download PNG
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const SUBSCRIPT_DIGITS = {
+        "0": "₀",
+        "1": "₁",
+        "2": "₂",
+        "3": "₃",
+        "4": "₄",
+        "5": "₅",
+        "6": "₆",
+        "7": "₇",
+        "8": "₈",
+        "9": "₉"
+      };
+
+      const inputs = {
+        topA: document.getElementById("topA"),
+        bottomA: document.getElementById("bottomA"),
+        topB: document.getElementById("topB"),
+        bottomB: document.getElementById("bottomB"),
+        positions: document.getElementById("positions"),
+        repeatBracket: document.getElementById("repeatBracket"),
+        topAAnchor: document.getElementById("topAAnchor"),
+        bottomAAnchor: document.getElementById("bottomAAnchor"),
+        topBAnchor: document.getElementById("topBAnchor"),
+        bottomBAnchor: document.getElementById("bottomBAnchor")
+      };
+
+      const chainPreview = document.getElementById("chainPreview");
+      const generateButton = document.getElementById("generateButton");
+      const downloadButton = document.getElementById("downloadButton");
+      const previewModal = document.getElementById("previewModal");
+      const closeModalButton = document.getElementById("closeModalButton");
+      const cancelModalButton = document.getElementById("cancelModalButton");
+      const pngPreviewImage = document.getElementById("pngPreviewImage");
+      const statusText = document.getElementById("statusText");
+      const positionCountBadge = document.getElementById("positionCountBadge");
+      const textMeasureCanvas = document.createElement("canvas");
+      const textMeasureContext = textMeasureCanvas.getContext("2d");
+      const textMetricCache = new Map();
+      const anchorDisplays = {
+        topA: {
+          value: document.getElementById("topAAnchorValue"),
+          preview: document.getElementById("topAAnchorPreview")
+        },
+        bottomA: {
+          value: document.getElementById("bottomAAnchorValue"),
+          preview: document.getElementById("bottomAAnchorPreview")
+        },
+        topB: {
+          value: document.getElementById("topBAnchorValue"),
+          preview: document.getElementById("topBAnchorPreview")
+        },
+        bottomB: {
+          value: document.getElementById("bottomBAnchorValue"),
+          preview: document.getElementById("bottomBAnchorPreview")
+        }
+      };
+      const groupFieldMap = {
+        topA: { textInput: "topA", anchorInput: "topAAnchor" },
+        bottomA: { textInput: "bottomA", anchorInput: "bottomAAnchor" },
+        topB: { textInput: "topB", anchorInput: "topBAnchor" },
+        bottomB: { textInput: "bottomB", anchorInput: "bottomBAnchor" }
+      };
+
+      let lastPngDataUrl = "";
+
+      function toSubscript(text) {
+        return String(text).replace(/\d/g, (digit) => SUBSCRIPT_DIGITS[digit] || digit);
+      }
+
+      function escapeXml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&apos;");
+      }
+
+      function getChainState() {
+        const parsed = Number.parseInt(inputs.positions.value, 10);
+        const positions = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+
+        if (String(positions) !== inputs.positions.value.trim()) {
+          inputs.positions.value = positions;
+        }
+
+        return {
+          positions,
+          showRepeatBracket: inputs.repeatBracket.checked,
+          groups: {
+            A: {
+              top: {
+                text: inputs.topA.value.trim(),
+                anchor: Number.parseInt(inputs.topAAnchor.value, 10) || 1
+              },
+              bottom: {
+                text: inputs.bottomA.value.trim(),
+                anchor: Number.parseInt(inputs.bottomAAnchor.value, 10) || 1
+              }
+            },
+            B: {
+              top: {
+                text: inputs.topB.value.trim(),
+                anchor: Number.parseInt(inputs.topBAnchor.value, 10) || 1
+              },
+              bottom: {
+                text: inputs.bottomB.value.trim(),
+                anchor: Number.parseInt(inputs.bottomBAnchor.value, 10) || 1
+              }
+            }
+          }
+        };
+      }
+
+      function getTextMetrics(text, fontSize, fontWeight) {
+        const cacheKey = `${fontWeight}-${fontSize}-${text}`;
+        const cached = textMetricCache.get(cacheKey);
+
+        if (cached) {
+          return cached;
+        }
+
+        textMeasureContext.font = `${fontWeight} ${fontSize}px Arial, Helvetica, sans-serif`;
+        const metrics = textMeasureContext.measureText(text);
+        const normalized = {
+          width: metrics.width || 0,
+          left: metrics.actualBoundingBoxLeft || 0,
+          right: metrics.actualBoundingBoxRight || metrics.width || 0,
+          ascent: metrics.actualBoundingBoxAscent || fontSize * 0.72,
+          descent: metrics.actualBoundingBoxDescent || fontSize * 0.18
+        };
+
+        textMetricCache.set(cacheKey, normalized);
+        return normalized;
+      }
+
+      function buildCenteredText(text, targetX, targetY, fontSize, fontWeight) {
+        const placement = getCenteredTextPlacement(text, targetX, targetY, fontSize, fontWeight);
+        return renderTextPlacement(text, placement, fontSize, fontWeight);
+      }
+
+      function getCenteredTextPlacement(text, targetX, targetY, fontSize, fontWeight) {
+        const metrics = getTextMetrics(text, fontSize, fontWeight);
+        return {
+          x: targetX - (metrics.right - metrics.left) / 2,
+          y: targetY - (metrics.descent - metrics.ascent) / 2,
+          metrics
+        };
+      }
+
+      function renderTextPlacement(text, placement, fontSize, fontWeight) {
+        return `<text x="${placement.x}" y="${placement.y}" font-size="${fontSize}" font-weight="${fontWeight}">${escapeXml(text)}</text>`;
+      }
+
+      function buildAnchoredText(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
+        const placement = getAnchoredTextPlacement(
+          text,
+          targetX,
+          targetY,
+          fontSize,
+          fontWeight,
+          anchorIndex
+        );
+
+        return placement ? renderTextPlacement(text, placement, fontSize, fontWeight) : "";
+      }
+
+      function getGroupTextPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
+        if (!text) {
+          return null;
+        }
+
+        return text.length === 1
+          ? getCenteredTextPlacement(text, targetX, targetY, fontSize, fontWeight)
+          : getAnchoredTextPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex);
+      }
+
+      function getAnchoredTextPlacement(text, targetX, targetY, fontSize, fontWeight, anchorIndex) {
+        const safeText = text || "";
+        const boundedAnchor = Math.max(1, Math.min(anchorIndex || 1, safeText.length || 1));
+
+        if (!safeText) {
+          return null;
+        }
+
+        const metrics = getTextMetrics(safeText, fontSize, fontWeight);
+        const prefix = safeText.slice(0, boundedAnchor - 1);
+        const anchorCharacter = safeText.charAt(boundedAnchor - 1) || safeText.charAt(0);
+        const prefixMetrics = getTextMetrics(prefix, fontSize, fontWeight);
+        const anchorMetrics = getTextMetrics(anchorCharacter, fontSize, fontWeight);
+        const anchorCenter =
+          (prefixMetrics.width || 0) +
+          ((anchorMetrics.right || 0) - (anchorMetrics.left || 0)) / 2;
+        return {
+          x: targetX - anchorCenter,
+          y: targetY - (metrics.descent - metrics.ascent) / 2,
+          metrics
+        };
+      }
+
+      function getBoundsFromPlacement(placement) {
+        return {
+          left: placement.x - placement.metrics.left,
+          right: placement.x + placement.metrics.right,
+          top: placement.y - placement.metrics.ascent,
+          bottom: placement.y + placement.metrics.descent
+        };
+      }
+
+      function updateAnchorControl(fieldKey) {
+        const mapping = groupFieldMap[fieldKey];
+        const textValue = inputs[mapping.textInput].value.trim();
+        const anchorInput = inputs[mapping.anchorInput];
+        const max = Math.max(1, textValue.length || 1);
+        let anchor = Number.parseInt(anchorInput.value, 10) || 1;
+
+        anchorInput.max = String(max);
+        anchor = Math.max(1, Math.min(anchor, max));
+        anchorInput.value = String(anchor);
+        anchorInput.disabled = textValue.length <= 1;
+
+        const display = anchorDisplays[fieldKey];
+        const selectedChar = textValue.charAt(anchor - 1) || " ";
+
+        display.value.textContent = textValue
+          ? `Character ${anchor}: ${toSubscript(selectedChar)}`
+          : "No text";
+
+        if (!textValue) {
+          display.preview.textContent = "Enter a group to choose the bond anchor.";
+          return;
+        }
+
+        const normalized = toSubscript(textValue);
+        display.preview.innerHTML = Array.from(normalized)
+          .map((character, index) =>
+            index === anchor - 1
+              ? `<span class="selected-anchor">${escapeXml(character)}</span>`
+              : escapeXml(character)
+          )
+          .join("");
+      }
+
+      function refreshAnchorControls() {
+        Object.keys(groupFieldMap).forEach(updateAnchorControl);
+      }
+
+      function buildSequence(state) {
+        return Array.from({ length: state.positions }, (_, index) =>
+          index % 2 === 0 ? state.groups.A : state.groups.B
+        );
+      }
+
+      function buildChainSvgMarkup(state, options = {}) {
+        const sequence = buildSequence(state);
+        const carbonFontSize = options.carbonFontSize || 42;
+        const groupFontSize = options.groupFontSize || 36;
+        const bondStroke = options.bondStroke || 4;
+        const pitch = options.pitch || 240;
+        const edgeLine = options.edgeLine || 112;
+        const leftPad = options.leftPad || 108;
+        const rightPad = options.rightPad || 108;
+        const baseY = options.baseY || 202;
+        const topLabelY = options.topLabelY || 54;
+        const bottomLabelY = options.bottomLabelY || 350;
+        const topBondTop = options.topBondTop || 106;
+        const bottomBondBottom = options.bottomBondBottom || 300;
+        const height = options.height || 404;
+        const carbonGap = options.carbonGap || 36;
+        const bondTextGap = options.bondTextGap || 16;
+        const lineColor = options.lineColor || "#2b2926";
+        const textColor = options.textColor || "#1f1d1a";
+        const outerPadding = options.outerPadding || 28;
+        const firstX = leftPad + edgeLine;
+
+        const lines = [];
+        const texts = [];
+        const bracketPaths = [];
+        const carbonPlacementCache = sequence.map((_, index) =>
+          getCenteredTextPlacement("C", firstX + index * pitch, baseY, carbonFontSize, 700)
+        );
+        const carbonBoundsCache = carbonPlacementCache.map(getBoundsFromPlacement);
+        const allBounds = [...carbonBoundsCache];
+        let contentMinX = carbonBoundsCache[0].left - bondTextGap - edgeLine;
+        let contentMaxX =
+          carbonBoundsCache[carbonBoundsCache.length - 1].right + bondTextGap + edgeLine;
+        let contentMinY = Math.min(...carbonBoundsCache.map((bounds) => bounds.top));
+        let contentMaxY = Math.max(...carbonBoundsCache.map((bounds) => bounds.bottom));
+
+        sequence.forEach((group, index) => {
+          const x = firstX + index * pitch;
+          const topText = toSubscript(group.top.text);
+          const bottomText = toSubscript(group.bottom.text);
+          const carbonPlacement = carbonPlacementCache[index];
+          const carbonBounds = carbonBoundsCache[index];
+
+          texts.push(renderTextPlacement("C", carbonPlacement, carbonFontSize, 700));
+
+          if (topText) {
+            const topPlacement = getGroupTextPlacement(
+              topText,
+              x,
+              topLabelY,
+              groupFontSize,
+              700,
+              group.top.anchor
+            );
+            const topBounds = getBoundsFromPlacement(topPlacement);
+            allBounds.push(topBounds);
+            contentMinX = Math.min(contentMinX, topBounds.left);
+            contentMaxX = Math.max(contentMaxX, topBounds.right);
+            contentMinY = Math.min(contentMinY, topBounds.top);
+            contentMaxY = Math.max(contentMaxY, topBounds.bottom);
+            lines.push(
+              `<line x1="${x}" y1="${carbonBounds.top - bondTextGap}" x2="${x}" y2="${topBounds.bottom + bondTextGap}" />`
+            );
+            texts.push(renderTextPlacement(topText, topPlacement, groupFontSize, 700));
+          }
+
+          if (bottomText) {
+            const bottomPlacement = getGroupTextPlacement(
+              bottomText,
+              x,
+              bottomLabelY,
+              groupFontSize,
+              700,
+              group.bottom.anchor
+            );
+            const bottomBounds = getBoundsFromPlacement(bottomPlacement);
+            allBounds.push(bottomBounds);
+            contentMinX = Math.min(contentMinX, bottomBounds.left);
+            contentMaxX = Math.max(contentMaxX, bottomBounds.right);
+            contentMinY = Math.min(contentMinY, bottomBounds.top);
+            contentMaxY = Math.max(contentMaxY, bottomBounds.bottom);
+            lines.push(
+              `<line x1="${x}" y1="${carbonBounds.bottom + bondTextGap}" x2="${x}" y2="${bottomBounds.top - bondTextGap}" />`
+            );
+            texts.push(renderTextPlacement(bottomText, bottomPlacement, groupFontSize, 700));
+          }
+        });
+
+        if (state.showRepeatBracket) {
+          const bracketInset = options.bracketInset || 34;
+          const bracketGap = options.bracketGap || Math.max(28, Math.round(edgeLine * 0.72));
+          const bracketRadius = options.bracketRadius || Math.max(14, Math.round(bracketGap * 0.58));
+          const bracketReach = options.bracketReach || Math.max(10, Math.round(bracketGap * 0.42));
+          const bracketStroke = options.bracketStroke || Math.max(1.5, bondStroke * 0.78);
+          const bracketCrossOvershoot =
+            options.bracketCrossOvershoot || Math.max(10, Math.round(bondStroke * 2.4));
+          const compoundMinX = Math.min(...allBounds.map((bounds) => bounds.left));
+          const compoundMaxX = Math.max(...allBounds.map((bounds) => bounds.right));
+          const compoundMinY = Math.min(...allBounds.map((bounds) => bounds.top));
+          const compoundMaxY = Math.max(...allBounds.map((bounds) => bounds.bottom));
+          const bracketTop = compoundMinY - bracketInset;
+          const bracketBottom = compoundMaxY + bracketInset;
+          const leftBracketX = compoundMinX - bracketGap;
+          const rightBracketX = compoundMaxX + bracketGap;
+          const leftInnerX = leftBracketX + bracketReach;
+          const rightInnerX = rightBracketX - bracketReach;
+          const topArcBottom = bracketTop + bracketRadius;
+          const bottomArcTop = bracketBottom - bracketRadius;
+          const nPlacement = getCenteredTextPlacement(
+            "n",
+            rightBracketX + bracketRadius + 10,
+            bracketBottom - 2,
+            Math.max(24, groupFontSize - 6),
+            400
+          );
+          const nBounds = getBoundsFromPlacement(nPlacement);
+
+          bracketPaths.push(
+            `<path d="M ${leftInnerX} ${bracketTop} Q ${leftBracketX} ${bracketTop} ${leftBracketX} ${topArcBottom} L ${leftBracketX} ${bottomArcTop} Q ${leftBracketX} ${bracketBottom} ${leftInnerX} ${bracketBottom}" stroke-width="${bracketStroke}" stroke-linecap="round" stroke-linejoin="round" />`
+          );
+          bracketPaths.push(
+            `<path d="M ${rightInnerX} ${bracketTop} Q ${rightBracketX} ${bracketTop} ${rightBracketX} ${topArcBottom} L ${rightBracketX} ${bottomArcTop} Q ${rightBracketX} ${bracketBottom} ${rightInnerX} ${bracketBottom}" stroke-width="${bracketStroke}" stroke-linecap="round" stroke-linejoin="round" />`
+          );
+          texts.push(
+            `<text x="${nPlacement.x}" y="${nPlacement.y}" font-size="${Math.max(
+              24,
+              groupFontSize - 6
+            )}" font-style="italic" font-weight="400">${escapeXml("n")}</text>`
+          );
+
+          contentMinX = Math.min(contentMinX, leftBracketX);
+          contentMaxX = Math.max(contentMaxX, rightBracketX, nBounds.right);
+          contentMinY = Math.min(contentMinY, bracketTop);
+          contentMaxY = Math.max(contentMaxY, bracketBottom, nBounds.bottom);
+
+          lines.unshift(
+            `<line x1="${leftBracketX - bracketCrossOvershoot}" y1="${baseY}" x2="${carbonBoundsCache[0].left - bondTextGap}" y2="${baseY}" />`
+          );
+          lines.push(
+            `<line x1="${carbonBoundsCache[carbonBoundsCache.length - 1].right + bondTextGap}" y1="${baseY}" x2="${rightBracketX + bracketCrossOvershoot}" y2="${baseY}" />`
+          );
+        } else {
+          lines.unshift(
+            `<line x1="${carbonBoundsCache[0].left - bondTextGap - edgeLine}" y1="${baseY}" x2="${carbonBoundsCache[0].left - bondTextGap}" y2="${baseY}" />`
+          );
+          lines.push(
+            `<line x1="${carbonBoundsCache[carbonBoundsCache.length - 1].right + bondTextGap}" y1="${baseY}" x2="${carbonBoundsCache[carbonBoundsCache.length - 1].right + bondTextGap + edgeLine}" y2="${baseY}" />`
+          );
+        }
+
+        for (let index = 0; index < sequence.length - 1; index += 1) {
+          const currentBounds = carbonBoundsCache[index];
+          const nextBounds = carbonBoundsCache[index + 1];
+          lines.push(
+            `<line x1="${currentBounds.right + bondTextGap}" y1="${baseY}" x2="${nextBounds.left - bondTextGap}" y2="${baseY}" />`
+          );
+        }
+
+        const viewMinX = contentMinX - outerPadding;
+        const viewMinY = contentMinY - outerPadding;
+        const viewWidth = contentMaxX - contentMinX + outerPadding * 2;
+        const viewHeight = contentMaxY - contentMinY + outerPadding * 2;
+
+        return `
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="${viewWidth}"
+            height="${viewHeight}"
+            viewBox="${viewMinX} ${viewMinY} ${viewWidth} ${viewHeight}"
+            role="img"
+            aria-label="Polymer chain section"
+          >
+            <rect x="${viewMinX}" y="${viewMinY}" width="${viewWidth}" height="${viewHeight}" fill="transparent"></rect>
+            <g
+              stroke="${lineColor}"
+              stroke-width="${bondStroke}"
+              stroke-linecap="butt"
+              stroke-linejoin="miter"
+              shape-rendering="geometricPrecision"
+              fill="none"
+            >
+              ${lines.join("")}
+              ${bracketPaths.join("")}
+            </g>
+            <g
+              fill="${textColor}"
+              font-family="Arial, Helvetica, sans-serif"
+            >
+              ${texts.join("")}
+            </g>
+          </svg>
+        `.trim();
+      }
+
+      function renderLivePreview() {
+        const state = getChainState();
+        const svgMarkup = buildChainSvgMarkup(state, {
+          carbonFontSize: 38,
+          groupFontSize: 38,
+          bondStroke: 4,
+          pitch: 230,
+          edgeLine: 96,
+          leftPad: 72,
+          rightPad: 72,
+          baseY: 188,
+          topLabelY: 54,
+          bottomLabelY: 322,
+          bondTextGap: 16,
+          bracketInset: 24,
+          bracketGap: 34,
+          bracketRadius: 18,
+          bracketReach: 13,
+          bracketCrossOvershoot: 14,
+          outerPadding: 24
+        });
+
+        chainPreview.innerHTML = svgMarkup;
+        positionCountBadge.textContent =
+          state.positions === 1 ? "1 position visible" : `${state.positions} positions visible`;
+      }
+
+      function openModal() {
+        previewModal.classList.add("is-active");
+        previewModal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal() {
+        previewModal.classList.remove("is-active");
+        previewModal.setAttribute("aria-hidden", "true");
+      }
+
+      function generatePng() {
+        const state = getChainState();
+        const svgMarkup = buildChainSvgMarkup(state, {
+          carbonFontSize: 50,
+          groupFontSize: 50,
+          bondStroke: 5,
+          pitch: 280,
+          edgeLine: 128,
+          leftPad: 90,
+          rightPad: 90,
+          baseY: 214,
+          topLabelY: 66,
+          bottomLabelY: 378,
+          bondTextGap: 18,
+          bracketInset: 28,
+          bracketGap: 42,
+          bracketRadius: 22,
+          bracketReach: 16,
+          bracketCrossOvershoot: 18,
+          outerPadding: 28
+        });
+
+        const svgBlob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const image = new Image();
+
+        image.onload = () => {
+          const scale = 3;
+          const canvas = document.createElement("canvas");
+          canvas.width = image.width * scale;
+          canvas.height = image.height * scale;
+
+          const context = canvas.getContext("2d");
+          context.setTransform(scale, 0, 0, scale, 0, 0);
+          context.drawImage(image, 0, 0);
+
+          lastPngDataUrl = canvas.toDataURL("image/png");
+          pngPreviewImage.src = lastPngDataUrl;
+          statusText.textContent = "PNG preview generated from the current chain.";
+          openModal();
+
+          URL.revokeObjectURL(svgUrl);
+        };
+
+        image.onerror = () => {
+          statusText.textContent = "PNG generation failed in this browser session.";
+          URL.revokeObjectURL(svgUrl);
+        };
+
+        image.src = svgUrl;
+      }
+
+      Object.values(inputs).forEach((input) => {
+        input.addEventListener("input", () => {
+          statusText.textContent = "Preview updates live as you type.";
+          refreshAnchorControls();
+          renderLivePreview();
+        });
+      });
+
+      generateButton.addEventListener("click", generatePng);
+      downloadButton.addEventListener("click", () => {
+        if (!lastPngDataUrl) {
+          return;
+        }
+
+        const link = document.createElement("a");
+        link.href = lastPngDataUrl;
+        link.download = "polymer-chain-section.png";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      });
+
+      closeModalButton.addEventListener("click", closeModal);
+      cancelModalButton.addEventListener("click", closeModal);
+      previewModal.querySelector(".modal-background").addEventListener("click", closeModal);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && previewModal.classList.contains("is-active")) {
+          closeModal();
+        }
+      });
+
+      refreshAnchorControls();
+      renderLivePreview();
+    </script>
+  </body>
+</html>
