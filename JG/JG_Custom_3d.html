@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>JG Custom — 3D Laser Cut Mockup</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1a1a1f; color: #ddd; font-family: system-ui, sans-serif; overflow: hidden; }
+  #app { position: fixed; inset: 0; }
+  #info {
+    position: fixed; top: 12px; left: 12px; padding: 10px 14px;
+    background: rgba(0,0,0,0.45); border-radius: 6px; font-size: 12px; line-height: 1.5;
+    pointer-events: none; user-select: none;
+  }
+  #info b { color: #f0c878; }
+  #loading {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; background: #1a1a1f; transition: opacity 0.4s ease;
+  }
+  #loading.hidden { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="info">
+  <b>JG Custom — Laser Cut Mockup</b><br/>
+  drag to rotate · scroll to zoom · right-drag to pan
+</div>
+<div id="loading">Loading SVG layers…</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { SVGLoader }   from 'three/addons/loaders/SVGLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+// ---------- constants ----------
+const SVG_W = 2599;
+const SVG_H = 3544;
+
+// Same physical thickness for the wooden base and the popout layer.
+// (Halved from initial pass to be closer to real laser-cut plywood.)
+const BASE_THICKNESS    = 45;
+const POPOUT_THICKNESS  = 45;
+// Engraving slightly reduces the base — rendered as a thin, darker raised layer.
+const ENGRAVE_DEPTH     = 6;
+
+const WOOD_COLOR     = 0x8a5a2b; // rich walnut
+const ENGRAVE_COLOR  = 0x2a1608; // burnt / charred
+const POPOUT_COLOR   = 0xe7c46a; // brushed gold (matches mockup)
+
+// ---------- renderer / scene ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById('app').appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1a1f);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 50000);
+camera.position.set(1700, 1400, 5400);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.target.set(0, 0, BASE_THICKNESS / 2);
+
+// ---------- lights ----------
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(2200, 2800, 3500);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left   = -3000;
+key.shadow.camera.right  =  3000;
+key.shadow.camera.top    =  3000;
+key.shadow.camera.bottom = -3000;
+key.shadow.camera.near = 100;
+key.shadow.camera.far  = 12000;
+key.shadow.bias = -0.0005;
+scene.add(key);
+
+const fill = new THREE.DirectionalLight(0xfff2dd, 0.45);
+fill.position.set(-3000, -1200, 1800);
+scene.add(fill);
+
+const rim = new THREE.DirectionalLight(0xb8d6ff, 0.3);
+rim.position.set(0, -2500, -1500);
+scene.add(rim);
+
+// ---------- ground (catches a soft shadow) ----------
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(20000, 20000),
+  new THREE.ShadowMaterial({ opacity: 0.35 })
+);
+ground.position.z = -1;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// ---------- procedural maple wood texture (raw, unfinished) ----------
+// Bakes a color + normal map on a 2D canvas and feeds them into a standard PBR
+// material. Maple is pale, with very fine mostly-straight grain — not the
+// dramatic concentric rings of walnut/oak. "Raw" surface = matte (high
+// roughness) + visible fiber micro-texture in the normal map.
+function makeMapleTextures(size = 1024) {
+  // hash-based 2D value noise -> fbm
+  const hash = (x, y, s) => {
+    let h = (x | 0) * 374761393 + (y | 0) * 668265263 + (s | 0) * 1597334677;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+  const smooth = t => t * t * (3 - 2 * t);
+  const noise = (x, y, s) => {
+    const xi = Math.floor(x), yi = Math.floor(y);
+    const xf = x - xi, yf = y - yi;
+    const u = smooth(xf), v = smooth(yf);
+    const a = hash(xi, yi, s), b = hash(xi + 1, yi, s);
+    const c = hash(xi, yi + 1, s), d = hash(xi + 1, yi + 1, s);
+    return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v;
+  };
+  const fbm = (x, y, oct, s) => {
+    let t = 0, a = 1, f = 1, m = 0;
+    for (let i = 0; i < oct; i++) { t += a * noise(x * f, y * f, s + i); m += a; a *= 0.5; f *= 2; }
+    return t / m;
+  };
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const lerp3 = (A, B, t) => [lerp(A[0], B[0], t), lerp(A[1], B[1], t), lerp(A[2], B[2], t)];
+  const smoothstep = (e0, e1, x) => {
+    const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+  };
+
+  const seed = 13;
+  // Toasted maple palette: medium honey-brown with darker amber grain lines
+  // and occasional mineral streaks, tuned so the gold popout has clear contrast.
+  const cream = [0x9a, 0x64, 0x35];
+  const tan   = [0x73, 0x45, 0x23];
+  const grain = [0x4a, 0x2a, 0x14];
+  const fleck = [0x23, 0x12, 0x08];
+
+  const heights = new Float32Array(size * size);
+  const colorCanvas  = document.createElement('canvas');
+  const normalCanvas = document.createElement('canvas');
+  colorCanvas.width  = colorCanvas.height  = size;
+  normalCanvas.width = normalCanvas.height = size;
+  const colorCtx  = colorCanvas.getContext('2d');
+  const normalCtx = normalCanvas.getContext('2d');
+  const colorImg  = colorCtx.createImageData(size, size);
+  const normalImg = normalCtx.createImageData(size, size);
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const u = x / size, v = y / size;
+
+      // Tiny lateral wobble so grain lines aren't ruler-straight.
+      const dx = fbm(u * 2.5, v * 5, 3, seed) - 0.5;
+
+      // Vertical grain: many sharp thin lines.
+      const linePos  = (u + dx * 0.08) * 130;
+      const lineBand = Math.abs(Math.sin(linePos * Math.PI));
+      const grainLine = Math.pow(1 - lineBand, 7); // sharp ridges
+
+      // Broader low-freq color warmth modulation across the board.
+      const softGrain = fbm(u * 9, v * 1.6, 3, seed + 7);
+
+      // Rare dark mineral streaks (sparse, longitudinal).
+      const fleckN    = fbm(u * 24, v * 90, 2, seed + 31);
+      const fleckMask = smoothstep(0.80, 0.90, fleckN) * 0.55;
+
+      // High-frequency micro-noise — this is the "raw" fiber surface.
+      const micro = noise(x * 0.6, y * 0.6, seed + 99) - 0.5;
+
+      // Height field drives the normal map.
+      const h = grainLine * 0.55 + fleckMask * 0.25 + micro * 0.20;
+      heights[y * size + x] = h;
+
+      // Color blending: warm background -> grain ridge -> mineral fleck.
+      let col = lerp3(cream, tan, softGrain * 0.65 + 0.18);
+      col = lerp3(col, grain, grainLine * 0.68);
+      col = lerp3(col, fleck, fleckMask);
+      // micro tint variation
+      const j = micro * 10;
+      col[0] = Math.max(0, Math.min(255, col[0] + j));
+      col[1] = Math.max(0, Math.min(255, col[1] + j));
+      col[2] = Math.max(0, Math.min(255, col[2] + j));
+
+      const i = (y * size + x) * 4;
+      colorImg.data[i] = col[0]; colorImg.data[i + 1] = col[1]; colorImg.data[i + 2] = col[2]; colorImg.data[i + 3] = 255;
+    }
+  }
+
+  // Normal map from height field (central differences, wraps).
+  const strength = 5.0;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const xm = (x - 1 + size) % size, xp = (x + 1) % size;
+      const ym = (y - 1 + size) % size, yp = (y + 1) % size;
+      const dhdx = (heights[y * size + xp] - heights[y * size + xm]) * strength;
+      const dhdy = (heights[yp * size + x] - heights[ym * size + x]) * strength;
+      const nx = -dhdx, ny = -dhdy, nz = 1.0;
+      const len = Math.hypot(nx, ny, nz);
+      const i = (y * size + x) * 4;
+      normalImg.data[i]     = ((nx / len) * 0.5 + 0.5) * 255;
+      normalImg.data[i + 1] = ((ny / len) * 0.5 + 0.5) * 255;
+      normalImg.data[i + 2] = ((nz / len) * 0.5 + 0.5) * 255;
+      normalImg.data[i + 3] = 255;
+    }
+  }
+
+  colorCtx.putImageData(colorImg, 0, 0);
+  normalCtx.putImageData(normalImg, 0, 0);
+  return {
+    color:  new THREE.CanvasTexture(colorCanvas),
+    normal: new THREE.CanvasTexture(normalCanvas),
+  };
+}
+
+const woodTex = makeMapleTextures(1024);
+woodTex.color.colorSpace = THREE.SRGBColorSpace;
+for (const t of [woodTex.color, woodTex.normal]) {
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  // ExtrudeGeometry emits world-space UVs (~0..2600). Tile a bit over once
+  // across the long axis so the grain reads as fine, not chunky.
+  t.repeat.set(1 / 1600, 1 / 1600);
+}
+
+// ---------- materials ----------
+const woodMat = new THREE.MeshStandardMaterial({
+  map:         woodTex.color,
+  normalMap:   woodTex.normal,
+  normalScale: new THREE.Vector2(0.85, 0.85), // raw fibers
+  roughness:   0.95,                          // unfinished, no varnish
+  metalness:   0.0,
+});
+const engraveMat = new THREE.MeshStandardMaterial({
+  color: ENGRAVE_COLOR, roughness: 0.95, metalness: 0.0,
+});
+const popoutMat = new THREE.MeshStandardMaterial({
+  color: POPOUT_COLOR, roughness: 0.35, metalness: 0.55,
+});
+
+// ---------- helpers ----------
+const loader = new SVGLoader();
+const loadSvg = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
+
+function shapesFromSvg(data) {
+  const shapes = [];
+  for (const path of data.paths) {
+    // Skip viewport rects and any other unfilled paths — these SVGs include a
+    // bounding `<rect style="fill:none">` that would otherwise extrude as a giant slab.
+    const fill = path.userData && path.userData.style && path.userData.style.fill;
+    if (fill === 'none' || fill === 'transparent') continue;
+    const ss = SVGLoader.createShapes(path);
+    for (const s of ss) shapes.push(s);
+  }
+  return shapes;
+}
+
+// SVG Y axis points down; Three.js Y points up. Mirroring shape vertices in Y
+// (then re-centering) gives an upright model with correct face winding.
+function flipShapesY(shapes) {
+  for (const shape of shapes) {
+    flipPathY(shape);
+    if (shape.holes) for (const h of shape.holes) flipPathY(h);
+  }
+}
+function flipPathY(path) {
+  for (const c of path.curves) {
+    if (c.v0) c.v0.y = -c.v0.y;
+    if (c.v1) c.v1.y = -c.v1.y;
+    if (c.v2) c.v2.y = -c.v2.y;
+    if (c.v3) c.v3.y = -c.v3.y;
+    if (c.aY  !== undefined) c.aY  = -c.aY;
+    if (c.yRadius !== undefined) {/* ellipse — no flip needed for radius */}
+  }
+}
+
+function buildLayer(shapes, depth, material, zOffset) {
+  const group = new THREE.Group();
+  for (const shape of shapes) {
+    const geom = new THREE.ExtrudeGeometry(shape, {
+      depth, bevelEnabled: false, curveSegments: 16,
+    });
+    const mesh = new THREE.Mesh(geom, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+  group.position.z = zOffset;
+  return group;
+}
+
+// ---------- build the model ----------
+const root = new THREE.Group();
+scene.add(root);
+
+(async () => {
+  try {
+    const [baseSvg, engSvg, popSvg] = await Promise.all([
+      loadSvg('JG_Custom_base.svg'),
+      loadSvg('JG_Custom_engraving.svg'),
+      loadSvg('JG_Custom_popouttext.svg'),
+    ]);
+
+    const baseShapes    = shapesFromSvg(baseSvg);
+    const engraveShapes = shapesFromSvg(engSvg);
+    const popoutShapes  = shapesFromSvg(popSvg);
+
+    flipShapesY(baseShapes);
+    flipShapesY(engraveShapes);
+    flipShapesY(popoutShapes);
+
+    // Base: full thickness, sits on the "table" at z=0.
+    const baseLayer = buildLayer(baseShapes, BASE_THICKNESS, woodMat, 0);
+
+    // Engraving: thin darker layer riding on the base surface (visually reads
+    // as burnt / engraved markings on the wood).
+    const engraveLayer = buildLayer(
+      engraveShapes, ENGRAVE_DEPTH, engraveMat, BASE_THICKNESS - ENGRAVE_DEPTH * 0.5
+    );
+
+    // Popout text: same physical thickness as the base, sitting on top.
+    const popoutLayer = buildLayer(
+      popoutShapes, POPOUT_THICKNESS, popoutMat, BASE_THICKNESS
+    );
+
+    root.add(baseLayer, engraveLayer, popoutLayer);
+
+    // Center the design horizontally; vertical center after Y flip is at -SVG_H/2.
+    root.position.x = -SVG_W / 2;
+    root.position.y =  SVG_H / 2;
+
+    document.getElementById('loading').classList.add('hidden');
+  } catch (err) {
+    document.getElementById('loading').textContent = 'Failed to load SVGs: ' + err.message;
+    console.error(err);
+  }
+})();
+
+// ---------- loop ----------
+function tick() {
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
