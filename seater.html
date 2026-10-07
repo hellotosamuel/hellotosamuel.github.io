@@ -28,10 +28,11 @@
       <label for="layoutPreset" class="font-semibold text-gray-700">Layout preset</label>
       <select id="layoutPreset" aria-describedby="presetHelp"
         class="border border-gray-300 rounded px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-        <option value="original" selected>Original sample, compact seats</option>
-        <option value="geography">Geography sample, larger seats</option>
+        <option value="geography">1 Subject</option>
+        <option value="original" selected>2 Subjects</option>
+        <option value="chemistry">3 Subjects</option>
       </select>
-      <p id="presetHelp" class="text-gray-600">Loads the crop settings below. You can still adjust them manually.</p>
+      <p id="presetHelp" class="text-gray-600">Choose the number of entries in the Subject(s) box. You can still adjust the crop settings below.</p>
     </div>
 
     <!-- Controls Panel -->
@@ -153,7 +154,8 @@
     const inputIds = ['shiftY', 'p1TrimBottom', 'p2UpperBound', 'p2LowerBound', 'p2PosY'];
     const layoutPresets = {
       original: { shiftY: 32, p1TrimBottom: 77, p2UpperBound: 239, p2LowerBound: 284, p2PosY: 64 },
-      geography: { shiftY: 47, p1TrimBottom: 66, p2UpperBound: 216, p2LowerBound: 265, p2PosY: 64 }
+      geography: { shiftY: 47, p1TrimBottom: 66, p2UpperBound: 216, p2LowerBound: 265, p2PosY: 64 },
+      chemistry: { shiftY: 20, p1TrimBottom: 87, p2UpperBound: 263, p2LowerBound: 306, p2PosY: 64 }
     };
 
     document.getElementById('layoutPreset').addEventListener('change', (event) => {
